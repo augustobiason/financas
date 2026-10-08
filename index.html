@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Painel Consolidador de Bancos</title>
+<title>Controle de Gastos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mut:#6b7380;--bd:#dfe3e8;--ac:#1f5fd6;--acb:#e8f0fe;--neg:#c62828;--pos:#1b7f3b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171b;--card:#1d2127;--tx:#e8eaed;--mut:#9aa3af;--bd:#333a43;--ac:#6ea0ff;--acb:#22304d;--neg:#ff7b72;--pos:#56d27a}}
@@ -39,6 +40,7 @@ select{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-ra
 tfoot td{font-weight:700;border-bottom:0}
 .bb{color:var(--mut);font-size:.85rem;margin-top:8px}
 input[type=text],input[type=date]{border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);padding:8px;font:inherit}
+td input[type=date]{padding:4px 6px;font-size:.85rem}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 10px}
 .tab{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit}
 .tab[aria-pressed="true"]{background:var(--acb);border-color:var(--ac);color:var(--ac);font-weight:600}
@@ -72,9 +74,10 @@ th[data-s]{cursor:pointer;user-select:none}
     <button class="act" id="add">Processar e adicionar</button>
     <button class="sec" id="clrRaw">Limpar dados brutos</button>
     <button class="sec" id="clr">Limpar tabela</button>
+    <button class="sec" id="undo" hidden>Desfazer limpeza</button>
     <span id="msg"></span>
   </div>
-  <details id="man" style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">Adicionar lançamento manual</summary>
+  <details id="man" style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">Adicionar um lançamento (formulário)</summary>
     <div class="row">
       <input type="date" id="md"><select id="mbank"></select>
       <input type="text" id="mdesc" placeholder="Descrição" style="min-width:180px;flex:1">
@@ -102,9 +105,14 @@ th[data-s]{cursor:pointer;user-select:none}
 
 <section class="card" id="p-tab">
   <div class="row" style="margin:0 0 10px;justify-content:space-between">
-    <div class="lbl" style="margin:0">3. Tabela consolidada <span id="cnt" class="mut"></span></div>
-    <button class="sec" id="cp">Copiar (TSV)</button>
+    <div class="lbl" style="margin:0">3. Tabela consolidada <span id="cnt" class="mut"></span> <span id="sv" class="mut" style="font-size:.8rem;font-weight:400;text-transform:none"></span></div>
+    <div class="row" style="margin:0">
+      <button class="sec" id="xcsv">Exportar para CSV</button>
+      <button class="sec" id="xxlsx">Exportar para Excel (.xlsx)</button>
+      <button class="sec" id="cp">Exportar para Google Planilhas</button>
+    </div>
   </div>
+  <p class="hint" id="xmsg" style="margin:0 0 10px">As exportações seguem o filtro atual da tabela.</p>
   <div class="row" style="margin:0 0 10px">
     <input type="search" id="fq" placeholder="Buscar na descrição...">
     <select id="fb"></select><select id="fc"></select>
@@ -113,9 +121,9 @@ th[data-s]{cursor:pointer;user-select:none}
   </div>
   <div class="wrap">
   <table>
-    <thead><tr><th data-s="date">Data</th><th data-s="bank">Banco</th><th data-s="desc">Descrição</th><th data-s="mod">Modalidade</th><th data-s="cat">Categoria</th><th class="v" data-s="val">Valor</th><th></th></tr></thead>
+    <thead><tr><th>#</th><th data-s="date">Data</th><th data-s="bank">Banco</th><th data-s="desc">Descrição</th><th data-s="mod">Modalidade</th><th data-s="cat">Categoria</th><th class="v" data-s="val">Valor</th><th></th></tr></thead>
     <tbody id="tb"></tbody>
-    <tfoot><tr><td colspan="5">Saldo da seleção</td><td class="v" id="fBal">R$ 0,00</td><td></td></tr></tfoot>
+    <tfoot><tr><td colspan="6">Saldo da seleção</td><td class="v" id="fBal">R$ 0,00</td><td></td></tr></tfoot>
   </table>
   </div>
   <p class="hint" id="empty">Nenhum lançamento ainda.</p>
@@ -140,10 +148,11 @@ const BANKS={
  santander:{n:'Santander',h:'Colunas: Descrição, Valor, Data, Qtd Parcelas, Nº Parcela... Valores com "--" são despesas.'},
  bb:{n:'Banco do Brasil',h:'Colunas: data, tipo, descrição, documento, valor, Entrada/Saída. COMGAS, CONDOMINIO EDIFICIO MANACA, ENEL e GRPQA: dividido por 2 e categoria Casa.'},
  bradescard:{n:'Bradescard',h:'Cartão Amazon. Linhas "DD/MM descrição valor", sem ano (informe o ano abaixo). Pagamento recebido é crédito.'},
- pluxee:{n:'Pluxee',h:'Vale-alimentação. Sem regra fixa: o painel tenta achar data e valor (+/- R$). Se não reconhecer, use o lançamento manual abaixo.'},
- ticket:{n:'Ticket',h:'Vale-refeição. Sem regra fixa: o painel tenta achar data e valor (+/- R$). Se não reconhecer, use o lançamento manual abaixo.'}
+ pluxee:{n:'Pluxee',h:'Vale-alimentação. Sem regra fixa: o painel tenta achar data e valor (+/- R$). Se não reconhecer, use o formulário de lançamento abaixo.'},
+ ticket:{n:'Ticket',h:'Vale-refeição. Sem regra fixa: o painel tenta achar data e valor (+/- R$). Se não reconhecer, use o formulário de lançamento abaixo.'},
+ manual:{n:'Lançamento Manual',h:'Sem regras: cole a planilha com cabeçalho (Data, Banco, Descrição, Modalidade, Categoria, Valor). Os valores entram como estão, com o sinal que vier. Categoria em branco é classificada automaticamente.'}
 };
-const CATS=['Alimentação (Mercado)','Alimentação (Restaurantes)','Bebidas e Festas','Casa','Educação','Fatura de Cartão','Investimentos','Lazer e Entretenimento','Presentes','Saúde/Bem-Estar/Estética','Serviços e tecnologia','SPFC','Transporte','Transporte (público)','Trabalho','Vestuário','Viagens','Outros'];
+const CATS=['Alimentação (Mercado)','Alimentação (Restaurantes)','Bebidas e Festas','Casa','Educação','Fatura de Cartão','Investimentos','Lazer e Entretenimento','Lazer','Presentes','Saúde/Bem-Estar/Estética','Serviços e tecnologia','SPFC','Transporte','Transporte (público)','Trabalho','Vestuário','Viagens','Outros'];
 const CATS_IN=['Salário','Freela','Benefício','Bônus','Empréstimo','Outros'];
 const CATS_IN_ALL=[...CATS_IN,'Investimentos','Fatura de Cartão']; // as duas últimas são técnicas (rendimentos e pagamento de fatura)
 const MODS=['','Crédito','Débito','Dinheiro','Pix','Benefício'];
@@ -162,7 +171,7 @@ const MAPA={
  // Bebidas e Festas
  'cervejaria 2 irmas':'Bebidas e Festas','oxxo':'Bebidas e Festas','marcosmariano':'Bebidas e Festas','lucianoaparecidog':'Bebidas e Festas','andreaugustode':'Bebidas e Festas','convenincia':'Bebidas e Festas','boteco mondego':'Bebidas e Festas','ze bolim':'Bebidas e Festas',
  // Saúde/Bem-Estar/Estética
- 'banca do paulo afonso':'Saúde/Bem-Estar/Estética','bombonier':'Saúde/Bem-Estar/Estética','bordao':'Saúde/Bem-Estar/Estética','drogaria':'Saúde/Bem-Estar/Estética','ferreiro barber':'Saúde/Bem-Estar/Estética','zigpay':'Saúde/Bem-Estar/Estética',
+ 'banca do paulo afonso':'Educação','bombonier':'Saúde/Bem-Estar/Estética','bordao':'Saúde/Bem-Estar/Estética','drogaria':'Saúde/Bem-Estar/Estética','ferreiro barber':'Saúde/Bem-Estar/Estética','zigpay':'Saúde/Bem-Estar/Estética',
  // Casa
  'atos departamento':'Casa','shopee':'Casa','zw presentes':'Casa','comgas':'Casa','condominio edificio manaca':'Casa','enel distribuicao':'Casa','grpqa':'Casa',
  // Vestuário
@@ -175,6 +184,11 @@ const MAPA={
  'fmu':'Educação','rendimentos':'Investimentos','transferencia realizada':'Investimentos','enl parafusos':'Trabalho','spfc':'SPFC','sesc internet':'Lazer e Entretenimento','animall vet':'Outros'
 };
 const MAPA_SORT=Object.entries(MAPA).sort((a,b)=>b[0].length-a[0].length);
+// SUB-REGRAS POR BANCO: 'trecho do MAPA': [[['banco (minúsculo)',...],'Categoria'],...]. Nos demais bancos vale o MAPA.
+const SUB={
+ 'banca do paulo afonso':[[['nubank'],'Lazer']],
+ 'oxxo':[[['pluxee','ticket'],'Alimentação (Mercado)']]
+};
 // receitas (entradas)
 const RULES_IN=[
  [/pagamento recebido|pagamento de fatura|fatura/,'Fatura de Cartão'],
@@ -247,10 +261,10 @@ function cells(line,delim){
   out.push(cur.trim());return out;
 }
 function delimOf(l){return l.includes('\t')?'\t':l.includes(';')?';':','}
-function classify(desc,val){
-  const n=norm(desc);
+function classify(desc,val,bk){
+  const n=norm(desc),nb=norm(bk||'');
   if(val>0){for(const[r,c]of RULES_IN)if(r.test(n))return c;return 'Outros'}
-  for(const[k,c]of MAPA_SORT)if(n.includes(k))return c;
+  for(const[k,c]of MAPA_SORT)if(n.includes(k)){const sr=(SUB[k]||[]).find(x=>x[0].includes(nb));return sr?sr[1]:c}
   for(const[r,c]of RULES)if(r.test(n))return c;
   return 'Outros';
 }
@@ -386,9 +400,25 @@ const PARSERS={
  }
 };
 PARSERS.ticket=PARSERS.pluxee;
+PARSERS.manual=function(text,ano){
+  const t=table(text),nm=x=>norm(x||'');
+  let i={d:idx(t.h,'data'),b:idx(t.h,'banco','origem'),ds:idx(t.h,'descri'),m:idx(t.h,'modal'),c:idx(t.h,'categ'),v:idx(t.h,'valor')};
+  if(!t.h.length||i.d<0||i.v<0){ // sem cabeçalho: Data, Banco, Descrição, [Modalidade], [Categoria], Valor
+    const n=(t.rows[0]||[]).length;
+    i={d:0,b:1,ds:2,m:n>=6?3:-1,c:n>=6?4:n===5?3:-1,v:n-1};
+  }
+  const cats=[...CATS,...CATS_IN_ALL];
+  return t.rows.map(r=>{
+    const dt=date(r[i.d]||'',ano),n=num(r[i.v]||'');
+    if(!dt||isNaN(n))return null;
+    const bk=(r[i.b]||'').trim(),bn=Object.values(BANKS).find(x=>nm(x.n)===nm(bk)&&x.n!==BANKS.manual.n);
+    const md=MODS.find(m=>m&&nm(m)===nm(r[i.m])),ct=(r[i.c]||'').trim();
+    return{date:dt,bank:bn?bn.n:(bk||'Manual'),desc:(r[i.ds]||'').trim(),val:n,mod:md||'',cat:ct?(cats.find(c=>nm(c)===nm(ct))||ct):undefined};
+  });
+};
 
 let bank='nubank',rows=[],seq=0;
-const decBy={nubank:'.',santander:',',bb:',',bradescard:',',pluxee:',',ticket:','};
+const decBy={nubank:'.',santander:',',bb:',',bradescard:',',pluxee:',',ticket:',',manual:'auto'};
 const DECS=[[',','Vírgula (1.234,56)'],['.','Ponto (1,234.56)'],['auto','Automático']];
 const $=id=>document.getElementById(id);
 
@@ -396,8 +426,8 @@ function drawChips(){
   $('chips').innerHTML=Object.entries(BANKS).map(([k,b])=>`<button class="chip" data-b="${k}" aria-pressed="${k===bank}">${b.n}</button>`).join('');
   $('hint').textContent=BANKS[bank].h;
   drawDec();
-  $('mbank').value=bank;if(bank==='pluxee'||bank==='ticket')$('man').open=true;
-  $('anoBox').style.display=(bank==='bradescard'||bank==='pluxee')?'':'none';
+  if(bank!=='manual')$('mbank').value=bank;if(bank==='pluxee'||bank==='ticket')$('man').open=true;
+  $('anoBox').style.display=(['bradescard','pluxee','ticket','manual'].includes(bank))?'':'none';
 }
 function drawDec(){
   $('decs').innerHTML=DECS.map(([k,l])=>`<button class="chip" data-d="${k}" aria-pressed="${decBy[bank]===k}">${l}</button>`).join('');
@@ -429,9 +459,9 @@ function draw(){
   $('per').innerHTML='<option value="">Todos</option>'+months.map(m=>`<option value="${m}"${m===per?' selected':''}>${mlab(m)}</option>`).join('');
   document.querySelectorAll('th[data-s]').forEach(th=>{const k=th.dataset.s;th.textContent=HEAD[k]+(k===sortK?(sortD>0?' ▲':' ▼'):'')});
   const vs=view();
-  $('tb').innerHTML=vs.map(r=>{
+  $('tb').innerHTML=vs.map((r,i)=>{
     const [y,m,d]=r.date.split('-');
-    return `<tr><td>${d}/${m}/${y}</td><td>${esc(r.bank)}</td><td>${esc(r.desc)}</td>
+    return `<tr><td class="mut">${i+1}</td><td><input type="date" data-id="${r.id}" data-f="date" value="${r.date}"></td><td>${esc(r.bank)}</td><td>${esc(r.desc)}</td>
     <td><select data-id="${r.id}" data-f="mod">${modOpts(r.mod)}</select></td>
     <td><select data-id="${r.id}" data-f="cat">${catsFor(r).map(c=>`<option${c===r.cat?' selected':''}>${esc(c)}</option>`).join('')}</select></td>
     <td class="v ${r.val<0?'neg':'pos'}">${brl(r.val)}</td><td><button class="x" data-del="${r.id}" title="Remover">✕</button></td></tr>`}).join('');
@@ -445,6 +475,9 @@ function draw(){
   const by={};rows.forEach(r=>by[r.bank]=(by[r.bank]||0)+r.val);
   $('byBank').textContent=Object.keys(by).length?'Por banco: '+Object.entries(by).map(([k,v])=>`${k} ${brl(v)}`).join(' · '):'';
   drawComp();drawIns();drawTips();
+  save();
+  $('sv').textContent=SAVED?'· salvo automaticamente neste navegador':'· salvamento local indisponível neste ambiente';
+  if(rows.length)$('undo').hidden=true;
 }
 function drawComp(){
   const rs=pool(true).filter(r=>r.val<0),ms=[...new Set(rs.map(r=>mk(r.date)))].sort();
@@ -511,13 +544,13 @@ function add(){
   const skipped=res.length-ok.length;
   ok.forEach(r=>{
     const desc=String(r.desc||'').replace(/\s+/g,' ').trim(),val=Math.round(r.val*100)/100;
-    let c=r.cat||classify(r.raw||desc,val);
+    let c=r.cat||classify(r.raw||desc,val,r.bank||BANKS[bank].n);
     if(c==='Outros'&&r.hint&&val<0)c=r.hint;
     if(!r.cat&&val>0&&(bank==='pluxee'||bank==='ticket'))c='Benefício';
-    rows.push({id:++seq,bank:BANKS[bank].n,date:r.date,desc,mod:r.mod!==undefined?r.mod:(BANKMOD[bank]||''),cat:c,val});
+    rows.push({id:++seq,bank:r.bank||BANKS[bank].n,date:r.date,desc,mod:r.mod!==undefined?r.mod:(BANKMOD[bank]||''),cat:c,val});
   });
   if(ok.length){const e=ok[0];$('msg').textContent=`${ok.length} lançamento(s) adicionado(s)${skipped?`; ${skipped} linha(s) ignorada(s)`:''}.${NOTE?' '+NOTE:''} Conferir 1ª linha: ${e.date.split('-').reverse().join('/')} · ${String(e.desc).slice(0,30)} · ${brl(e.val)}`}
-  else $('msg').textContent=`Nenhuma linha reconhecida como ${BANKS[bank].n}.${['pluxee','ticket'].includes(bank)?' Use o lançamento manual abaixo.':''} Primeiras linhas lidas: `+text.split(/\r?\n/).filter(l=>l.trim()).slice(0,2).map(l=>l.trim().slice(0,70)).join(' | ');
+  else $('msg').textContent=`Nenhuma linha reconhecida como ${BANKS[bank].n}.${['pluxee','ticket'].includes(bank)?' Use o formulário de lançamento abaixo.':''} Primeiras linhas lidas: `+text.split(/\r?\n/).filter(l=>l.trim()).slice(0,2).map(l=>l.trim().slice(0,70)).join(' | ');
   if(ok.length)$('inp').value='';
   draw();
 }
@@ -525,13 +558,56 @@ $('chips').addEventListener('click',e=>{const b=e.target.closest('[data-b]');if(
 $('decs').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(b){decBy[bank]=b.dataset.d;drawDec()}});
 $('add').onclick=add;
 $('clrRaw').onclick=()=>{$('inp').value='';$('msg').textContent='Dados brutos limpos.';$('inp').focus()};
-$('clr').onclick=()=>{rows=[];$('msg').textContent='Tabela limpa.';draw()};
+$('clr').onclick=()=>{if(!rows.length)return;undoRows=rows;rows=[];$('undo').hidden=false;$('msg').textContent='Tabela e salvamento local limpos.';draw()};
+$('undo').onclick=()=>{rows=undoRows;undoRows=[];$('undo').hidden=true;$('msg').textContent='Lançamentos restaurados.';draw()};
 $('tb').addEventListener('click',e=>{const x=e.target.closest('[data-del]');if(x){rows=rows.filter(r=>r.id!=x.dataset.del);draw()}});
-$('tb').addEventListener('change',e=>{const s=e.target.closest('select[data-id]');if(s){const r=rows.find(r=>r.id==s.dataset.id);if(r){r[s.dataset.f]=s.value;draw()}}});
+$('tb').addEventListener('change',e=>{const s=e.target.closest('[data-id]');if(!s)return;if(s.dataset.f==='date'&&!s.value){draw();return}const r=rows.find(r=>r.id==s.dataset.id);if(r){r[s.dataset.f]=s.value;draw()}});
+const SK='painel-consolidador-bancos:v1';
+let SAVED=false,undoRows=[];
+function save(){try{localStorage.setItem(SK,JSON.stringify({v:1,rows}));SAVED=true}catch(e){SAVED=false}}
+function load(){
+  try{
+    const o=JSON.parse(localStorage.getItem(SK)||'null');
+    if(o&&Array.isArray(o.rows))rows=o.rows.filter(r=>r&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&isFinite(r.val)).map(r=>({id:++seq,bank:String(r.bank||''),date:r.date,desc:String(r.desc||''),mod:String(r.mod||''),cat:String(r.cat||'Outros'),val:+r.val}));
+  }catch(e){}
+}
+const HDR=['Data','Banco Origem','Descrição','Modalidade','Categoria','Valor'];
+const dmy=d=>d.split('-').reverse().join('/');
+const stamp=()=>new Date().toISOString().slice(0,10);
+const xmsg=h=>{$('xmsg').innerHTML=h};
+const HINT=' Se o download for bloqueado (ex.: dentro do Claude), use a versão hospedada ou a cópia para Planilhas.';
+function dl(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
+$('xcsv').onclick=()=>{
+  const vs=view();if(!vs.length){xmsg('Não há lançamentos para exportar.');return}
+  const q=x=>`"${String(x).replace(/"/g,'""')}"`;
+  const L=[HDR.map(q).join(';')].concat(vs.map(r=>[q(dmy(r.date)),q(r.bank),q(r.desc),q(r.mod),q(r.cat),r.val.toFixed(2).replace('.',',')].join(';')));
+  dl(`lancamentos-${stamp()}.csv`,new Blob(['\ufeff'+L.join('\r\n')],{type:'text/csv;charset=utf-8'}));
+  xmsg(`CSV gerado com ${vs.length} lançamento(s) (separador ";" e vírgula decimal).`+HINT);
+};
+$('xxlsx').onclick=()=>{
+  const vs=view();if(!vs.length){xmsg('Não há lançamentos para exportar.');return}
+  if(window.XLSX){
+    const aoa=[HDR].concat(vs.map(r=>{const[y,m,d]=r.date.split('-').map(Number);return[new Date(Date.UTC(y,m-1,d,12)),r.bank,r.desc,r.mod,r.cat,r.val]}));
+    const ws=XLSX.utils.aoa_to_sheet(aoa,{cellDates:true});
+    for(let i=2;i<=aoa.length;i++){if(ws['A'+i])ws['A'+i].z='dd/mm/yyyy';if(ws['F'+i])ws['F'+i].z='#,##0.00'}
+    ws['!cols']=[{wch:12},{wch:16},{wch:42},{wch:12},{wch:26},{wch:14}];
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Lançamentos');
+    XLSX.writeFile(wb,`lancamentos-${stamp()}.xlsx`);
+    xmsg(`Excel gerado com ${vs.length} lançamento(s).`+HINT);
+  }else{ // sem a biblioteca: tabela HTML que o Excel abre como planilha
+    const td=x=>`<td>${esc(x)}</td>`;
+    const t='<html><head><meta charset="utf-8"></head><body><table><tr>'+HDR.map(h=>`<th>${h}</th>`).join('')+'</tr>'+vs.map(r=>'<tr>'+[dmy(r.date),r.bank,r.desc,r.mod,r.cat,r.val.toFixed(2).replace('.',',')].map(td).join('')+'</tr>').join('')+'</table></body></html>';
+    dl(`lancamentos-${stamp()}.xls`,new Blob([t],{type:'application/vnd.ms-excel'}));
+    xmsg('Biblioteca XLSX indisponível (sem internet?): gerei um .xls compatível. O Excel pode avisar sobre o formato ao abrir.'+HINT);
+  }
+};
 $('cp').onclick=async()=>{
-  const tsv=['Data\tBanco Origem\tDescrição\tModalidade\tCategoria\tValor'].concat(rows.map(r=>{const[y,m,d]=r.date.split('-');return[`${d}/${m}/${y}`,r.bank,r.desc,r.mod,r.cat,String(r.val).replace('.',',')].join('\t')})).join('\n');
-  try{await navigator.clipboard.writeText(tsv);$('msg').textContent='Tabela copiada. Cole no Excel ou Planilhas.'}
-  catch(e){const t=document.createElement('textarea');t.value=tsv;document.body.appendChild(t);t.select();try{document.execCommand('copy');$('msg').textContent='Tabela copiada.'}catch(_){$('msg').textContent='Não foi possível copiar.'}t.remove()}
+  const vs=view();if(!vs.length){xmsg('Não há lançamentos para exportar.');return}
+  const tsv=[HDR.join('\t')].concat(vs.map(r=>[dmy(r.date),r.bank,r.desc,r.mod,r.cat,r.val.toFixed(2).replace('.',',')].join('\t'))).join('\n');
+  let ok=true;
+  try{await navigator.clipboard.writeText(tsv)}
+  catch(e){const t=document.createElement('textarea');t.value=tsv;document.body.appendChild(t);t.select();try{ok=document.execCommand('copy')}catch(_){ok=false}t.remove()}
+  xmsg(ok?`${vs.length} lançamento(s) copiado(s). <a href="https://sheets.new" target="_blank" rel="noopener">Abrir nova planilha</a> e colar com Ctrl+V na célula A1. Se a planilha estiver em inglês, troque a vírgula decimal por ponto.`:'Não foi possível copiar automaticamente. Use "Exportar para CSV" e importe em Arquivo > Importar.');
 };
 function addManual(){
   DEC='auto';
@@ -539,7 +615,7 @@ function addManual(){
   if(!dt||!ds||!isFinite(n)){$('msg').textContent='Preencha data, descrição e valor.';return}
   const val=($('mtipo').value==='in'?1:-1)*n,b=$('mbank').value;
   const mod=$('mmod').value==='auto'?(BANKMOD[b]!==undefined?BANKMOD[b]:(val<0?'Débito':'')):$('mmod').value;
-  let c=classify(ds,val);if(val>0&&(b==='pluxee'||b==='ticket'))c='Benefício';
+  let c=classify(ds,val,BANKS[b].n);if(val>0&&(b==='pluxee'||b==='ticket'))c='Benefício';
   rows.push({id:++seq,bank:BANKS[b].n,date:dt,desc:ds,mod,cat:c,val:Math.round(val*100)/100});
   $('mdesc').value='';$('mval').value='';$('msg').textContent='Lançamento manual adicionado.';draw();
 }
@@ -552,13 +628,13 @@ $('fx').onclick=()=>{F={q:'',bank:'',cat:'',tipo:'',mod:''};$('fq').value='';$('
 $('ign').onchange=draw;
 $('per').onchange=e=>{per=e.target.value;draw()};
 $('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b)setTab(b.dataset.t)});
-$('mbank').innerHTML=Object.entries(BANKS).map(([k,b])=>`<option value="${k}">${b.n}</option>`).join('');
+$('mbank').innerHTML=Object.entries(BANKS).filter(([k])=>k!=='manual').map(([k,b])=>`<option value="${k}">${b.n}</option>`).join('');
 $('mmod').innerHTML='<option value="auto">Modalidade automática</option>'+MODS.filter(Boolean).map(m=>`<option>${m}</option>`).join('');
 $('fm').innerHTML='<option value="">Todas as modalidades</option>'+MODS.filter(Boolean).map(m=>`<option>${m}</option>`).join('');
 $('md').value=new Date().toISOString().slice(0,10);
 $('madd').onclick=addManual;
 $('fm').onchange=e=>{F.mod=e.target.value;draw()};
-drawChips();draw();setTab('tab');
+load();drawChips();draw();setTab('tab');
 </script>
 </body>
 </html>
