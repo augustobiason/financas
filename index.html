@@ -72,6 +72,12 @@ input[type=text],input[type=number]{border:1px solid var(--bd);border-radius:8px
 td input[type=date],td select{width:100%;padding:3px 4px;font-size:.85rem;border-radius:6px}
 .xbtn{background:none;border:0;color:var(--mut);cursor:pointer;font-size:1rem}.xbtn:hover{color:var(--neg)}
 tr.ex td{opacity:.5}
+#tbl tbody tr.sel td{background:var(--acb)}
+.fbar{margin:0 0 10px;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}
+.lastbank{display:flex;flex-wrap:wrap;gap:8px}
+.lb2{display:flex;flex-direction:column;border:1px solid var(--ac);background:var(--acb);border-radius:10px;padding:6px 12px;min-width:130px}
+.lb2 span{font-size:.78rem;color:var(--mut)}.lb2 b{font-size:1.05rem}
+.lb2.none{border-color:var(--bd);background:var(--bg)}.lb2.none b{font-size:.85rem;color:var(--mut);font-weight:500}
 [data-bid]{position:relative}
 body.editing [data-uid]{outline:1px dashed var(--ac);outline-offset:2px;cursor:text}
 body.editing [data-bid]{outline:1px dashed var(--bd);outline-offset:5px}
@@ -115,6 +121,8 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <label class="lbl" for="fmt">Selecione o Formato do Extrato</label>
   <select id="fmt" style="min-width:260px;max-width:100%"></select>
   <p class="hint" id="hint"></p>
+  <div class="lbl" data-uid="l.panel.last" style="margin-top:12px">Data do último lançamento processado</div>
+  <div class="lastbank" id="lastBank"></div>
   <div class="lbl" style="margin-top:14px">Dados brutos</div>
   <textarea id="inp" placeholder="Cole aqui o extrato (com a linha de cabeçalho)..." spellcheck="false"></textarea>
   <div class="row" style="margin-top:10px">
@@ -169,9 +177,12 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
     </div>
     <div class="bulk" id="bulk" hidden>
       <b>Ações em Massa</b> <span class="mut sm" id="bulkN"></span>
+      <select id="bbank" aria-label="Banco"></select>
       <select id="bcat" aria-label="Categoria"></select>
       <select id="bkind" aria-label="Tipo"><option value="">Tipo…</option><option value="fixa">Fixa/Recorrente</option><option value="variavel">Variável</option><option value="__none__">— (sem tipo)</option></select>
+      <select id="bmod" aria-label="Modalidade"><option value="">Modalidade…</option><option>Crédito</option><option>Débito</option><option>Dinheiro</option><option>Pix</option><option>Benefício</option><option value="__none__">— (vazio)</option></select>
       <select id="bquem" aria-label="Quem"></select>
+      <select id="bign" aria-label="Ignorar nos gráficos"><option value="">Ignorar…</option><option value="sim">Sim (ignorar nos gráficos)</option><option value="nao">Não (contar nos gráficos)</option></select>
       <button class="sec" id="bclear">Limpar seleção</button>
       <span class="mut sm" id="bmsg"></span>
     </div>
@@ -212,12 +223,15 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 <section id="v-rules" hidden>
   <div class="card">
     <h3>Cadastro de regra</h3>
-    <p class="mut sm" style="margin-top:-4px">As regras personalizadas têm prioridade sobre as regras de fábrica ao processar extratos e valem de forma absoluta: categoria, tipo, filtro de gráficos e descrição.</p>
+    <p class="mut sm" style="margin-top:-4px">As regras personalizadas têm prioridade sobre as regras de fábrica ao processar extratos. Cada campo pode ficar em branco ("não definir"): a regra só altera o que você preencher. Se várias regras casarem, a de palavra-chave mais específica vence.</p>
     <div class="rform">
       <label>Palavra-chave na descrição<input type="text" id="rkw" placeholder="ex.: OXXO"></label>
+      <label data-uid="lb.rules.bank">Banco<select id="rbank"></select></label>
       <label>Mapear para a Categoria<select id="rcat"></select></label>
-      <label>Classificar como<select id="rkind"><option value="fixa">Fixa/Recorrente</option><option value="variavel">Variável</option></select></label>
-      <label>Ignorar nos Gráficos?<select id="rign"><option value="0">Não</option><option value="1">Sim (Estorno/Reembolso)</option></select></label>
+      <label>Classificar como<select id="rkind"><option value="">— (não definir)</option><option value="fixa">Fixa/Recorrente</option><option value="variavel">Variável</option></select></label>
+      <label data-uid="lb.rules.mod">Modalidade<select id="rmod"><option value="">— (não definir)</option><option>Crédito</option><option>Débito</option><option>Dinheiro</option><option>Pix</option><option>Benefício</option></select></label>
+      <label>Ignorar nos Gráficos?<select id="rign"><option value="">— (não definir)</option><option value="nao">Não</option><option value="sim">Sim (Estorno/Reembolso)</option></select></label>
+      <label data-uid="lb.rules.quem">Quem<select id="rquem"></select></label>
       <label>Simplificar Descrição para (opcional)<input type="text" id="rsimp" placeholder="ex.: Oxxo"></label>
       <button class="act" id="rsave">Salvar Regra</button>
     </div>
@@ -236,9 +250,10 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   </div>
   <div class="card">
     <h3>Cadastrar ou editar formato</h3>
-    <p class="mut sm" style="margin-top:-4px">Informe o nome exato dos cabeçalhos das colunas do extrato bruto (maiúsculas e acentos não importam).</p>
+    <p class="mut sm" style="margin-top:-4px">No tipo "Colunas com cabeçalho", informe o nome exato dos cabeçalhos do extrato bruto (maiúsculas e acentos não importam). Os demais tipos de leitura (texto corrido, BB e planilha integral) não usam os cabeçalhos abaixo.</p>
     <div class="rform">
       <label>Nome do formato<input type="text" id="fname" placeholder="ex.: Meu Cartão"></label>
+      <label data-uid="lb.fmts.mode">Tipo de leitura<select id="fmode"><option value="cols">Colunas com cabeçalho</option><option value="amazon">Texto corrido (Amazon)</option><option value="bb">Extrato BB inteligente</option><option value="sheet">Planilha integral (9 colunas)</option></select></label>
       <label>Cabeçalho de Data<input type="text" id="fcdata" placeholder="ex.: Data"></label>
       <label>Cabeçalho de Descrição<input type="text" id="fcdesc" placeholder="ex.: Descrição"></label>
       <label>Cabeçalho de Valor<input type="text" id="fcval" placeholder="ex.: Valor"></label>
@@ -458,22 +473,29 @@ function demo(){
 /* ===== regras personalizadas (aprendizado) ===== */
 const RKEY='painel-financeiro-regras:v1';
 let ALLCATS=[...new Set([...CATS,...CATS_IN_ALL])];
-const SEED=[ // exemplos pré-carregados; podem ser excluídos na aba Regras
- {kw:'netflix',cat:'Lazer e Entretenimento',kind:'fixa',ign:false,simp:'Netflix'},
- {kw:'spotify',cat:'Lazer e Entretenimento',kind:'fixa',ign:false,simp:'Spotify'},
- {kw:'enel distribuicao',cat:'Casa',kind:'fixa',ign:false,simp:'Enel'},
- {kw:'comgas',cat:'Casa',kind:'fixa',ign:false,simp:'Comgas'},
- {kw:'uber',cat:'Transporte',kind:'variavel',ign:false,simp:'Uber'},
- {kw:'estorno',cat:'Outros',kind:'variavel',ign:true,simp:''},
- {kw:'reembolso',cat:'Outros',kind:'variavel',ign:true,simp:''}
+const SEED=[ // exemplos pré-carregados; podem ser excluídos na aba Regras ('' = não definir)
+ {kw:'netflix',bank:'',cat:'Lazer e Entretenimento',kind:'fixa',mod:'',ign:'nao',quem:'',simp:'Netflix'},
+ {kw:'spotify',bank:'',cat:'Lazer e Entretenimento',kind:'fixa',mod:'',ign:'nao',quem:'',simp:'Spotify'},
+ {kw:'enel distribuicao',bank:'',cat:'Casa',kind:'fixa',mod:'',ign:'nao',quem:'',simp:'Enel'},
+ {kw:'comgas',bank:'',cat:'Casa',kind:'fixa',mod:'',ign:'nao',quem:'',simp:'Comgas'},
+ {kw:'uber',bank:'',cat:'Transporte',kind:'variavel',mod:'',ign:'nao',quem:'',simp:'Uber'},
+ {kw:'estorno',bank:'',cat:'Outros',kind:'variavel',mod:'',ign:'sim',quem:'',simp:''},
+ {kw:'reembolso',bank:'',cat:'Outros',kind:'variavel',mod:'',ign:'sim',quem:'',simp:''}
 ];
 let CR=[];
-function loadRules(){try{const o=JSON.parse(localStorage.getItem(RKEY)||'null');if(o&&Array.isArray(o.rules)){CR=o.rules.filter(r=>r&&r.kw);return true}}catch(e){}return false}
-function saveRules(){try{localStorage.setItem(RKEY,JSON.stringify({v:1,rules:CR}))}catch(e){}}
-function matchRule(txt,rules){const n=norm(txt);let best=null;for(const r of rules){const k=norm(r.kw);if(k&&n.includes(k)&&(!best||k.length>norm(best.kw).length))best=r}return best}
-function applyRule(row,rules){ // aplica de forma absoluta: categoria, tipo, ignorar e descrição simplificada
-  const r=matchRule((row.orig||'')+' '+row.desc,rules);if(!r)return false;
-  row.cat=r.cat;row.kind=r.kind;row.ign=!!r.ign;if(r.simp)row.desc=r.simp;return true;
+const normRule=r=>({id:r.id,kw:r.kw,bank:r.bank||'',cat:r.cat||'',kind:r.kind||'',mod:r.mod||'',quem:r.quem||'',simp:r.simp||'',ign:typeof r.ign==='boolean'?(r.ign?'sim':'nao'):(r.ign||'')});
+function loadRules(){try{const o=JSON.parse(localStorage.getItem(RKEY)||'null');if(o&&Array.isArray(o.rules)){CR=o.rules.filter(r=>r&&r.kw).map(normRule);return true}}catch(e){}return false}
+function saveRules(){try{localStorage.setItem(RKEY,JSON.stringify({v:2,rules:CR}))}catch(e){}}
+function applyRule(row,rules){ // campos em branco na regra não alteram nada; regras mais específicas (palavra-chave maior) vencem as genéricas
+  const txt=norm((row.orig||'')+' '+row.desc);
+  const hit=rules.filter(r=>{const k=norm(r.kw);return k&&txt.includes(k)}).sort((a,b)=>norm(a.kw).length-norm(b.kw).length);
+  if(!hit.length)return false;
+  hit.forEach(r=>{
+    if(r.cat)row.cat=r.cat;if(r.kind)row.kind=r.kind;if(r.bank)row.bank=r.bank;if(r.mod)row.mod=r.mod;if(r.quem)row.quem=r.quem;
+    if(r.ign==='sim')row.ign=true;else if(r.ign==='nao')row.ign=false;
+    if(r.simp)row.desc=r.simp;
+  });
+  return true;
 }
 
 
@@ -498,6 +520,7 @@ const orderedCols=()=>{const o=IFC.order.filter(k=>k!=='sel'&&COLS.some(c=>c.k==
 function initUid(){
   const cnt={},SEC=el=>(el.closest('section[id]')||{}).id||'top';
   const reg=(el,uid)=>{el.dataset.uid=uid;el.dataset.st='1';DEF[uid]=getLbl(el)};
+  document.querySelectorAll('[data-uid]:not([data-st])').forEach(el=>reg(el,el.dataset.uid)); // elementos com ID estrutural fixo no HTML
   const next=(el,p)=>{const k=p+'.'+SEC(el);cnt[k]=(cnt[k]||0)+1;return k+'.'+cnt[k]};
   document.querySelectorAll('#nav button[data-t]').forEach(b=>reg(b,'nav.'+b.dataset.t));
   document.querySelectorAll('main button[id],header button[id]').forEach(b=>{if(!['editToggle','editReset'].includes(b.id))reg(b,'btn.'+b.id)});
@@ -556,14 +579,17 @@ function userRows(){
 function save(){try{localStorage.setItem(SRC_KEY,JSON.stringify({v:1,rows:DATA}))}catch(e){}}
 const FKEY='painel-financeiro-formatos:v1';
 const DECL={auto:'Automático',',':'Vírgula','.':'Ponto'};
-const SEED_FMT=[ // exemplos pré-carregados; edite ou exclua na aba Configuração de Formatos
- {name:'Nubank',cData:'date',cDesc:'title',cValor:'amount',cQuem:'Quem',cBank:'',cCat:'',inv:true,dec:'.',mod:'Crédito'},
- {name:'Santander',cData:'Data',cDesc:'Descrição',cValor:'Valor',cQuem:'',cBank:'',cCat:'',inv:false,dec:',',mod:''},
- {name:'Conta BB',cData:'Data',cDesc:'Descrição',cValor:'Valor',cQuem:'',cBank:'',cCat:'',inv:false,dec:',',mod:'Débito'},
- {name:'Planilha Geral',cData:'Data',cDesc:'Descrição',cValor:'Valor',cQuem:'Quem',cBank:'Banco',cCat:'Categoria',inv:false,dec:'auto',mod:''}
+const SEED_FMT=[ // exemplos pré-carregados; edite ou exclua na aba Configuração de formatos
+ {name:'Nubank',mode:'cols',cData:'date',cDesc:'title',cValor:'amount',cQuem:'Quem',cBank:'',cCat:'',inv:true,dec:'.',mod:'Crédito'},
+ {name:'Santander',mode:'cols',cData:'Data',cDesc:'Descrição',cValor:'Valor',cQuem:'',cBank:'',cCat:'',inv:false,dec:',',mod:''},
+ {name:'Amazon',mode:'amazon',cData:'',cDesc:'',cValor:'',cQuem:'',cBank:'',cCat:'',inv:true,dec:',',mod:'Crédito'},
+ {name:'BB',mode:'bb',cData:'',cDesc:'',cValor:'',cQuem:'',cBank:'',cCat:'',inv:false,dec:',',mod:''},
+ {name:'Planilha Integral',mode:'sheet',cData:'',cDesc:'',cValor:'',cQuem:'',cBank:'',cCat:'',inv:false,dec:'auto',mod:''}
 ];
+const MIGR_FMT=['Amazon','BB','Planilha Integral']; // formatos novos incluídos em cadastros já existentes
+function migrateFormats(){let n=0;SEED_FMT.forEach(f=>{if(MIGR_FMT.includes(f.name)&&!FM.some(x=>norm(x.name)===norm(f.name))){FM.push({...f,id:Date.now()+n++})}});if(n)saveFormats()}
 let FM=[];
-function loadFormats(){try{const o=JSON.parse(localStorage.getItem(FKEY)||'null');if(o&&Array.isArray(o.formats)){FM=o.formats.filter(f=>f&&f.name&&f.cData&&f.cDesc&&f.cValor);return true}}catch(e){}return false}
+function loadFormats(){try{const o=JSON.parse(localStorage.getItem(FKEY)||'null');if(o&&Array.isArray(o.formats)){FM=o.formats.filter(f=>f&&f.name).map(f=>({mode:'cols',...f}));return true}}catch(e){}return false}
 function saveFormats(){try{localStorage.setItem(FKEY,JSON.stringify({v:1,formats:FM}))}catch(e){}}
 
 /* ===== estado ===== */
@@ -590,6 +616,17 @@ function fullMonths(rs){ // descarta o último mês se for parcial
   return md<25?ms.slice(0,-1):ms;
 }
 const flt=()=>`Período ${F.d0?dmy(F.d0):'—'} a ${F.d1?dmy(F.d1):'—'} · ${F.bank||'Todos os bancos'} (ajuste na aba ${LB('nav.cons')})`;
+function renderLast(){ // data do último lançamento processado, por banco cadastrado
+  const names=[...new Set([...FM.map(f=>f.name),...DATA.map(r=>r.bank).filter(Boolean)])].sort(az),last={};
+  DATA.forEach(r=>{if(r.bank&&(!last[r.bank]||r.date>last[r.bank]))last[r.bank]=r.date});
+  $('lastBank').innerHTML=names.length?names.map(n=>`<div class="lb2${last[n]?'':' none'}"><span>${esc(n)}</span><b>${last[n]?dmy(last[n]):'sem lançamentos'}</b></div>`).join(''):'<span class="mut sm">Nenhum banco cadastrado.</span>';
+}
+function moveFilters(){ // período, banco e busca descem para logo acima da tabela (a numeração de IDs foi gerada antes)
+  const f=document.querySelector('#v-cons > .card.row'),q=$('tx').parentElement;
+  if(!f||!q)return;
+  f.classList.remove('card');f.classList.add('fbar');f.removeAttribute('data-bid');
+  q.parentElement.insertBefore(f,q);
+}
 function fillT(){
   const cats=[...new Set(DATA.map(r=>r.cat).filter(Boolean))].sort(az),noCat=DATA.some(r=>!r.cat),banks=[...new Set(DATA.map(r=>r.bank))].sort(az),quems=[...new Set(DATA.map(r=>r.quem).filter(Boolean))].sort(az);
   const hasNone=quems.length>0&&DATA.some(r=>!r.quem);
@@ -615,7 +652,7 @@ function refresh(){
   if(AUTO){F.d0=ds[0]||'';F.d1=ds[ds.length-1]||'';$('f0').value=F.d0;$('f1').value=F.d1}
   const banks=[...new Set(DATA.map(r=>r.bank))].sort(az);if(F.bank&&!banks.includes(F.bank))F.bank='';
   $('fb').innerHTML='<option value="">Todos os bancos/cartões</option>'+banks.map(b=>`<option${b===F.bank?' selected':''}>${esc(b)}</option>`).join('');
-  fillT();
+  fillT();renderLast();fillRuleSelects();
   $('src').textContent=SRC==='user'?`· seus lançamentos (${DATA.length})`:'· dados fictícios de demonstração (substituídos ao adicionar o primeiro lançamento; não são salvos)';
   $('sv').textContent=SRC==='user'?(STORE?'· salvo automaticamente neste navegador':'· salvamento local indisponível neste ambiente'):'· modo demonstração';
   render();
@@ -668,7 +705,7 @@ function renderTable(){
   const ED=['date','desc','val'],iv=vis.findIndex(c=>c.k==='val'),tot=sum(rs.filter(r=>!exc(r)).map(r=>r.val));
   $('tbl').innerHTML=`<colgroup>${vis.map(c=>`<col data-k="${c.k}" style="width:${W(c.k)}px">`).join('')}</colgroup>
    <thead><tr>${vis.map(c=>`<th data-k="${c.k}"${c.k==='sel'?'':` data-uid="col.${c.k}"`} class="${c.r?'r':''}"${EDITM&&c.k!=='sel'?' draggable="true"':''}>${c.k==='sel'?'<input type="checkbox" id="selAllRows" title="Selecionar todas as linhas visíveis" aria-label="Selecionar todas">':['n','x'].includes(c.k)?LB('col.'+c.k):LB('col.'+c.k)+(SORT.k===c.k?(SORT.d>0?' ▲':' ▼'):'')}<i class="rz" data-k="${c.k}"></i></th>`).join('')}</tr></thead>
-   <tbody>${rs.map((r,i)=>`<tr class="${exc(r)?'ex':''}">${vis.map(c=>`<td${ED.includes(c.k)?` data-edit="${c.k}" data-id="${r.id}"`:''} class="${[c.r?'r '+(r.val<0?'neg':'pos'):'',ED.includes(c.k)?'ed':''].filter(Boolean).join(' ')}" title="${esc(ED.includes(c.k)&&c.k!=='desc'?'Clique duas vezes para editar':['bank','desc'].includes(c.k)?r[c.k]||'':'')}">${cell(c.k,r,i)}</td>`).join('')}</tr>`).join('')}</tbody>`+
+   <tbody>${rs.map((r,i)=>`<tr data-rid="${r.id}" class="${[exc(r)?'ex':'',SELR.has(r.id)?'sel':''].filter(Boolean).join(' ')}">${vis.map(c=>`<td${ED.includes(c.k)?` data-edit="${c.k}" data-id="${r.id}"`:''} class="${[c.r?'r '+(r.val<0?'neg':'pos'):'',ED.includes(c.k)?'ed':''].filter(Boolean).join(' ')}" title="${esc(ED.includes(c.k)&&c.k!=='desc'?'Clique duas vezes para editar':['bank','desc'].includes(c.k)?r[c.k]||'':'')}">${cell(c.k,r,i)}</td>`).join('')}</tr>`).join('')}</tbody>`+
    (iv>=0&&rs.length?`<tfoot><tr>${iv>0?`<td colspan="${iv}">Saldo da seleção${nEx?' (sem os esmaecidos)':''}</td>`:''}<td class="r ${tot<0?'neg':'pos'}">${brl(tot)}</td>${vis.length-iv-1>0?`<td colspan="${vis.length-iv-1}"></td>`:''}</tr></tfoot>`:'');
   const sa=$('selAllRows');if(sa){const n=rs.filter(r=>SELR.has(r.id)).length;sa.checked=rs.length>0&&n===rs.length;sa.indeterminate=n>0&&n<rs.length}
   renderBulk();
@@ -680,14 +717,36 @@ function buildMenu(){
 function renderBulk(){
   const n=SELR.size;$('bulk').hidden=!n;if(!n)return;
   $('bulkN').textContent=`${n} ${n===1?'linha selecionada':'linhas selecionadas'}`;
-  const q=[...new Set([...DATA.map(r=>r.quem).filter(Boolean),'Eu','Ambos'])].sort(az);
-  $('bquem').innerHTML='<option value="">Quem…</option>'+q.map(x=>`<option>${esc(x)}</option>`).join('')+'<option value="__none__">— (vazio)</option>';
+  const o=l=>l.map(x=>`<option>${esc(x)}</option>`).join('');
+  $('bbank').innerHTML='<option value="">Banco…</option>'+o([...new Set([...FM.map(f=>f.name),...DATA.map(r=>r.bank).filter(Boolean)])].sort(az));
+  $('bquem').innerHTML='<option value="">Quem…</option>'+o([...new Set([...DATA.map(r=>r.quem).filter(Boolean),'Eu','Ambos'])].sort(az))+'<option value="__none__">— (vazio)</option>';
 }
 function bulk(fn,txt){
   let n=0;DATA.forEach(r=>{if(SELR.has(r.id)){fn(r);n++}});
   commit();$('bmsg').textContent=`${n} ${n===1?'linha atualizada':'linhas atualizadas'}: ${txt}.`;
 }
-
+/* ===== seleção de linhas: clique, Ctrl/Cmd, Shift ===== */
+let ANCH=null,SHIFT=false;
+function updateSel(){
+  const trs=[...document.querySelectorAll('#tbl tbody tr[data-rid]')];let k=0;
+  trs.forEach(tr=>{const on=SELR.has(+tr.dataset.rid);if(on)k++;tr.classList.toggle('sel',on);const c=tr.querySelector('[data-sel]');if(c)c.checked=on});
+  const sa=$('selAllRows');if(sa){sa.checked=trs.length>0&&k===trs.length;sa.indeterminate=k>0&&k<trs.length}
+  renderBulk();
+}
+function selectRange(id,add){
+  const ids=tableView().map(r=>r.id);
+  if(ANCH===null||!ids.includes(ANCH)){SELR.add(id);ANCH=id;return}
+  const a=ids.indexOf(ANCH),b=ids.indexOf(id),lo=Math.min(a,b),hi=Math.max(a,b);
+  if(!add)SELR.clear();
+  ids.slice(lo,hi+1).forEach(i=>SELR.add(i));
+}
+function rowClick(tr,e){
+  const id=+tr.dataset.rid,multi=e.ctrlKey||e.metaKey;
+  if(e.shiftKey)selectRange(id,multi);
+  else if(multi){SELR.has(id)?SELR.delete(id):SELR.add(id);ANCH=id}
+  else{if(SELR.size===1&&SELR.has(id))SELR.clear();else{SELR.clear();SELR.add(id)}ANCH=id}
+  updateSel();
+}
 
 /* ===== gerenciamento de categorias ===== */
 const CATKEY='painel-financeiro-categorias:v1';
@@ -697,7 +756,7 @@ function saveCats(){try{localStorage.setItem(CATKEY,JSON.stringify({v:1,out:CATS
 function syncCats(){ALLCATS=[...new Set([...CATS,...CATS_IN_ALL])]}
 function fillCatSelects(){
   const o=ALLCATS.map(c=>`<option>${esc(c)}</option>`).join('');
-  $('rcat').innerHTML=o;
+  $('rcat').innerHTML='<option value="">— (não definir)</option>'+o;
   $('bcat').innerHTML='<option value="">Categoria…</option>'+o+'<option value="__none__">— (em branco)</option>';
 }
 function catsChanged(rows){syncCats();saveCats();fillCatSelects();renderCats();if(rows)commit();else render()}
@@ -735,38 +794,153 @@ function renderCats(){
 
 /* ===== formatos de extrato ===== */
 const resolveCat=x=>{x=(x||'').trim();return x?(ALLCATS.find(c=>norm(c)===norm(x))||x):''};
-function parseFormat(f,text){
+const MODN=x=>MODS.find(m=>m&&norm(m)===norm(x))||'';
+const KINDN=x=>/fix|recorr/.test(norm(x))?'fixa':/vari/.test(norm(x))?'variavel':'';
+function yearFor(dd,mm){const now=new Date(),y=now.getFullYear();return new Date(y,mm-1,dd)>new Date(now.getTime()+45*864e5)?y-1:y} // DD/MM sem ano: ano atual ou o anterior
+const dateY=s=>{const m=/^\s*(\d{1,2})\/(\d{1,2})\s*$/.exec(s||'');return date(s||'',m?yearFor(+m[1],+m[2]):new Date().getFullYear())};
+function splitSheet(text,need){
   const L=text.split(/\r?\n/).filter(l=>l.trim());
-  if(L.length<2)throw 'Cole a linha de cabeçalho e pelo menos uma linha de dados.';
+  if(L.length<need)throw 'Cole a linha de cabeçalho e pelo menos uma linha de dados.';
   L[0]=L[0].replace(/^\ufeff/,'');
-  const d=delimOf(L[0]),H=cells(L[0],d).map(norm);
+  return L;
+}
+/* --- leitura por colunas (cabeçalhos informados no formato) --- */
+function parseCols(f,text){
+  const L=splitSheet(text,2),d=delimOf(L[0]),H=cells(L[0],d).map(norm);
   const find=(name,req)=>{if(!name)return -1;const i=H.indexOf(norm(name));if(i<0&&req)throw `Cabeçalho "${name}" não encontrado. Cabeçalhos lidos: ${cells(L[0],d).join(' | ')}.`;return i};
   const iD=find(f.cData,1),iS=find(f.cDesc,1),iV=find(f.cValor,1),iQ=find(f.cQuem),iB=find(f.cBank),iC=find(f.cCat);
   DEC=f.dec||'auto';
-  const year=new Date().getFullYear(),rows=[];let skipped=0;
+  const rows=[];let skipped=0;
   L.slice(1).forEach(l=>{
-    const r=cells(l,d),dt=date(r[iD]||'',year),n=num(r[iV]||''),ds=(r[iS]||'').trim();
+    const r=cells(l,d),dt=dateY(r[iD]||''),n=num(r[iV]||''),ds=(r[iS]||'').trim();
     if(!dt||!isFinite(n)||!ds){skipped++;return}
     let v=f.inv?-n:n;const q=iQ>=0?(r[iQ]||'').trim():'';
     if(norm(q)==='ambos')v/=2; // divisão automática quando Quem = Ambos
-    rows.push({date:dt,desc:ds.replace(/\s+/g,' '),val:Math.round(v*100)/100,quem:q,bank:iB>=0?(r[iB]||'').trim():'',cat:iC>=0?resolveCat(r[iC]):''});
+    const cat=iC>=0?resolveCat(r[iC]):'';
+    rows.push({date:dt,desc:ds.replace(/\s+/g,' '),val:Math.round(v*100)/100,quem:q,bank:iB>=0?(r[iB]||'').trim():'',cat,faithful:!!cat});
   });
   return{rows,skipped};
 }
+/* --- texto corrido (Amazon): data DD/MM, descrição e valor reconhecidos por RegEx, sem colunas --- */
+function parseAmazon(f,text){
+  const T=text.replace(/[ \t\u00a0]+/g,' ').replace(/\s*\n\s*/g,'\n').trim(); // mantém as quebras de linha como limites de lançamento
+  const MON='(?:R\\$\\s*)?-?\\d{1,3}(?:[.,]\\d{3})*[.,]\\d{2}-?|(?:R\\$\\s*)?-?\\d+[.,]\\d{2}-?';
+  const RX=new RegExp('(\\d{2}/\\d{2}(?:/\\d{2,4})?)\\s+(.+?)\\s+('+MON+')(?=\\s+\\d{2}/\\d{2}(?!\\d)|[ \\t]*(?:\\n|$))','gs');
+  DEC=f.dec||'auto';
+  const rows=[];let m,skipped=0;
+  while((m=RX.exec(T))){
+    const ds=m[1],desc=m[2].replace(/\s+/g,' ').trim(),dd=+ds.slice(0,2),mm=+ds.slice(3,5);
+    if(mm<1||mm>12||dd<1||dd>31||!desc){skipped++;continue}
+    if(/^(total|saldo|vencimento|limite|valor total|pagamento minimo|encargos|juros)\b/.test(norm(desc))){skipped++;continue}
+    let n=num(m[3]);if(!isFinite(n)){skipped++;continue}
+    if(n>0&&/pagamento|estorno|credito|devolu/.test(norm(desc)))n=-n; // créditos: o sinal segue a convenção da fatura (compra positiva)
+    const dt=date(ds,yearFor(dd,mm));if(!dt){skipped++;continue}
+    rows.push({date:dt,desc,raw:desc,val:Math.round((f.inv?-n:n)*100)/100,quem:''});
+  }
+  return{rows,skipped};
+}
+/* --- Banco do Brasil: identifica o tipo da transação e limpa a descrição --- */
+const BBT=[['pix',/\bpix\b/],['tarifa',/\b(tarifa|tar|cesta de servicos|iof|anuidade|juros)\b/],['boleto',/\b(boleto|pagto|pagamento de conta|convenio)\b/],['transf',/\b(transfer\w*|ted|doc)\b/],['saque',/\bsaque\b/],['proventos',/\b(proventos|salario|folha)\b/],['deposito',/\bdeposito\b/],['invest',/\b(rendimentos?|aplicacao|resgate|poupanca)\b/],['cartao',/(compra (com|no) cartao|cartao|debito)/]];
+const BBMOD={pix:'Pix',cartao:'Débito',tarifa:'Débito',boleto:'Débito',transf:'Débito',saque:'Débito'};
+const BBLBL={tarifa:'Tarifa',boleto:'Boleto',transf:'Transferência',saque:'Saque',proventos:'Proventos',deposito:'Depósito',invest:'Aplicação'};
+const BBP={
+ pix:/^pix\s*(?:[-–:]\s*)?(?:enviado|recebido|transferido|transf\.?|pagamento|compra|qr ?code)?\s*(?:[-–:]\s*)?/i,
+ cartao:/^(?:compra\s+(?:com|no)\s+cart[aã]o(?:\s+d[eé]bito)?|cart[aã]o\s+d[eé]bito|d[eé]bito\s*(?:autom[aá]tico)?)\s*(?:[-–:]\s*)?/i,
+ tarifa:/^(?:tarifa(?:\s+banc[aá]ria)?|tar\.?|iof|cesta\s+de\s+servi[cç]os?)\s*(?:[-–:]\s*)?/i,
+ boleto:/^(?:pagamento\s+de\s+boleto|pagto\.?\s+boleto|pagamento\s+de\s+conta|boleto|pagto\.?)\s*(?:[-–:]\s*)?/i,
+ transf:/^(?:transfer[eê]ncia(?:\s+(?:realizada|recebida|enviada))?|ted|doc)\s*(?:[-–:]\s*)?/i,
+ saque:/^saque(?:\s+(?:em\s+)?(?:caixa|atm|terminal))?\s*(?:[-–:]\s*)?/i,
+ proventos:/^(?:recebimento\s+de\s+proventos|proventos|sal[aá]rio)\s*(?:[-–:]\s*)?/i,
+ deposito:/^dep[oó]sito(?:\s+(?:em\s+)?(?:dinheiro|cheque|online))?\s*(?:[-–:]\s*)?/i,
+ invest:/^(?:rendimentos?|aplica[cç][aã]o|resgate)\s*(?:[-–:]\s*)?/i
+};
+function bbClean(raw){ // remove CNPJ/CPF, agência/conta, datas, horas, códigos e números soltos
+  let t=' '+raw+' ';
+  t=t.replace(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/g,' ').replace(/\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g,' ')
+   .replace(/\bag(?:[eê]ncia)?\.?\s*\d{3,5}(?:-[\dxX])?\b/gi,' ').replace(/\b(?:c\/c|cc|conta)\.?\s*\d{3,}(?:-[\dxX])?\b/gi,' ')
+   .replace(/\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?(?:[-\s]+\d{1,2}:\d{2}(?::\d{2})?)?/g,' ').replace(/\b\d{1,2}:\d{2}(?::\d{2})?\b/g,' ')
+   .replace(/\b\d{4,}\b/g,' ').replace(/[*#_]+/g,' ');
+  t=t.replace(/\s+/g,' ').trim().replace(/(\s+\d{1,3})+$/,'').replace(/^[\s\-–:;,.]+|[\s\-–:;,.]+$/g,'');
+  return t;
+}
+function bbDesc(raw,type){
+  const t=bbClean(raw),rest=type&&BBP[type]?t.replace(BBP[type],'').trim():t;
+  if(type==='pix')return rest||'Pix';
+  if(type==='cartao')return rest||'Compra no cartão';
+  return BBLBL[type]?(rest?`${BBLBL[type]}: ${rest}`:BBLBL[type]):(rest||t);
+}
+function parseBB(f,text){
+  DEC=f.dec||',';
+  const MONRX=/(?:^|\s)((?:[-−–]\s?)?(?:R\$\s?)?(?:\d{1,3}(?:[.,]\d{3})*[.,]\d{2}|\d+[.,]\d{2}))(?:\s?-)?(?:\s+([CD]))?(?=\s|$)/gi;
+  const DTRX=/\b(\d{2}\/\d{2}\/\d{4}|\d{2}\/\d{2}\/\d{2}|\d{4}-\d{2}-\d{2})\b/;
+  const rows=[];let skipped=0,ctx=null;
+  text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    const dm=DTRX.exec(l);
+    let dt=dm?date(dm[1],new Date().getFullYear()):ctx,rest=dm?l.replace(dm[0],' '):l;
+    if(dm&&!/\d[.,]\d{2}\b/.test(rest)&&!rest.trim().replace(/\W/g,'')){ctx=dt;return} // linha só com a data
+    if(dm)ctx=dt;
+    const ms=[...rest.matchAll(MONRX)];
+    if(!ms.length||!dt){if(dm)skipped++;return}
+    let pick=ms[ms.length-1];
+    if(ms.length>=2&&ms[ms.length-1][2]&&ms[ms.length-2][2])pick=ms[ms.length-2]; // última coluna é saldo (também C/D): usa o valor anterior
+    const n=num(pick[1]),fl=norm(l);
+    if(!isFinite(n)){skipped++;return}
+    const suf=(pick[2]||'').toUpperCase();
+    let neg;
+    if(/\bsaida\b/.test(fl))neg=true;else if(/\bentrada\b/.test(fl))neg=false;
+    else if(suf==='D')neg=true;else if(suf==='C')neg=false;
+    else if(n<0)neg=true;
+    else neg=!/(recebid|recebimento|deposito|credito|estorno|rendimento|proventos|salario|resgate)/.test(fl);
+    let raw=rest.replace(pick[0],' ');
+    if(ms.length>=2&&pick!==ms[ms.length-1])raw=raw.replace(ms[ms.length-1][0],' ');
+    raw=raw.replace(/\b(entrada|sa[ií]da)\b/gi,' ').replace(/\s+/g,' ').trim();
+    const nr=norm(raw),type=(BBT.find(([k,rx])=>rx.test(nr))||[])[0]||'';
+    let v=Math.abs(n)*(neg?-1:1),cat='';
+    if(/comgas|condominio edificio manaca|enel|grpqa/.test(nr)){v/=2;cat='Casa'} // regra do BB: contas da casa dividem por 2
+    rows.push({date:dt,desc:bbDesc(raw,type),raw,val:Math.round(v*100)/100,mod:BBMOD[type]||'',cat,quem:''});
+  });
+  return{rows,skipped};
+}
+/* --- planilha integral: Data | Banco Origem | Descrição | Modalidade | Categoria | Valor | Tipo | Ignorar nos gráficos | Quem --- */
+function parseSheet(f,text){
+  const L=splitSheet(text,1),d=delimOf(L[0]);
+  const hasH=!/\d{1,4}[\/-]\d{1,2}[\/-]\d{1,4}/.test(L[0]);
+  const H=hasH?cells(L[0],d).map(norm):[];
+  const ix=(...ks)=>H.findIndex(h=>ks.some(k=>h===k||h.startsWith(k)));
+  const I=hasH?{d:ix('data'),b:ix('banco'),s:ix('descricao','historico'),m:ix('modalidade'),c:ix('categoria'),v:ix('valor'),k:ix('tipo'),g:ix('ignorar'),q:ix('quem')}:{d:0,b:1,s:2,m:3,c:4,v:5,k:6,g:7,q:8};
+  if(I.d<0||I.v<0)throw `Cabeçalhos "Data" e "Valor" não encontrados. Cabeçalhos lidos: ${cells(L[0],d).join(' | ')}.`;
+  DEC=f.dec||'auto';
+  const rows=[];let skipped=0;
+  (hasH?L.slice(1):L).forEach(l=>{
+    const r=cells(l,d),dt=dateY(r[I.d]||''),n=num(r[I.v]||'');
+    if(!dt||!isFinite(n)){skipped++;return}
+    rows.push({date:dt,desc:(r[I.s]||'').replace(/\s+/g,' ').trim()||'(sem descrição)',val:Math.round(n*100)/100,bank:I.b>=0?(r[I.b]||'').trim():'',mod:MODN(r[I.m]),cat:resolveCat(r[I.c]),kind:KINDN(r[I.k]),ign:/^(sim|s|1|true|x)/.test(norm(r[I.g])),quem:I.q>=0?(r[I.q]||'').trim():'',faithful:true});
+  });
+  return{rows,skipped};
+}
+function parseFormat(f,text){
+  const m=f.mode||'cols';
+  return m==='amazon'?parseAmazon(f,text):m==='bb'?parseBB(f,text):m==='sheet'?parseSheet(f,text):parseCols(f,text);
+}
+const MODEL={cols:'Colunas com cabeçalho',amazon:'Texto corrido (Amazon)',bb:'Extrato BB inteligente',sheet:'Planilha integral'};
 function fillFmt(){
   const cur=$('fmt').value;
   $('fmt').innerHTML=FM.length?FM.map(f=>`<option value="${f.id}"${String(f.id)===cur?' selected':''}>${esc(f.name)}</option>`).join(''):'<option value="">Nenhum formato cadastrado</option>';
   showHint();fillT();
 }
 function showHint(){
-  const f=FM.find(x=>String(x.id)===$('fmt').value);
-  $('hint').textContent=f?`Cabeçalhos esperados — Data: "${f.cData}" · Descrição: "${f.cDesc}" · Valor: "${f.cValor}"${f.cQuem?` · Quem: "${f.cQuem}" (Ambos divide o valor por 2)`:''}${f.inv?' · Sinal do valor invertido.':''}`:`Cadastre um formato na aba ${LB('nav.fmts')} para colar extratos.`;
+  const f=FM.find(x=>String(x.id)===$('fmt').value),m=f&&(f.mode||'cols');
+  $('hint').textContent=!f?`Cadastre um formato na aba ${LB('nav.fmts')} para colar extratos.`:
+   m==='amazon'?'Cole o extrato em texto corrido: o painel acha data (DD/MM), descrição e valor por padrões de texto, sem precisar de colunas. Pagamentos, estornos e valores com "-" no fim entram como créditos.':
+   m==='bb'?'Cole as linhas do extrato do BB (com data). O painel identifica Pix, Débito, Tarifa, Boleto e outros tipos, preenche a modalidade e limpa códigos, agências e horários da descrição. COMGAS, CONDOMINIO EDIFICIO MANACA, ENEL e GRPQA: dividido por 2 e categoria Casa.':
+   m==='sheet'?'Cole a planilha com as colunas: Data | Banco Origem | Descrição | Modalidade | Categoria | Valor | Tipo | Ignorar nos gráficos | Quem. A coluna Banco Origem define o destino de cada linha. As linhas entram fielmente, sem regras automáticas.':
+   `Cabeçalhos esperados — Data: "${f.cData}" · Descrição: "${f.cDesc}" · Valor: "${f.cValor}"${f.cQuem?` · Quem: "${f.cQuem}" (Ambos divide o valor por 2)`:''}${f.inv?' · Sinal do valor invertido.':''}`;
 }
 function renderFmts(){
-  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Formato</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map(f=>`<tr><td><b>${esc(f.name)}</b></td><td>${esc(f.cData)}</td><td>${esc(f.cDesc)}</td><td>${esc(f.cValor)}</td><td>${esc(f.cQuem||'—')}</td><td>${esc(f.cBank||'—')}</td><td>${esc(f.cCat||'—')}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
+  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Formato</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map(f=>{const c=(f.mode||'cols')==='cols',dash='<span class="mut">—</span>';return `<tr><td><b>${esc(f.name)}</b></td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
 }
 const FF=['fname','fcdata','fcdesc','fcval','fcquem','fcbank','fccat'];
-function resetFmtForm(){EDITF=null;FF.forEach(i=>$(i).value='');$('finv').checked=false;$('fdec').value='auto';$('fmod').value='';setLbl($('fsave'),LB('btn.fsave'));$('fcancel').hidden=true}
+function resetFmtForm(){EDITF=null;FF.forEach(i=>$(i).value='');$('fmode').value='cols';$('finv').checked=false;$('fdec').value='auto';$('fmod').value='';setLbl($('fsave'),LB('btn.fsave'));$('fcancel').hidden=true}
 
 /* ===== lançamento isolado (formulário) ===== */
 function addManual(){
@@ -785,13 +959,18 @@ function add(){
   if(!f){$('msg').textContent=`Cadastre e selecione um formato na aba ${LB('nav.fmts')}.`;return}
   if(!text.trim()){$('msg').textContent='Cole os dados do extrato primeiro.';return}
   let res;try{res=parseFormat(f,text)}catch(e){$('msg').textContent=String(e);return}
-  if(!res.rows.length){$('msg').textContent=`Nenhuma linha válida no formato "${f.name}". Confira os cabeçalhos, a data e o separador decimal.`;return}
+  if(!res.rows.length){$('msg').textContent=`Nenhuma linha válida no formato "${f.name}" (${MODEL[f.mode||'cols']}). Confira o texto colado, a data e o separador decimal.`;return}
   const wasDemo=SRC==='demo';if(wasDemo)setSource('user');
   res.rows.forEach(r=>{
-    const bank=r.bank||f.name;
-    const row={id:++seq,bank,date:r.date,desc:r.desc,orig:r.desc.slice(0,200),mod:/\bpix\b/.test(norm(r.desc))?'Pix':(f.mod||''),cat:'',val:r.val,kind:'',ign:false,quem:r.quem};
-    if(r.cat)row.cat=r.cat; // categoria vinda da planilha entra fielmente
-    else{row.cat=classify(r.desc,r.val,bank);if(f.mod==='Benefício'&&r.val>0)row.cat='Benefício';applyRule(row,CR)} // regras do usuário têm prioridade absoluta
+    const raw=r.raw||r.desc,bank=r.bank||f.name;
+    const row={id:++seq,bank,date:r.date,desc:r.desc,orig:raw.slice(0,200),mod:r.mod||(/\bpix\b/.test(norm(raw))?'Pix':(f.mod||'')),cat:'',val:r.val,kind:r.kind||'',ign:!!r.ign,quem:r.quem||''};
+    if(r.faithful){row.cat=r.cat||'';row.mod=r.mod!==undefined?r.mod:row.mod} // planilha e categoria vinda da planilha entram fielmente, sem regras
+    else{
+      const sug=r.cat?catMap(r.cat):'';
+      row.cat=ALLCATS.includes(sug)?sug:classify(raw,r.val,bank);
+      if(f.mod==='Benefício'&&r.val>0)row.cat='Benefício';
+      applyRule(row,CR); // regras do usuário têm prioridade absoluta
+    }
     DATA.push(row);
   });
   const outside=!AUTO&&res.rows.some(r=>(F.d0&&r.date<F.d0)||(F.d1&&r.date>F.d1));
@@ -800,12 +979,20 @@ function add(){
   $('msg').textContent=`${res.rows.length} lançamento(s) adicionado(s) pelo formato "${f.name}"${res.skipped?`; ${res.skipped} linha(s) ignorada(s)`:''}.${wasDemo?' Modo demonstração encerrado.':''}${outside?` Alguns ficam fora do período filtrado: use "${LB('btn.fx')}".`:''} Conferir 1ª linha: ${dmy(e.date)} · ${e.desc.slice(0,30)} · ${brl(e.val)}`;
 }
 
-
 /* ===== aba Regras ===== */
-function renderRules(){
-  $('rtbl').innerHTML=CR.length?`<thead><tr><th>Palavra-chave</th><th>Categoria</th><th>Tipo</th><th>Ignorar nos gráficos</th><th>Descrição simplificada</th><th></th></tr></thead><tbody>${CR.map(r=>`<tr><td>${esc(r.kw)}</td><td>${esc(r.cat||'—')}</td><td>${r.kind==='fixa'?'Fixa/Recorrente':'Variável'}</td><td>${r.ign?'Sim (Estorno/Reembolso)':'Não'}</td><td>${r.simp?esc(r.simp):'<span class="mut">—</span>'}</td><td><button class="sec" data-rdel="${r.id}">Excluir</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhuma regra cadastrada.</td></tr></tbody>';
+function fillRuleSelects(){
+  const az2=(a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'});
+  const banks=[...new Set([...FM.map(f=>f.name),...DATA.map(r=>r.bank).filter(Boolean),...CR.map(r=>r.bank).filter(Boolean)])].sort(az2);
+  const quems=[...new Set([...DATA.map(r=>r.quem).filter(Boolean),...CR.map(r=>r.quem).filter(Boolean),'Eu','Ambos'])].sort(az2);
+  const set=(id,html)=>{const v=$(id).value;$(id).innerHTML=html;$(id).value=v};
+  const o=l=>l.map(x=>`<option>${esc(x)}</option>`).join('');
+  set('rbank','<option value="">— (não definir)</option>'+o(banks));
+  set('rquem','<option value="">— (não definir)</option>'+o(quems));
 }
-
+function renderRules(){
+  const d='<span class="mut">—</span>',sn={sim:'Sim (Estorno/Reembolso)',nao:'Não'};
+  $('rtbl').innerHTML=CR.length?`<thead><tr><th>Palavra-chave</th><th>Banco</th><th>Tipo</th><th>Modalidade</th><th>Categoria</th><th>Ignorar nos gráficos</th><th>Quem</th><th>Descrição simplificada</th><th></th></tr></thead><tbody>${CR.map(r=>`<tr><td><b>${esc(r.kw)}</b></td><td>${r.bank?esc(r.bank):d}</td><td>${r.kind==='fixa'?'Fixa/Recorrente':r.kind==='variavel'?'Variável':d}</td><td>${r.mod?esc(r.mod):d}</td><td>${r.cat?esc(r.cat):d}</td><td>${sn[r.ign]||d}</td><td>${r.quem?esc(r.quem):d}</td><td>${r.simp?esc(r.simp):d}</td><td style="white-space:nowrap"><button class="sec" data-rcp="${r.id}">Copiar/Duplicar</button> <button class="sec" data-rdel="${r.id}">Excluir</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhuma regra cadastrada.</td></tr></tbody>';
+}
 
 /* ===== aba Comparativo ===== */
 const nice=m=>{const raw=m/5,mag=Math.pow(10,Math.floor(Math.log10(raw))),st=[1,2,2.5,5,10].find(s=>s*mag>=raw)*mag;return st*5};
@@ -1033,33 +1220,44 @@ $('madd').onclick=addManual;
 
 /* ===== configuração de formatos ===== */
 $('fsave').onclick=()=>{
-  const v=i=>$(i).value.trim(),f={name:v('fname'),cData:v('fcdata'),cDesc:v('fcdesc'),cValor:v('fcval'),cQuem:v('fcquem'),cBank:v('fcbank'),cCat:v('fccat'),inv:$('finv').checked,dec:$('fdec').value,mod:$('fmod').value};
-  if(!f.name||!f.cData||!f.cDesc||!f.cValor){$('fmsg').textContent='Informe o nome do formato e os cabeçalhos de Data, Descrição e Valor.';return}
+  const v=i=>$(i).value.trim(),f={name:v('fname'),mode:$('fmode').value,cData:v('fcdata'),cDesc:v('fcdesc'),cValor:v('fcval'),cQuem:v('fcquem'),cBank:v('fcbank'),cCat:v('fccat'),inv:$('finv').checked,dec:$('fdec').value,mod:$('fmod').value};
+  if(!f.name){$('fmsg').textContent='Informe o nome do formato.';return}
+  if(f.mode==='cols'&&(!f.cData||!f.cDesc||!f.cValor)){$('fmsg').textContent='No modo "Colunas com cabeçalho", informe os cabeçalhos de Data, Descrição e Valor.';return}
   if(FM.some(x=>norm(x.name)===norm(f.name)&&x.id!==EDITF)){$('fmsg').textContent='Já existe um formato com esse nome.';return}
   if(EDITF){const i=FM.findIndex(x=>x.id===EDITF);f.id=EDITF;FM[i]=f;$('fmsg').textContent='Formato atualizado.'}
   else{f.id=Date.now();FM.push(f);$('fmsg').textContent='Formato salvo.'}
-  saveFormats();$('fmt').value=String(f.id);resetFmtForm();fillFmt();renderFmts();
+  saveFormats();$('fmt').value=String(f.id);resetFmtForm();fillFmt();renderFmts();fillRuleSelects();renderLast();
 };
 $('fcancel').onclick=()=>{resetFmtForm();$('fmsg').textContent='Edição cancelada.'};
 $('ftbl').addEventListener('click',e=>{
   const ed=e.target.closest('[data-fed]'),dl_=e.target.closest('[data-fdel]');
   if(ed){const f=FM.find(x=>String(x.id)===ed.dataset.fed);if(!f)return;EDITF=f.id;
-    $('fname').value=f.name;$('fcdata').value=f.cData;$('fcdesc').value=f.cDesc;$('fcval').value=f.cValor;$('fcquem').value=f.cQuem||'';$('fcbank').value=f.cBank||'';$('fccat').value=f.cCat||'';
+    $('fname').value=f.name;$('fmode').value=f.mode||'cols';$('fcdata').value=f.cData||'';$('fcdesc').value=f.cDesc||'';$('fcval').value=f.cValor||'';$('fcquem').value=f.cQuem||'';$('fcbank').value=f.cBank||'';$('fccat').value=f.cCat||'';
     $('finv').checked=!!f.inv;$('fdec').value=f.dec||'auto';$('fmod').value=f.mod||'';$('fsave').textContent='Atualizar formato';$('fcancel').hidden=false;$('fmsg').textContent=`Editando "${f.name}".`;$('fname').focus()}
-  if(dl_){FM=FM.filter(x=>String(x.id)!==dl_.dataset.fdel);if(EDITF&&!FM.some(x=>x.id===EDITF))resetFmtForm();saveFormats();fillFmt();renderFmts();$('fmsg').textContent='Formato excluído.'}
+  if(dl_){FM=FM.filter(x=>String(x.id)!==dl_.dataset.fdel);if(EDITF&&!FM.some(x=>x.id===EDITF))resetFmtForm();saveFormats();fillFmt();renderFmts();fillRuleSelects();renderLast();$('fmsg').textContent='Formato excluído.'}
 });
 
 /* ===== regras ===== */
+let RCLONE=false;
 $('rsave').onclick=()=>{
   const kw=$('rkw').value.trim();if(!kw){$('rmsg').textContent='Informe a palavra-chave.';return}
-  const r={id:Date.now(),kw,cat:$('rcat').value,kind:$('rkind').value,ign:$('rign').value==='1',simp:$('rsimp').value.trim()};
-  const i=CR.findIndex(x=>norm(x.kw)===norm(kw));
+  const r={id:Date.now(),kw,bank:$('rbank').value,cat:$('rcat').value,kind:$('rkind').value,mod:$('rmod').value,ign:$('rign').value,quem:$('rquem').value,simp:$('rsimp').value.trim()};
+  if(!(r.bank||r.cat||r.kind||r.mod||r.ign||r.quem||r.simp)){$('rmsg').textContent='Defina pelo menos um campo além da palavra-chave (os demais podem ficar em branco).';return}
+  const i=RCLONE?-1:CR.findIndex(x=>norm(x.kw)===norm(kw));
   if(i>=0){r.id=CR[i].id;CR[i]=r}else CR.push(r);
-  saveRules();renderRules();
-  $('rmsg').textContent=(i>=0?'Regra atualizada.':'Regra salva.')+` Vale para os próximos extratos; use "${LB('btn.rapply')}" para atualizar os atuais.`;
-  $('rkw').value='';$('rsimp').value='';
+  RCLONE=false;saveRules();fillRuleSelects();renderRules();
+  $('rmsg').textContent=(i>=0?'Regra atualizada.':'Regra salva.')+` Campos em branco não alteram nada. Vale para os próximos extratos; use "${LB('btn.rapply')}" para atualizar os atuais.`;
+  ['rkw','rsimp','rbank','rcat','rkind','rmod','rign','rquem'].forEach(i=>{$(i).value=''});
 };
-$('rtbl').addEventListener('click',e=>{const b=e.target.closest('[data-rdel]');if(b){CR=CR.filter(r=>r.id!=b.dataset.rdel);saveRules();renderRules();$('rmsg').textContent='Regra excluída.'}});
+$('rtbl').addEventListener('click',e=>{
+  const del=e.target.closest('[data-rdel]'),cp=e.target.closest('[data-rcp]');
+  if(del){CR=CR.filter(r=>r.id!=del.dataset.rdel);saveRules();fillRuleSelects();renderRules();$('rmsg').textContent='Regra excluída.'}
+  if(cp){const r=CR.find(x=>String(x.id)===cp.dataset.rcp);if(!r)return;
+    fillRuleSelects();
+    $('rkw').value=r.kw;$('rbank').value=r.bank;$('rcat').value=r.cat;$('rkind').value=r.kind;$('rmod').value=r.mod;$('rign').value=r.ign;$('rquem').value=r.quem;$('rsimp').value=r.simp;
+    RCLONE=true;$('rmsg').textContent='Regra copiada para o formulário. Altere o que quiser e clique em Salvar Regra para criar a variação.';
+    $('rkw').scrollIntoView&&$('rkw').scrollIntoView({block:'center'});$('rkw').focus()}
+});
 $('rapply').onclick=()=>{let n=0;DATA.forEach(r=>{if(applyRule(r,CR))n++});commit();$('rmsg').textContent=`${n} lançamento(s) correspondem às regras e foram atualizados.`};
 
 /* ===== filtros ===== */
@@ -1080,15 +1278,17 @@ document.addEventListener('click',e=>{if(!e.target.closest('.dd'))$('menu').hidd
 $('menu').addEventListener('change',e=>{const k=e.target.dataset.k;if(!k)return;UI.hide=e.target.checked?UI.hide.filter(x=>x!==k):[...UI.hide,k];saveUI();renderTable()});
 $('menu').addEventListener('click',e=>{if(e.target.id==='mreset'){UI={hide:[],w:{},ex:UI.ex};saveUI();buildMenu();renderTable()}});
 $('tbl').addEventListener('click',e=>{
+  SHIFT=e.shiftKey;
   const x=e.target.closest('[data-del]');if(x){DATA=DATA.filter(r=>r.id!=x.dataset.del);commit();return}
+  const tr=e.target.closest('tbody tr');if(tr&&!e.target.closest('input,select,button,textarea,a')){rowClick(tr,e);return}
   const th=e.target.closest('th');if(!th||e.target.closest('.rz')||e.target.closest('input')||['sel','n','x'].includes(th.dataset.k))return;
   const k=th.dataset.k;SORT=SORT.k===k?{k,d:-SORT.d}:{k,d:k==='val'?-1:1};renderTable();
 });
 $('tbl').addEventListener('change',e=>{
   const sa=e.target.closest('#selAllRows');
-  if(sa){const vs=tableView();vs.forEach(r=>sa.checked?SELR.add(r.id):SELR.delete(r.id));renderTable();return}
+  if(sa){tableView().forEach(r=>sa.checked?SELR.add(r.id):SELR.delete(r.id));updateSel();return}
   const cb=e.target.closest('[data-sel]');
-  if(cb){const id=+cb.dataset.sel;cb.checked?SELR.add(id):SELR.delete(id);renderTable();return}
+  if(cb){const id=+cb.dataset.sel;if(SHIFT&&cb.checked)selectRange(id,true);else cb.checked?SELR.add(id):SELR.delete(id);ANCH=id;SHIFT=false;updateSel();return}
   const s=e.target.closest('[data-id]');if(!s)return;
   const r=DATA.find(r=>r.id==s.dataset.id);if(!r)return;
   r[s.dataset.f]=s.type==='checkbox'?s.checked:s.value;commit();
@@ -1119,6 +1319,15 @@ document.addEventListener('pointermove',e=>{if(!RZ)return;const w=Math.max(40,Ma
 document.addEventListener('pointerup',()=>{if(RZ){RZ=null;document.body.classList.remove('rzing');saveUI()}});
 
 /* ===== ações em massa ===== */
+$('tbl').addEventListener('mousedown',e=>{if(e.shiftKey&&!e.target.closest('input,select,textarea'))e.preventDefault()}); // Shift+clique não seleciona texto
+document.addEventListener('keydown',e=>{
+  if(TAB!=='cons'||LED!==null||(e.target&&e.target.closest&&e.target.closest('input,textarea,select')))return;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'&&$('tbl').querySelector('tbody tr')){e.preventDefault();tableView().forEach(r=>SELR.add(r.id));updateSel()}
+  else if(e.key==='Escape'&&SELR.size){SELR.clear();updateSel()}
+});
+$('bbank').onchange=e=>{const v=e.target.value;if(!v)return;bulk(r=>{r.bank=v},`banco "${v}"`);e.target.value=''};
+$('bmod').onchange=e=>{const v=e.target.value;if(!v)return;bulk(r=>{r.mod=v==='__none__'?'':v},`modalidade ${v==='__none__'?'(vazio)':v}`);e.target.value=''};
+$('bign').onchange=e=>{const v=e.target.value;if(!v)return;bulk(r=>{r.ign=v==='sim'},v==='sim'?'ignorar nos gráficos':'contar nos gráficos');e.target.value=''};
 $('bcat').onchange=e=>{const v=e.target.value;if(!v)return;bulk(r=>{r.cat=v==='__none__'?'':v},v==='__none__'?'categoria em branco':`categoria "${v}"`);e.target.value=''};
 $('bkind').onchange=e=>{const v=e.target.value;if(!v)return;bulk(r=>{r.kind=v==='__none__'?'':v},`tipo ${v==='fixa'?'Fixa':v==='variavel'?'Variável':'(vazio)'}`);e.target.value=''};
 $('bquem').onchange=e=>{const v=e.target.value;if(!v)return;bulk(r=>{r.quem=v==='__none__'?'':v},`Quem ${v==='__none__'?'(vazio)':v}`);e.target.value=''};
@@ -1201,10 +1410,10 @@ $('md').value=new Date().toISOString().slice(0,10);
 $('mmod').innerHTML=MODS.map(m=>`<option value="${m}">${m||'Modalidade (—)'}</option>`).join('');
 $('ign').checked=UI.ex;
 if(!loadRules()){CR=SEED.map((r,i)=>({...r,id:i+1}));saveRules()}
-if(!loadFormats()){FM=SEED_FMT.map((f,i)=>({...f,id:i+1}));saveFormats()}
+if(!loadFormats()){FM=SEED_FMT.map((f,i)=>({...f,id:i+1}));saveFormats()}else migrateFormats();
 if(!loadCats())saveCats();
 syncCats();fillCatSelects();renderCats();
-loadIFC();Object.assign(DEF,DYNDEF);COLS.forEach(c=>{DEF['col.'+c.k]=c.t});initUid();initBlocks();applyLabels();applyLayout();
+loadIFC();Object.assign(DEF,DYNDEF);COLS.forEach(c=>{DEF['col.'+c.k]=c.t});initUid();initBlocks();applyLabels();applyLayout();moveFilters();
 buildMenu();fillFmt();
 setSource(userRows().length?'user':'demo');setTab('cons');
 </script>
