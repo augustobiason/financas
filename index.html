@@ -72,6 +72,13 @@ input[type=text],input[type=number]{border:1px solid var(--bd);border-radius:8px
 td input[type=date],td select{width:100%;padding:3px 4px;font-size:.85rem;border-radius:6px}
 .xbtn{background:none;border:0;color:var(--mut);cursor:pointer;font-size:1rem}.xbtn:hover{color:var(--neg)}
 tr.ex td{opacity:.5}
+#tbl tbody tr[style*="--bc"] td{background:color-mix(in srgb,var(--bc) 11%,transparent)}
+#tbl tbody tr[style*="--bc"] td:first-child{box-shadow:inset 4px 0 0 var(--bc)}
+#tbl tbody tr.sel td{background:var(--acb)}
+.lb2{border-left:5px solid var(--bc,var(--ac))}
+.lb2.none{border-left-color:var(--bc,var(--bd))}
+button.mv{padding:4px 8px}button.mv:disabled{opacity:.35;cursor:default}
+input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--bd);border-radius:6px;background:var(--bg);cursor:pointer}
 #tbl tbody tr.sel td{background:var(--acb)}
 .fbar{margin:0 0 10px;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}
 .lastbank{display:flex;flex-wrap:wrap;gap:8px}
@@ -161,6 +168,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <div class="grid2">
     <div class="card"><h3>Categorias de gastos (saídas)</h3><div id="pieOut"></div></div>
     <div class="card"><h3>Categorias de receitas (entradas)</h3><div id="pieIn"></div></div>
+    <div class="card"><h3 data-uid="h.cons.bank">Saídas por banco/cartão</h3><div id="pieBank"></div></div>
   </div>
   <div class="card">
     <div class="row between" style="margin-bottom:10px">
@@ -172,7 +180,12 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
     <div class="row" style="margin:0 0 10px">
       <label class="row sm">Categoria <select id="tc"></select></label>
       <label class="row sm">Banco/Cartão <select id="tb"></select></label>
-      <label class="row sm">Quem <select id="tq"></select></label>
+      <label class="row sm" data-uid="lb.cons.fdate">Data <select id="tdt"></select></label>
+      <label class="row sm" data-uid="lb.cons.fdesc">Descrição <select id="tds" style="max-width:230px"></select></label>
+      <label class="row sm" data-uid="lb.cons.fmod">Modalidade <select id="tmo"></select></label>
+      <label class="row sm" data-uid="lb.cons.fval">Valor <select id="tvl"></select></label>
+      <label class="row sm" data-uid="lb.cons.fkind">Tipo <select id="tkd"></select></label>
+      <label class="row sm" data-uid="lb.cons.fign">Ignorar nos Gráficos <select id="tig"></select></label>
       <button class="sec" id="tx">Limpar Filtros</button>
     </div>
     <div class="bulk" id="bulk" hidden>
@@ -196,6 +209,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
     <div class="row between"><h3 style="margin:0">Despesas por mês</h3><span class="mut sm" id="cflt"></span></div>
     <div class="row" style="margin:10px 0">
       <label class="row sm">Meses em análise <select id="cper"></select></label>
+      <label class="row sm" data-uid="lb.comp.grp">Agrupar por <select id="cgrp"><option value="cat">Categoria</option><option value="bank">Banco/Cartão</option></select></label>
       <label class="row sm">Gráfico <select id="ctype"><option value="area">Área plotada</option><option value="bars">Barras agrupadas</option></select></label>
     </div>
     <div class="chart" id="barChart"></div>
@@ -204,7 +218,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <div class="card">
     <div class="row between"><h3 style="margin:0">Categorias para comparar</h3>
       <span class="row"><button class="sec" id="selAll">Marcar todas</button><button class="sec" id="selNone">Limpar seleção</button></span></div>
-    <p class="mut sm" style="margin:6px 0 0">Sem nenhuma marcada, o gráfico mostra o total geral de despesas. As categorias aparecem em ordem alfabética.</p>
+    <p class="mut sm" id="catNote" style="margin:6px 0 0">Sem nenhuma marcada, o gráfico mostra o total geral de despesas. As categorias aparecem em ordem alfabética.</p>
     <div class="cats" id="catList"></div>
   </div>
 </section>
@@ -295,7 +309,7 @@ const sum=a=>a.reduce((s,x)=>s+x,0),mean=a=>a.length?sum(a)/a.length:0;
 const dmy=d=>d.split('-').reverse().join('/');
 const mlab=k=>MES[+k.slice(5)-1]+' '+k.slice(0,4);
 const monthsOf=rs=>[...new Set(rs.map(r=>r.date.slice(0,7)))].sort();
-const PAL=['#2563eb','#e11d48','#16a34a','#f59e0b','#7c3aed','#0891b2','#ea580c','#db2777','#65a30d'],GRAY='#94a3b8';
+const PAL=['#2563eb','#e11d48','#16a34a','#f59e0b','#7c3aed','#0891b2','#ea580c','#db2777','#65a30d','#4f46e5','#0d9488','#be123c'],GRAY='#94a3b8';
 let EXCL=['Fatura de Cartão','Investimentos']; // fora das análises: evitam dupla contagem
 const SRC_KEY='painel-consolidador-bancos:v1',UI_KEY='painel-financeiro-ui:v1';
 
@@ -503,6 +517,7 @@ function applyRule(row,rules){ // campos em branco na regra não alteram nada; r
 let RENC={}; // nome de fábrica → nome atual (categorias renomeadas)
 const catMap=c=>RENC[c]||c;
 const cn=r=>r.cat||'Sem categoria';
+const ccol=c=>c==='Sem categoria'?GRAY:PAL[Math.max(0,ALLCATS.indexOf(c))%PAL.length]; // cor estável por categoria (posição na lista A-Z)
 function classify(d,v,b){const c=catMap(classify0(d,v,b));return ALLCATS.includes(c)?c:''} // categoria excluída ⇒ em branco
 
 /* ===== interface customizável: rótulos, ordem de colunas e layout (tudo por IDs estruturais) ===== */
@@ -594,7 +609,8 @@ function saveFormats(){try{localStorage.setItem(FKEY,JSON.stringify({v:1,formats
 
 /* ===== estado ===== */
 const COLS=[{k:'sel',t:'Seleção',w:46},{k:'n',t:'#',w:52},{k:'date',t:'Data',w:125},{k:'bank',t:'Banco',w:130},{k:'desc',t:'Descrição',w:280},{k:'mod',t:'Modalidade',w:125},{k:'cat',t:'Categoria',w:215},{k:'kind',t:'Tipo',w:115},{k:'ign',t:'Ignorar',w:80},{k:'val',t:'Valor',w:125,r:1},{k:'x',t:'Ações',w:70}];
-let UI={hide:[],w:{},ex:true},DATA=[],SRC='demo',TAB='cons',SORT={k:'date',d:-1},SEL=new Set(),SELR=new Set(),F={d0:'',d1:'',bank:'',q:''},T={cat:'',bank:'',quem:''},AUTO=true,seq=0,undoRows=[],EDITF=null;
+const T0=()=>({cat:'',bank:'',date:'',desc:'',mod:'',val:'',kind:'',ign:''});
+let UI={hide:[],w:{},ex:true},DATA=[],SRC='demo',TAB='cons',SORT={k:'date',d:-1},SEL=new Set(),SELR=new Set(),F={d0:'',d1:'',bank:'',q:''},T=T0(),AUTO=true,seq=0,undoRows=[],EDITF=null;
 try{const o=JSON.parse(localStorage.getItem(UI_KEY)||'null');if(o&&Array.isArray(o.hide)&&o.w)UI={ex:true,...o}}catch(e){}
 const saveUI=()=>{try{localStorage.setItem(UI_KEY,JSON.stringify(UI))}catch(e){}};
 const W=k=>UI.w[k]||COLS.find(c=>c.k===k).w;
@@ -602,13 +618,19 @@ const az=(a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'});
 const exc=r=>r.ign||(UI.ex&&EXCL.includes(r.cat)); // ignorados, fatura e investimentos: fora das análises, visíveis na tabela
 const inRange=r=>(!F.d0||r.date>=F.d0)&&(!F.d1||r.date<=F.d1)&&(!F.bank||r.bank===F.bank);
 const qmatch=r=>{const q=norm(F.q);return !q||norm(r.desc+' '+r.cat+' '+r.bank).includes(q)};
-const tmatch=r=>(!T.cat||(T.cat==='__none__'?!r.cat:r.cat===T.cat))&&(!T.bank||r.bank===T.bank)&&(!T.quem||(T.quem==='__none__'?!r.quem:r.quem===T.quem));
+const VR={neg:'Saídas (negativos)',pos:'Entradas (positivos)',r0:'Até R$ 50',r1:'R$ 50 a 200',r2:'R$ 200 a 1.000',r3:'Acima de R$ 1.000'};
+const vmatch=(r,v)=>{const a=Math.abs(r.val);return v==='neg'?r.val<0:v==='pos'?r.val>0:v==='r0'?a<=50:v==='r1'?a>50&&a<=200:v==='r2'?a>200&&a<=1000:a>1000};
+const tmatch=r=>(!T.cat||(T.cat==='__none__'?!r.cat:r.cat===T.cat))&&(!T.bank||r.bank===T.bank)
+ &&(!T.date||(T.date.startsWith('m:')?r.date.startsWith(T.date.slice(2)):r.date===T.date.slice(2)))
+ &&(!T.desc||r.desc===T.desc)&&(!T.mod||(T.mod==='__none__'?!r.mod:r.mod===T.mod))&&(!T.val||vmatch(r,T.val))
+ &&(!T.kind||(T.kind==='__none__'?!r.kind:r.kind===T.kind))&&(!T.ign||(T.ign==='sim'?!!r.ign:!r.ign));
 const base=()=>DATA.filter(r=>!exc(r)&&inRange(r));
 const shown=()=>base().filter(qmatch);
-const catsFor=r=>{const l=r.val>0?CATS_IN_ALL:CATS;return !r.cat||l.includes(r.cat)?l:[...l,r.cat]};
+const catsFor=r=>{const l=r.val>0?CATS_IN_ALL:CATS;return !r.cat||l.includes(r.cat)?l:[...l,r.cat].sort(az)};
 function tableView(){
+  const bm=SORT.k==='bank'?Object.fromEntries(allBanks().map((b,i)=>[b,i])):null; // coluna Banco ordena pela ordem definida na configuração
   return DATA.filter(r=>inRange(r)&&qmatch(r)&&tmatch(r)).sort((a,b)=>{
-    const x=a[SORT.k],y=b[SORT.k],c=typeof x==='number'?x-y:String(x||'').localeCompare(String(y||''),'pt-BR');return(c||a.id-b.id)*SORT.d});
+    const x=a[SORT.k],y=b[SORT.k],c=bm?(bm[x]??999)-(bm[y]??999):typeof x==='number'?x-y:String(x||'').localeCompare(String(y||''),'pt-BR');return(c||a.id-b.id)*SORT.d});
 }
 function fullMonths(rs){ // descarta o último mês se for parcial
   const ms=monthsOf(rs);if(ms.length<2)return ms;
@@ -616,10 +638,10 @@ function fullMonths(rs){ // descarta o último mês se for parcial
   return md<25?ms.slice(0,-1):ms;
 }
 const flt=()=>`Período ${F.d0?dmy(F.d0):'—'} a ${F.d1?dmy(F.d1):'—'} · ${F.bank||'Todos os bancos'} (ajuste na aba ${LB('nav.cons')})`;
-function renderLast(){ // data do último lançamento processado, por banco cadastrado
-  const names=[...new Set([...FM.map(f=>f.name),...DATA.map(r=>r.bank).filter(Boolean)])].sort(az),last={};
+function renderLast(){ // data do último lançamento por banco/formato real (sem "Planilha Integral/Geral")
+  const names=SRC==='user'?allBanks():realFormats().map(f=>f.name),last={}; // na demonstração só os formatos cadastrados
   DATA.forEach(r=>{if(r.bank&&(!last[r.bank]||r.date>last[r.bank]))last[r.bank]=r.date});
-  $('lastBank').innerHTML=names.length?names.map(n=>`<div class="lb2${last[n]?'':' none'}"><span>${esc(n)}</span><b>${last[n]?dmy(last[n]):'sem lançamentos'}</b></div>`).join(''):'<span class="mut sm">Nenhum banco cadastrado.</span>';
+  $('lastBank').innerHTML=names.length?names.map(n=>`<div class="lb2${last[n]?'':' none'}" style="--bc:${bcol(n)}"><span>${esc(n)}</span><b>${last[n]?dmy(last[n]):'sem lançamentos'}</b></div>`).join(''):'<span class="mut sm">Nenhum banco cadastrado.</span>';
 }
 function moveFilters(){ // período, banco e busca descem para logo acima da tabela (a numeração de IDs foi gerada antes)
   const f=document.querySelector('#v-cons > .card.row'),q=$('tx').parentElement;
@@ -628,29 +650,45 @@ function moveFilters(){ // período, banco e busca descem para logo acima da tab
   q.parentElement.insertBefore(f,q);
 }
 function fillT(){
-  const cats=[...new Set(DATA.map(r=>r.cat).filter(Boolean))].sort(az),noCat=DATA.some(r=>!r.cat),banks=[...new Set(DATA.map(r=>r.bank))].sort(az),quems=[...new Set(DATA.map(r=>r.quem).filter(Boolean))].sort(az);
-  const hasNone=quems.length>0&&DATA.some(r=>!r.quem);
+  const cats=[...new Set(DATA.map(r=>r.cat).filter(Boolean))].sort(az),noCat=DATA.some(r=>!r.cat);
+  const banks=orderBanks(DATA.map(r=>r.bank).filter(Boolean));
+  const days=[...new Set(DATA.map(r=>r.date))].sort().reverse(),months=[...new Set(DATA.map(r=>r.date.slice(0,7)))].sort().reverse();
+  const descs=[...new Set(DATA.map(r=>r.desc))].sort(az);
   if(T.cat&&T.cat!=='__none__'&&!cats.includes(T.cat))T.cat='';if(T.cat==='__none__'&&!noCat)T.cat='';
   if(T.bank&&!banks.includes(T.bank))T.bank='';
-  if(T.quem&&T.quem!=='__none__'&&!quems.includes(T.quem))T.quem='';
-  if(T.quem==='__none__'&&!hasNone)T.quem='';
-  const o=(list,cur)=>list.map(x=>`<option${x===cur?' selected':''}>${esc(x)}</option>`).join('');
+  if(T.date&&!(T.date.startsWith('m:')?months.includes(T.date.slice(2)):days.includes(T.date.slice(2))))T.date='';
+  if(T.desc&&!descs.includes(T.desc))T.desc='';
+  const o=(list,cur)=>list.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
   $('tc').innerHTML='<option value="">Todas as categorias</option>'+o(cats,T.cat)+(noCat?`<option value="__none__"${T.cat==='__none__'?' selected':''}>(sem categoria)</option>`:'');
   $('tb').innerHTML='<option value="">Todos os bancos/cartões</option>'+o(banks,T.bank);
-  $('tq').innerHTML='<option value="">Todos</option>'+o(quems,T.quem)+(hasNone?`<option value="__none__"${T.quem==='__none__'?' selected':''}>(sem informação)</option>`:'');
-  $('banklist').innerHTML=[...new Set([...FM.map(f=>f.name),...banks])].sort(az).map(b=>`<option value="${esc(b)}">`).join('');
+  $('tdt').innerHTML='<option value="">Todas as datas</option><optgroup label="Mês">'+months.map(m=>`<option value="m:${m}"${T.date==='m:'+m?' selected':''}>${mlab(m)}</option>`).join('')+'</optgroup><optgroup label="Dia">'+days.map(d=>`<option value="d:${d}"${T.date==='d:'+d?' selected':''}>${dmy(d)}</option>`).join('')+'</optgroup>';
+  $('tds').innerHTML='<option value="">Todas as descrições</option>'+o(descs,T.desc);
+  $('tmo').value=T.mod;$('tvl').value=T.val;$('tkd').value=T.kind;$('tig').value=T.ign;
+  $('banklist').innerHTML=allBanks().map(b=>`<option value="${esc(b)}">`).join('');
 }
+
+/* ===== bancos: ordem definida pelo usuário, nomes reais e cores ===== */
+const isSheetName=n=>/^planilha (integral|geral)$/.test(norm(n||''));
+const realFormats=()=>FM.filter(f=>(f.mode||'cols')!=='sheet'&&!isSheetName(f.name));
+function allBanks(){ // bancos/formatos reais: primeiro na ordem da configuração, depois os demais (A-Z)
+  const fo=realFormats().map(f=>f.name);
+  return[...fo,...[...new Set(DATA.map(r=>r.bank).filter(b=>b&&!isSheetName(b)&&!fo.includes(b)))].sort(az)];
+}
+function orderBanks(list){const m=Object.fromEntries(allBanks().map((b,i)=>[b,i]));return[...new Set(list)].sort((a,b)=>(m[a]??999)-(m[b]??999)||az(a,b))}
+function nextColor(){const used=new Set(FM.map(f=>f.color).filter(Boolean));return PAL.find(c=>!used.has(c))||PAL[FM.length%PAL.length]}
+function ensureColors(){let ch=false;FM.forEach(f=>{if(!f.color){f.color=nextColor();ch=true}});if(ch)saveFormats()}
+function bcol(n){const f=FM.find(x=>x.name===n);if(f&&f.color)return f.color;let h=0;for(const ch of String(n||''))h=(h*31+ch.charCodeAt(0))>>>0;return PAL[h%PAL.length]}
 
 /* ===== atualização ===== */
 function setSource(s){
   SRC=s;DATA=s==='user'?userRows():demo();seq=Math.max(0,...DATA.map(r=>r.id));
-  AUTO=true;F.q='';F.bank='';T={cat:'',bank:'',quem:''};$('fq').value='';SEL.clear();SELR.clear();undoRows=[];$('undo').hidden=true;
+  AUTO=true;F.q='';F.bank='';T=T0();$('fq').value='';SEL.clear();SELR.clear();undoRows=[];$('undo').hidden=true;
   refresh();
 }
 function refresh(){
   const ds=DATA.map(r=>r.date).sort();
   if(AUTO){F.d0=ds[0]||'';F.d1=ds[ds.length-1]||'';$('f0').value=F.d0;$('f1').value=F.d1}
-  const banks=[...new Set(DATA.map(r=>r.bank))].sort(az);if(F.bank&&!banks.includes(F.bank))F.bank='';
+  const banks=orderBanks(DATA.map(r=>r.bank).filter(Boolean));if(F.bank&&!banks.includes(F.bank))F.bank='';
   $('fb').innerHTML='<option value="">Todos os bancos/cartões</option>'+banks.map(b=>`<option${b===F.bank?' selected':''}>${esc(b)}</option>`).join('');
   fillT();renderLast();fillRuleSelects();
   $('src').textContent=SRC==='user'?`· seus lançamentos (${DATA.length})`:'· dados fictícios de demonstração (substituídos ao adicionar o primeiro lançamento; não são salvos)';
@@ -662,14 +700,16 @@ function commit(){if(SRC==='user')save();if(DATA.length)$('undo').hidden=true;re
 
 /* ===== gráfico de pizza ===== */
 function arc(r,a0,a1){const x0=r*Math.cos(a0),y0=r*Math.sin(a0),x1=r*Math.cos(a1),y1=r*Math.sin(a1);return`M0 0L${x0} ${y0}A${r} ${r} 0 ${a1-a0>Math.PI?1:0} 1 ${x1} ${y1}Z`}
-function pie(id,rs,sign){
-  const by={};rs.filter(r=>r.val*sign>0).forEach(r=>by[cn(r)]=(by[cn(r)]||0)+Math.abs(r.val));
+function pie(id,rs,sign,grp){
+  const by={};rs.filter(r=>r.val*sign>0).forEach(r=>{const k=grp==='bank'?(r.bank||'Sem banco'):cn(r);by[k]=(by[k]||0)+Math.abs(r.val)});
   let e=Object.entries(by).sort((a,b)=>b[1]-a[1]);const tot=sum(e.map(x=>x[1]));
   if(!tot){$(id).innerHTML='<p class="mut">Sem lançamentos no período.</p>';return}
   if(e.length>8)e=[...e.slice(0,7),['Outras',sum(e.slice(7).map(x=>x[1]))]];
+  const bi=grp==='bank'?Object.fromEntries(allBanks().map((b,i)=>[b,i])):null; // legenda: bancos na ordem configurada, categorias em A-Z
+  e.sort((x,y)=>x[0]==='Outras'?1:y[0]==='Outras'?-1:bi?(bi[x[0]]??999)-(bi[y[0]]??999)||az(x[0],y[0]):az(x[0],y[0]));
   let a=-Math.PI/2;
   const it=e.map(([n,v],i)=>{
-    const f=v/tot,a1=a+f*2*Math.PI,mid=(a+a1)/2,col=n==='Outras'?GRAY:PAL[i%PAL.length],tip=`${n}: ${brl(v)} (${pct(f*100)})`;
+    const f=v/tot,a1=a+f*2*Math.PI,mid=(a+a1)/2,col=n==='Outras'?GRAY:(grp==='bank'?bcol(n):ccol(n)),tip=`${n}: ${brl(v)} (${pct(f*100)})`;
     const d=f>.9999?'M0 -100A100 100 0 1 1 0 100A100 100 0 1 1 0 -100Z':arc(100,a,a1);
     const lab=f>=.07?`<text x="${(62*Math.cos(mid)).toFixed(1)}" y="${(62*Math.sin(mid)).toFixed(1)}">${Math.round(f*100)}%</text>`:'';
     const g=`<g class="sl" data-i="${i}" data-tip="${esc(tip)}" style="--dx:${(7*Math.cos(mid)).toFixed(1)}px;--dy:${(7*Math.sin(mid)).toFixed(1)}px"><path d="${d}" fill="${col}"/>${lab}</g>`;
@@ -684,7 +724,7 @@ function renderCons(){
   const rs=shown(),inc=sum(rs.filter(r=>r.val>0).map(r=>r.val)),out=-sum(rs.filter(r=>r.val<0).map(r=>r.val)),bal=inc-out;
   $('kIn').textContent=brl(inc);$('kOut').textContent=brl(out);$('kBal').textContent=brl(bal);
   $('kBalBox').className='k bal'+(bal<0?' neg':'');
-  pie('pieOut',rs,-1);pie('pieIn',rs,1);
+  pie('pieOut',rs,-1);pie('pieIn',rs,1);pie('pieBank',rs,-1,'bank');
   renderTable();
 }
 function renderTable(){
@@ -705,7 +745,7 @@ function renderTable(){
   const ED=['date','desc','val'],iv=vis.findIndex(c=>c.k==='val'),tot=sum(rs.filter(r=>!exc(r)).map(r=>r.val));
   $('tbl').innerHTML=`<colgroup>${vis.map(c=>`<col data-k="${c.k}" style="width:${W(c.k)}px">`).join('')}</colgroup>
    <thead><tr>${vis.map(c=>`<th data-k="${c.k}"${c.k==='sel'?'':` data-uid="col.${c.k}"`} class="${c.r?'r':''}"${EDITM&&c.k!=='sel'?' draggable="true"':''}>${c.k==='sel'?'<input type="checkbox" id="selAllRows" title="Selecionar todas as linhas visíveis" aria-label="Selecionar todas">':['n','x'].includes(c.k)?LB('col.'+c.k):LB('col.'+c.k)+(SORT.k===c.k?(SORT.d>0?' ▲':' ▼'):'')}<i class="rz" data-k="${c.k}"></i></th>`).join('')}</tr></thead>
-   <tbody>${rs.map((r,i)=>`<tr data-rid="${r.id}" class="${[exc(r)?'ex':'',SELR.has(r.id)?'sel':''].filter(Boolean).join(' ')}">${vis.map(c=>`<td${ED.includes(c.k)?` data-edit="${c.k}" data-id="${r.id}"`:''} class="${[c.r?'r '+(r.val<0?'neg':'pos'):'',ED.includes(c.k)?'ed':''].filter(Boolean).join(' ')}" title="${esc(ED.includes(c.k)&&c.k!=='desc'?'Clique duas vezes para editar':['bank','desc'].includes(c.k)?r[c.k]||'':'')}">${cell(c.k,r,i)}</td>`).join('')}</tr>`).join('')}</tbody>`+
+   <tbody>${rs.map((r,i)=>`<tr data-rid="${r.id}"${r.bank?` style="--bc:${bcol(r.bank)}"`:''} class="${[exc(r)?'ex':'',SELR.has(r.id)?'sel':''].filter(Boolean).join(' ')}">${vis.map(c=>`<td${ED.includes(c.k)?` data-edit="${c.k}" data-id="${r.id}"`:''} class="${[c.r?'r '+(r.val<0?'neg':'pos'):'',ED.includes(c.k)?'ed':''].filter(Boolean).join(' ')}" title="${esc(ED.includes(c.k)&&c.k!=='desc'?'Clique duas vezes para editar':['bank','desc'].includes(c.k)?r[c.k]||'':'')}">${cell(c.k,r,i)}</td>`).join('')}</tr>`).join('')}</tbody>`+
    (iv>=0&&rs.length?`<tfoot><tr>${iv>0?`<td colspan="${iv}">Saldo da seleção${nEx?' (sem os esmaecidos)':''}</td>`:''}<td class="r ${tot<0?'neg':'pos'}">${brl(tot)}</td>${vis.length-iv-1>0?`<td colspan="${vis.length-iv-1}"></td>`:''}</tr></tfoot>`:'');
   const sa=$('selAllRows');if(sa){const n=rs.filter(r=>SELR.has(r.id)).length;sa.checked=rs.length>0&&n===rs.length;sa.indeterminate=n>0&&n<rs.length}
   renderBulk();
@@ -718,7 +758,7 @@ function renderBulk(){
   const n=SELR.size;$('bulk').hidden=!n;if(!n)return;
   $('bulkN').textContent=`${n} ${n===1?'linha selecionada':'linhas selecionadas'}`;
   const o=l=>l.map(x=>`<option>${esc(x)}</option>`).join('');
-  $('bbank').innerHTML='<option value="">Banco…</option>'+o([...new Set([...FM.map(f=>f.name),...DATA.map(r=>r.bank).filter(Boolean)])].sort(az));
+  $('bbank').innerHTML='<option value="">Banco…</option>'+o(allBanks());
   $('bquem').innerHTML='<option value="">Quem…</option>'+o([...new Set([...DATA.map(r=>r.quem).filter(Boolean),'Eu','Ambos'])].sort(az))+'<option value="__none__">— (vazio)</option>';
 }
 function bulk(fn,txt){
@@ -753,7 +793,7 @@ const CATKEY='painel-financeiro-categorias:v1';
 let CEDIT=null,CDEL=null;
 function loadCats(){try{const o=JSON.parse(localStorage.getItem(CATKEY)||'null');if(o&&Array.isArray(o.out)&&Array.isArray(o.inn)){CATS=o.out.slice();CATS_IN_ALL=o.inn.slice();RENC=o.ren||{};if(Array.isArray(o.excl))EXCL=o.excl.slice();return true}}catch(e){}return false}
 function saveCats(){try{localStorage.setItem(CATKEY,JSON.stringify({v:1,out:CATS,inn:CATS_IN_ALL,ren:RENC,excl:EXCL}))}catch(e){}}
-function syncCats(){ALLCATS=[...new Set([...CATS,...CATS_IN_ALL])]}
+function syncCats(){CATS.sort(az);CATS_IN_ALL.sort(az);ALLCATS=[...new Set([...CATS,...CATS_IN_ALL])].sort(az)} // A-Z em qualquer lista
 function fillCatSelects(){
   const o=ALLCATS.map(c=>`<option>${esc(c)}</option>`).join('');
   $('rcat').innerHTML='<option value="">— (não definir)</option>'+o;
@@ -937,7 +977,8 @@ function showHint(){
    `Cabeçalhos esperados — Data: "${f.cData}" · Descrição: "${f.cDesc}" · Valor: "${f.cValor}"${f.cQuem?` · Quem: "${f.cQuem}" (Ambos divide o valor por 2)`:''}${f.inv?' · Sinal do valor invertido.':''}`;
 }
 function renderFmts(){
-  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Formato</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map(f=>{const c=(f.mode||'cols')==='cols',dash='<span class="mut">—</span>';return `<tr><td><b>${esc(f.name)}</b></td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
+  const dash='<span class="mut">—</span>';
+  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Ordem</th><th>Cor</th><th>Formato</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map((f,i)=>{const c=(f.mode||'cols')==='cols';return `<tr><td style="white-space:nowrap"><button class="sec mv" data-fup="${f.id}" title="Subir"${i===0?' disabled':''}>▲</button> <button class="sec mv" data-fdn="${f.id}" title="Descer"${i===FM.length-1?' disabled':''}>▼</button></td><td><input type="color" data-fcol="${f.id}" value="${f.color||'#2563eb'}" title="Cor do banco" aria-label="Cor do banco ${esc(f.name)}"></td><td><b>${esc(f.name)}</b></td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
 }
 const FF=['fname','fcdata','fcdesc','fcval','fcquem','fcbank','fccat'];
 function resetFmtForm(){EDITF=null;FF.forEach(i=>$(i).value='');$('fmode').value='cols';$('finv').checked=false;$('fdec').value='auto';$('fmod').value='';setLbl($('fsave'),LB('btn.fsave'));$('fcancel').hidden=true}
@@ -962,7 +1003,7 @@ function add(){
   if(!res.rows.length){$('msg').textContent=`Nenhuma linha válida no formato "${f.name}" (${MODEL[f.mode||'cols']}). Confira o texto colado, a data e o separador decimal.`;return}
   const wasDemo=SRC==='demo';if(wasDemo)setSource('user');
   res.rows.forEach(r=>{
-    const raw=r.raw||r.desc,bank=r.bank||f.name;
+    const raw=r.raw||r.desc,bank=r.bank||((f.mode||'cols')==='sheet'?'':f.name);
     const row={id:++seq,bank,date:r.date,desc:r.desc,orig:raw.slice(0,200),mod:r.mod||(/\bpix\b/.test(norm(raw))?'Pix':(f.mod||'')),cat:'',val:r.val,kind:r.kind||'',ign:!!r.ign,quem:r.quem||''};
     if(r.faithful){row.cat=r.cat||'';row.mod=r.mod!==undefined?r.mod:row.mod} // planilha e categoria vinda da planilha entram fielmente, sem regras
     else{
@@ -982,7 +1023,7 @@ function add(){
 /* ===== aba Regras ===== */
 function fillRuleSelects(){
   const az2=(a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'});
-  const banks=[...new Set([...FM.map(f=>f.name),...DATA.map(r=>r.bank).filter(Boolean),...CR.map(r=>r.bank).filter(Boolean)])].sort(az2);
+  const banks=orderBanks([...allBanks(),...CR.map(r=>r.bank).filter(Boolean)]);
   const quems=[...new Set([...DATA.map(r=>r.quem).filter(Boolean),...CR.map(r=>r.quem).filter(Boolean),'Eu','Ambos'])].sort(az2);
   const set=(id,html)=>{const v=$(id).value;$(id).innerHTML=html;$(id).value=v};
   const o=l=>l.map(x=>`<option>${esc(x)}</option>`).join('');
@@ -1010,7 +1051,8 @@ function barChart(ms,series,partial){
   return`<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Gráfico de barras agrupadas por mês">${g}</svg><div class="lg">${series.map(s=>`<span><i style="background:${s.col}"></i>${esc(s.name)}</span>`).join('')}</div>`+(partial.length?'<p class="mut sm" style="margin:8px 0 0">* mês em andamento (dados parciais)</p>':'');
 }
 /* ===== comparativo: gráfico de área, tabela de tendências e seletor de período ===== */
-let CPER='all',CTYPE='area',CS=null;
+let CPER='all',CTYPE='area',CGRP='cat',CS=null;
+const gkey=r=>CGRP==='bank'?(r.bank||'Sem banco'):cn(r);
 function areaChart(ms,series,partial){
   const Wd=900,H=380,L=78,T0=18,B=52,R=28,pw=Wd-L-R,ph=H-T0-B,top=nice(Math.max(1,...series.flatMap(s=>s.v))),n=ms.length;
   const X=i=>L+(n>1?pw*i/(n-1):pw/2),Y=v=>T0+ph-v/top*ph;
@@ -1036,12 +1078,14 @@ function renderComp(){
   $('ctype').value=CTYPE;
   const shownM=CPER==='3'?all.slice(-3):CPER==='6'?all.slice(-6):CPER.startsWith('m:')?[CPER.slice(2)]:all;
   let ms=shownM;if(ms.length===1){const i=all.indexOf(ms[0]);if(i>0)ms=[all[i-1],ms[0]]} // um mês só: o gráfico mostra também o anterior
-  const T={};rs.forEach(r=>{const c=T[cn(r)]=T[cn(r)]||{},k=r.date.slice(0,7);c[k]=(c[k]||0)-r.val});
-  const cats=Object.keys(T).sort(az);
+  const T={};rs.forEach(r=>{const g=gkey(r),c=T[g]=T[g]||{},k=r.date.slice(0,7);c[k]=(c[k]||0)-r.val});
+  const cats=CGRP==='bank'?orderBanks(Object.keys(T)):Object.keys(T).sort(az),col=CGRP==='bank'?bcol:ccol;
   [...SEL].forEach(c=>{if(!cats.includes(c))SEL.delete(c)});
   const tot={};cats.forEach(c=>tot[c]=sum(Object.values(T[c])));
-  $('catList').innerHTML=cats.map(c=>`<label><input type="checkbox" data-c="${esc(c)}"${SEL.has(c)?' checked':''}><i style="background:${PAL[cats.indexOf(c)%PAL.length]}"></i>${esc(c)} <span class="mut sm">${brl(tot[c])}</span></label>`).join('');
-  CS={T,cats,all,ms,shownM,fm};
+  $('catList').innerHTML=cats.map(c=>`<label><input type="checkbox" data-c="${esc(c)}"${SEL.has(c)?' checked':''}><i style="background:${col(c)}"></i>${esc(c)} <span class="mut sm">${brl(tot[c])}</span></label>`).join('');
+  CS={T,cats,all,ms,shownM,fm,col};
+  $('catNote').textContent=CGRP==='bank'?'Sem nenhum banco marcado, o gráfico mostra o total geral de despesas. Os bancos aparecem na ordem definida na aba de configuração, com a cor de cada um.':'Sem nenhuma marcada, o gráfico mostra o total geral de despesas. As categorias aparecem em ordem alfabética.';
+  $('cgrp').value=CGRP;
   drawChart();drawTrend();
 }
 function drawChart(){
@@ -1049,7 +1093,7 @@ function drawChart(){
   const {T,cats,ms,fm}=CS;
   if(!ms.length){$('barChart').innerHTML='<p class="mut">Sem despesas no período selecionado.</p>';return}
   const val=c=>ms.map(m=>c===null?cats.reduce((s,k)=>s+(T[k][m]||0),0):(T[c][m]||0));
-  const series=SEL.size?cats.filter(c=>SEL.has(c)).map(c=>({name:c,col:PAL[cats.indexOf(c)%PAL.length],v:val(c)})):[{name:LB('comp.total'),col:PAL[0],v:val(null)}];
+  const series=SEL.size?cats.filter(c=>SEL.has(c)).map(c=>({name:c,col:CS.col(c),v:val(c)})):[{name:LB('comp.total'),col:PAL[0],v:val(null)}];
   const partial=ms.filter(m=>!fm.includes(m));
   $('barChart').innerHTML=CTYPE==='bars'?barChart(ms,series,partial):areaChart(ms,series,partial);
 }
@@ -1060,7 +1104,7 @@ function drawTrend(){
   const totO={};all.forEach(m=>{totO[m]=cats.reduce((s,c)=>s+(T[c][m]||0),0)});
   const arrow=(p,c)=>{if(p===undefined)return'';if(c>p)return`<small class="neg">▲ ${p>0?pct((c-p)/p*100):'novo'}</small>`;if(c<p)return`<small class="pos">▼ ${pct((p-c)/p*100)}</small>`;return'<small class="mut">=</small>'};
   const cell=(o,m)=>{const i=all.indexOf(m),cur=o[m]||0,prev=i>0?(o[all[i-1]]||0):undefined;return cur||prev?`${brl(cur)}${arrow(prev,cur)}`:'<span class="mut">—</span>'};
-  $('ctab').innerHTML=`<table class="cmp" style="width:100%;table-layout:auto"><thead><tr><th data-uid="comp.catcol">${LB('comp.catcol')}</th>${shownM.map(m=>`<th class="r">${mlab(m)}${fm.includes(m)?'':'*'}</th>`).join('')}</tr></thead><tbody>${cats.map(c=>`<tr><td>${esc(c)}</td>${shownM.map(m=>`<td class="r">${cell(T[c],m)}</td>`).join('')}</tr>`).join('')}</tbody><tfoot><tr><td data-uid="comp.total">${LB('comp.total')}</td>${shownM.map(m=>`<td class="r">${cell(totO,m)}</td>`).join('')}</tr></tfoot></table>`+(shownM.some(m=>!fm.includes(m))?'<p class="mut sm" style="margin:8px 10px">* mês em andamento (dados parciais). ▲ vermelho: gastou mais que no mês anterior · ▼ verde: gastou menos.</p>':'<p class="mut sm" style="margin:8px 10px">▲ vermelho: gastou mais que no mês imediatamente anterior · ▼ verde: gastou menos.</p>');
+  $('ctab').innerHTML=`<table class="cmp" style="width:100%;table-layout:auto"><thead><tr>${CGRP==='bank'?'<th>Banco</th>':`<th data-uid="comp.catcol">${LB('comp.catcol')}</th>`}${shownM.map(m=>`<th class="r">${mlab(m)}${fm.includes(m)?'':'*'}</th>`).join('')}</tr></thead><tbody>${cats.map(c=>`<tr><td>${esc(c)}</td>${shownM.map(m=>`<td class="r">${cell(T[c],m)}</td>`).join('')}</tr>`).join('')}</tbody><tfoot><tr><td data-uid="comp.total">${LB('comp.total')}</td>${shownM.map(m=>`<td class="r">${cell(totO,m)}</td>`).join('')}</tr></tfoot></table>`+(shownM.some(m=>!fm.includes(m))?'<p class="mut sm" style="margin:8px 10px">* mês em andamento (dados parciais). ▲ vermelho: gastou mais que no mês anterior · ▼ verde: gastou menos.</p>':'<p class="mut sm" style="margin:8px 10px">▲ vermelho: gastou mais que no mês imediatamente anterior · ▼ verde: gastou menos.</p>');
 }
 
 /* ===== recorrência, volume e dicas ===== */
@@ -1224,16 +1268,20 @@ $('fsave').onclick=()=>{
   if(!f.name){$('fmsg').textContent='Informe o nome do formato.';return}
   if(f.mode==='cols'&&(!f.cData||!f.cDesc||!f.cValor)){$('fmsg').textContent='No modo "Colunas com cabeçalho", informe os cabeçalhos de Data, Descrição e Valor.';return}
   if(FM.some(x=>norm(x.name)===norm(f.name)&&x.id!==EDITF)){$('fmsg').textContent='Já existe um formato com esse nome.';return}
-  if(EDITF){const i=FM.findIndex(x=>x.id===EDITF);f.id=EDITF;FM[i]=f;$('fmsg').textContent='Formato atualizado.'}
-  else{f.id=Date.now();FM.push(f);$('fmsg').textContent='Formato salvo.'}
+  if(EDITF){const i=FM.findIndex(x=>x.id===EDITF);f.id=EDITF;f.color=FM[i].color||nextColor();FM[i]=f;$('fmsg').textContent='Formato atualizado.'}
+  else{f.id=Date.now();f.color=nextColor();FM.push(f);$('fmsg').textContent='Formato salvo.'}
   saveFormats();$('fmt').value=String(f.id);resetFmtForm();fillFmt();renderFmts();fillRuleSelects();renderLast();
 };
+$('ftbl').addEventListener('change',e=>{const c=e.target.closest('[data-fcol]');if(!c)return;const f=FM.find(x=>String(x.id)===c.dataset.fcol);if(f){f.color=c.value;saveFormats();refresh();$('fmsg').textContent=`Cor de "${f.name}" atualizada na tabela e nos gráficos.`}});
 $('fcancel').onclick=()=>{resetFmtForm();$('fmsg').textContent='Edição cancelada.'};
 $('ftbl').addEventListener('click',e=>{
   const ed=e.target.closest('[data-fed]'),dl_=e.target.closest('[data-fdel]');
   if(ed){const f=FM.find(x=>String(x.id)===ed.dataset.fed);if(!f)return;EDITF=f.id;
     $('fname').value=f.name;$('fmode').value=f.mode||'cols';$('fcdata').value=f.cData||'';$('fcdesc').value=f.cDesc||'';$('fcval').value=f.cValor||'';$('fcquem').value=f.cQuem||'';$('fcbank').value=f.cBank||'';$('fccat').value=f.cCat||'';
     $('finv').checked=!!f.inv;$('fdec').value=f.dec||'auto';$('fmod').value=f.mod||'';$('fsave').textContent='Atualizar formato';$('fcancel').hidden=false;$('fmsg').textContent=`Editando "${f.name}".`;$('fname').focus()}
+  const up=e.target.closest('[data-fup]'),dn=e.target.closest('[data-fdn]');
+  if(up||dn){const id=(up||dn).dataset.fup||(up||dn).dataset.fdn,i=FM.findIndex(x=>String(x.id)===id),j=up?i-1:i+1;
+    if(i>=0&&j>=0&&j<FM.length){[FM[i],FM[j]]=[FM[j],FM[i]];saveFormats();fillFmt();refresh();$('fmsg').textContent='Ordem atualizada: vale no seletor de formatos, nos filtros e em todas as listas de bancos.'}return}
   if(dl_){FM=FM.filter(x=>String(x.id)!==dl_.dataset.fdel);if(EDITF&&!FM.some(x=>x.id===EDITF))resetFmtForm();saveFormats();fillFmt();renderFmts();fillRuleSelects();renderLast();$('fmsg').textContent='Formato excluído.'}
 });
 
@@ -1267,10 +1315,8 @@ $('fb').onchange=e=>{F.bank=e.target.value;render()};
 $('fq').oninput=e=>{F.q=e.target.value;render()};
 $('ign').onchange=e=>{UI.ex=e.target.checked;saveUI();render()};
 $('fx').onclick=()=>{AUTO=true;F.q='';F.bank='';$('fq').value='';refresh()};
-$('tc').onchange=e=>{T.cat=e.target.value;renderTable()};
-$('tb').onchange=e=>{T.bank=e.target.value;renderTable()};
-$('tq').onchange=e=>{T.quem=e.target.value;renderTable()};
-$('tx').onclick=()=>{T={cat:'',bank:'',quem:''};fillT();renderTable()};
+[['tc','cat'],['tb','bank'],['tdt','date'],['tds','desc'],['tmo','mod'],['tvl','val'],['tkd','kind'],['tig','ign']].forEach(([id,k])=>{$(id).onchange=e=>{T[k]=e.target.value;renderTable()}});
+$('tx').onclick=()=>{T=T0();fillT();renderTable()};
 
 /* ===== tabela: colunas, ordenação, seleção e edição ===== */
 $('gear').onclick=e=>{e.stopPropagation();$('menu').hidden=!$('menu').hidden};
@@ -1336,8 +1382,9 @@ $('bclear').onclick=()=>{SELR.clear();$('bmsg').textContent='';renderTable()};
 /* ===== comparativo e tooltips ===== */
 $('catList').addEventListener('change',e=>{const c=e.target.dataset.c;if(c===undefined)return;e.target.checked?SEL.add(c):SEL.delete(c);drawChart()});
 $('cper').onchange=e=>{CPER=e.target.value;renderComp()};
+$('cgrp').onchange=e=>{CGRP=e.target.value;SEL.clear();renderComp()};
 $('ctype').onchange=e=>{CTYPE=e.target.value;drawChart()};
-$('selAll').onclick=()=>{base().filter(r=>r.val<0).forEach(r=>SEL.add(r.cat));renderComp()};
+$('selAll').onclick=()=>{base().filter(r=>r.val<0).forEach(r=>SEL.add(gkey(r)));renderComp()};
 $('selNone').onclick=()=>{SEL.clear();renderComp()};
 document.addEventListener('mouseover',e=>{const el=e.target.closest('.pie [data-i]');document.querySelectorAll('.pie').forEach(p=>{p.classList.remove('dim');p.querySelectorAll('.on').forEach(x=>x.classList.remove('on'))});
   if(el){const p=el.closest('.pie');p.classList.add('dim');p.querySelectorAll(`[data-i="${el.dataset.i}"]`).forEach(x=>x.classList.add('on'))}});
@@ -1409,10 +1456,14 @@ document.addEventListener('mouseup',()=>{if(DB&&!DB.classList.contains('dragging
 $('md').value=new Date().toISOString().slice(0,10);
 $('mmod').innerHTML=MODS.map(m=>`<option value="${m}">${m||'Modalidade (—)'}</option>`).join('');
 $('ign').checked=UI.ex;
+$('tmo').innerHTML='<option value="">Todas as modalidades</option>'+MODS.filter(Boolean).map(m=>`<option>${m}</option>`).join('')+'<option value="__none__">(sem modalidade)</option>';
+$('tvl').innerHTML='<option value="">Todos os valores</option>'+Object.entries(VR).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+$('tkd').innerHTML='<option value="">Todos os tipos</option><option value="fixa">Fixa/Recorrente</option><option value="variavel">Variável</option><option value="__none__">(sem tipo)</option>';
+$('tig').innerHTML='<option value="">Todos</option><option value="sim">Sim (ignorados)</option><option value="nao">Não (contam)</option>';
 if(!loadRules()){CR=SEED.map((r,i)=>({...r,id:i+1}));saveRules()}
 if(!loadFormats()){FM=SEED_FMT.map((f,i)=>({...f,id:i+1}));saveFormats()}else migrateFormats();
-if(!loadCats())saveCats();
-syncCats();fillCatSelects();renderCats();
+ensureColors();
+loadCats();syncCats();saveCats();fillCatSelects();renderCats();
 loadIFC();Object.assign(DEF,DYNDEF);COLS.forEach(c=>{DEF['col.'+c.k]=c.t});initUid();initBlocks();applyLabels();applyLayout();moveFilters();
 buildMenu();fillFmt();
 setSource(userRows().length?'user':'demo');setTab('cons');
