@@ -72,6 +72,16 @@ input[type=text],input[type=number]{border:1px solid var(--bd);border-radius:8px
 td input[type=date],td select{width:100%;padding:3px 4px;font-size:.85rem;border-radius:6px}
 .xbtn{background:none;border:0;color:var(--mut);cursor:pointer;font-size:1rem}.xbtn:hover{color:var(--neg)}
 tr.ex td{opacity:.5}
+.adv{flex:1 1 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 16px;padding:12px;margin-top:4px;border:1px dashed var(--ac);border-radius:10px;background:var(--card);animation:advdrop .18s ease}
+.adv .advt{grid-column:1/-1;margin:0}
+.adv label{display:flex;flex-direction:column;align-items:stretch;gap:4px;font-size:.82rem;color:var(--mut)}
+.adv label select{width:100%;max-width:none}
+.adv label:has(input[type=checkbox]){flex-direction:row;align-items:center;color:var(--tx);align-self:end}
+@keyframes advdrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.badge{background:var(--ac);color:#fff;border-radius:999px;padding:0 7px;font-size:.72rem;margin-left:4px}
+.chev{display:inline-block;margin-left:4px;font-style:normal;transition:transform .15s}
+#advBtn[aria-expanded="true"]{background:var(--acb);border-color:var(--ac);color:var(--ac)}
+#advBtn[aria-expanded="true"] .chev{transform:rotate(180deg)}
 body.locked>header,body.locked>.navw,body.locked>main{display:none!important}
 button.ic{font-size:1.15rem;line-height:1;padding:7px 10px}
 .syncchip{font-size:.8rem;border:1px solid var(--bd);border-radius:999px;padding:3px 10px;background:var(--card);white-space:nowrap}
@@ -83,7 +93,7 @@ button.ic{font-size:1.15rem;line-height:1;padding:7px 10px}
 .lockbox{text-align:center}.lockbox label{display:flex;flex-direction:column;gap:4px;text-align:left;font-size:.85rem;color:var(--mut);margin:10px 0}
 .lockbox input{width:100%;margin:6px 0 10px;text-align:center;font-size:1.4rem;letter-spacing:.5em;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
 .lockbox select{width:100%}.lockic{font-size:2.2rem}.mt{font-size:1.15rem;font-weight:700;margin:4px 0 10px}
-.modal{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.modal{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
 .mbox{max-width:520px;max-height:92vh;overflow:auto}
 .mbox pre{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:10px;font-size:.78rem;overflow:auto;white-space:pre-wrap}
 .pmenu{min-width:230px}.pmenu hr{border:0;border-top:1px solid var(--bd);margin:8px 0}
@@ -188,7 +198,9 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
     <label class="row sm">Até <input type="date" id="f1"></label>
     <input type="search" id="fq" placeholder="Pesquisar por descrição, categoria ou banco...">
     <label class="row sm"><input type="checkbox" id="ign" checked> Ignorar fatura e investimentos nas análises</label>
+    <button class="sec adv-btn" id="advBtn" aria-expanded="false" aria-controls="advFilters" title="Mostrar ou ocultar os filtros avançados">🎚️ + Filtros <span class="badge" id="advN" hidden>0</span><i class="chev">▾</i></button>
     <button class="sec" id="fx">Limpar filtros</button>
+    <div class="adv" id="advFilters" hidden><div class="lbl advt" data-uid="l.cons.adv">Filtros avançados</div></div>
   </div>
   <div class="cards">
     <div class="k in"><span>Total de entradas</span><b id="kIn"></b></div>
@@ -617,6 +629,11 @@ alter table public.painel_dados enable row level security;
 drop policy if exists "painel_anon_all" on public.painel_dados;
 create policy "painel_anon_all" on public.painel_dados
   for all to anon using (true) with check (true);`;
+const MEM={};let MEMONLY=false; // se o navegador bloquear o LocalStorage, os dados ficam só na memória desta sessão
+function lsGet(k){if(k in MEM)return MEM[k];try{const v=localStorage.getItem(k);return v===undefined?null:v}catch(e){MEMONLY=true;return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v);delete MEM[k]}catch(e){MEMONLY=true;MEM[k]=String(v)}}
+function lsDel(k){delete MEM[k];try{localStorage.removeItem(k)}catch(e){MEMONLY=true}}
+function lsKeys(){const o=new Set(Object.keys(MEM));try{for(let i=0;i<localStorage.length;i++)o.add(localStorage.key(i))}catch(e){MEMONLY=true}return[...o]}
 let PID=null,SESSION=null,PROFS={v:1,active:null,profiles:[]},PMODE='new',PDEL=false;
 const SYNC={on:false,state:'local',msg:'',dirty:new Set(),ver:{},revs:{},busy:false,timer:null,retry:null,conflict:[],last:'',url:'',key:'',booted:false,poll:null};
 const nowHM=()=>new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -624,8 +641,8 @@ function reloadPage(){location.reload()}
 
 /* --- armazenamento local por perfil + fila de envio --- */
 const nsKey=n=>`pf:${PID}:${n}`;
-const rawLocal=n=>{try{return localStorage.getItem(nsKey(n))}catch(e){return null}};
-const putLocal=(n,str)=>{try{localStorage.setItem(nsKey(n),str)}catch(e){}};
+const rawLocal=n=>{try{return lsGet(nsKey(n))}catch(e){return null}};
+const putLocal=(n,str)=>{try{lsSet(nsKey(n),str)}catch(e){}};
 const kvGet=n=>PID?rawLocal(n):null;
 function kvSet(n,obj){
   if(!PID)return;
@@ -634,14 +651,14 @@ function kvSet(n,obj){
   putLocal(n,str);
   if(CLOUDKEYS.includes(n)){SYNC.dirty.add(n);SYNC.ver[n]=(SYNC.ver[n]||0)+1;persistMeta();schedulePush()}
 }
-function persistMeta(){try{localStorage.setItem(nsKey('sync'),JSON.stringify({dirty:[...SYNC.dirty],revs:SYNC.revs}))}catch(e){}}
-function loadMeta(){try{const o=JSON.parse(localStorage.getItem(nsKey('sync'))||'null');SYNC.dirty=new Set(o&&o.dirty||[]);SYNC.revs=o&&o.revs||{}}catch(e){SYNC.dirty=new Set();SYNC.revs={}}}
+function persistMeta(){try{lsSet(nsKey('sync'),JSON.stringify({dirty:[...SYNC.dirty],revs:SYNC.revs}))}catch(e){}}
+function loadMeta(){try{const o=JSON.parse(lsGet(nsKey('sync'))||'null');SYNC.dirty=new Set(o&&o.dirty||[]);SYNC.revs=o&&o.revs||{}}catch(e){SYNC.dirty=new Set();SYNC.revs={}}}
 function adoptLegacy(){ // dados de versões sem perfil passam para o primeiro perfil que entrar
-  if(localStorage.getItem('painel-financeiro-legado')==='1')return;
+  if(lsGet('painel-financeiro-legado')==='1')return;
   let moved=false;
-  for(const[n,k] of Object.entries(LEGACY)){const v=localStorage.getItem(k);if(v!==null&&rawLocal(n)===null){putLocal(n,v);moved=true;if(CLOUDKEYS.includes(n))SYNC.dirty.add(n)}localStorage.removeItem(k)}
+  for(const[n,k] of Object.entries(LEGACY)){const v=lsGet(k);if(v!==null&&rawLocal(n)===null){putLocal(n,v);moved=true;if(CLOUDKEYS.includes(n))SYNC.dirty.add(n)}lsDel(k)}
   if(moved)persistMeta();
-  localStorage.setItem('painel-financeiro-legado','1');
+  lsSet('painel-financeiro-legado','1');
 }
 
 /* --- senha de 4 dígitos: PBKDF2 + AES-GCM (quando o navegador oferece WebCrypto) --- */
@@ -665,16 +682,16 @@ async function openProfile(p,pin){ // {cred,aes} ou null (senha errada)
   if(p.enc){if(!SECURE)return null;const k=await deriveKeys(pin,unb64(p.salt));if(k.hash!==p.hash)return null;try{return{cred:await unseal(k.aes,p.cred),aes:k.aes}}catch(e){return null}}
   return weakHash(pin+p.salt)===p.hash?{cred:plainDec(p.cred.plain),aes:null}:null;
 }
-function loadProfs(){try{const o=JSON.parse(localStorage.getItem(PROFKEY)||'null');if(o&&Array.isArray(o.profiles))PROFS=o}catch(e){}}
-const saveProfs=()=>{try{localStorage.setItem(PROFKEY,JSON.stringify(PROFS))}catch(e){}};
-const lockState=id=>{try{return JSON.parse(localStorage.getItem(`pf:${id}:lock`)||'{}')}catch(e){return{}}};
-const saveLock=(id,o)=>{try{localStorage.setItem(`pf:${id}:lock`,JSON.stringify(o))}catch(e){}};
+function loadProfs(){try{const o=JSON.parse(lsGet(PROFKEY)||'null');if(o&&Array.isArray(o.profiles))PROFS=o}catch(e){}}
+const saveProfs=()=>{try{lsSet(PROFKEY,JSON.stringify(PROFS))}catch(e){}};
+const lockState=id=>{try{return JSON.parse(lsGet(`pf:${id}:lock`)||'{}')}catch(e){return{}}};
+const saveLock=(id,o)=>{try{lsSet(`pf:${id}:lock`,JSON.stringify(o))}catch(e){}};
 
 /* --- cliente do Supabase (PostgREST) --- */
 const normUrl=u=>(u||'').trim().replace(/\/+$/,'').replace(/\/rest\/v1$/,'');
 async function sbWith(url,key,path,opt){
   const ctrl=typeof AbortController!=='undefined'?new AbortController():null,to=setTimeout(()=>ctrl&&ctrl.abort(),10000);
-  try{return await fetch(url+'/rest/v1/'+path,{...(opt||{}),signal:ctrl&&ctrl.signal,headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json',...((opt&&opt.headers)||{})}})}
+  try{return await fetch(url+'/rest/v1/'+path,{...(opt||{}),signal:ctrl&&ctrl.signal,headers:{apikey:key,...(/^eyJ/.test(key)?{Authorization:'Bearer '+key}:{}),'Content-Type':'application/json',...((opt&&opt.headers)||{})}})}
   finally{clearTimeout(to)}
 }
 const sb=(path,opt)=>sbWith(SYNC.url,SYNC.key,path,opt);
@@ -812,11 +829,18 @@ async function tryUnlock(){
 }
 async function enter(p,r){
   if(SYNC.entering)return;SYNC.entering=true;
-  PID=p.id;SESSION={profile:p,aes:r.aes,cred:r.cred};
-  SYNC.url=normUrl(r.cred.url);SYNC.key=r.cred.key||'';SYNC.on=!!(SYNC.url&&SYNC.key);
-  loadMeta();adoptLegacy();
-  $('lockMsg').textContent=SYNC.on?'Sincronizando com o Supabase…':'Abrindo…';
-  await startApp();
+  try{
+    PID=p.id;SESSION={profile:p,aes:r.aes,cred:r.cred};
+    SYNC.url=normUrl(r.cred.url);SYNC.key=r.cred.key||'';SYNC.on=!!(SYNC.url&&SYNC.key);
+    loadMeta();adoptLegacy();
+    $('lockMsg').textContent=SYNC.on?'Sincronizando com o Supabase…':'Abrindo…';
+    await startApp();
+    if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: use a nuvem para não perder os dados ao fechar.');
+  }catch(e){
+    SYNC.entering=false;document.body.classList.add('locked');$('lock').hidden=false;
+    const m='Erro ao abrir o painel: '+(e&&e.message||e);
+    $('lockMsg').textContent=m;$('pmMsg').textContent=m;$('profModal').hidden=false;
+  }
 }
 
 /* --- cadastro de perfis (modal) e menu do ícone 👤 --- */
@@ -826,7 +850,7 @@ function openProfModal(mode){
   $('pmName').value=mode==='edit'?SESSION.profile.name:'';$('pmName').disabled=mode==='edit';
   $('pmPin').value='';$('pmPinL').hidden=mode==='edit';
   $('pmUrl').value=mode==='edit'?SESSION.cred.url||'':'';$('pmKey').value=mode==='edit'?SESSION.cred.key||'':'';
-  $('pmMsg').textContent=SECURE?'':'Este navegador/ambiente não oferece criptografia forte (WebCrypto): as credenciais ficam apenas ofuscadas neste aparelho.';
+  $('pmMsg').textContent=(SECURE?'':'Este navegador/ambiente não oferece criptografia forte (WebCrypto): as credenciais ficam apenas ofuscadas neste aparelho. ')+(MEMONLY?'O navegador bloqueou o armazenamento local: o perfil só vale nesta sessão.':'');
   $('pmCancel').hidden=!SESSION&&!PROFS.profiles.length;
   $('pmSql').textContent=SQL_SETUP;
   $('profModal').hidden=false;try{($(mode==='edit'?'pmUrl':'pmName')).focus()}catch(e){}
@@ -843,8 +867,15 @@ function readProfForm(){
   return{name,pin,url,key};
 }
 async function saveProfForm(){
+  const b=$('pmSave');if(b.disabled)return;b.disabled=true;
+  try{await saveProfFormInner()}
+  catch(e){$('profModal').hidden=false;$('pmMsg').textContent='Não foi possível concluir: '+(e&&e.message||e)}
+  finally{b.disabled=false}
+}
+async function saveProfFormInner(){
   const f=readProfForm();if(f.err){$('pmMsg').textContent=f.err;return}
   const cred={url:f.url,key:f.key};
+  $('pmMsg').textContent=PMODE==='new'?'Criando o perfil…':'Salvando…';
   if(PMODE==='new'){
     const{p,aes}=await makeProfile(f.name,f.pin,cred);
     PROFS.profiles.push(p);PROFS.active=p.id;saveProfs();$('profModal').hidden=true;
@@ -873,7 +904,7 @@ function renderProfMenu(){
 function deleteCurrentProfile(){
   const id=SESSION.profile.id;
   PROFS.profiles=PROFS.profiles.filter(p=>p.id!==id);PROFS.active=PROFS.profiles[0]?PROFS.profiles[0].id:null;saveProfs();
-  for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith(`pf:${id}:`))localStorage.removeItem(k)}
+  lsKeys().forEach(k=>{if(k.startsWith(`pf:${id}:`))lsDel(k)});
   reloadPage();
 }
 
@@ -1009,7 +1040,11 @@ function activeFilters(){ // lista legível dos filtros acionados
   return a;
 }
 const flt=()=>{const a=activeFilters();return a.length?`Análise restrita a: ${a.join(' · ')}`:'Sem filtros ativos: todos os lançamentos'};
+let ADV=false;
+function setAdv(open){ADV=open;$('advFilters').hidden=!open;$('advBtn').setAttribute('aria-expanded',open);$('advBtn').classList.toggle('on',open)}
+function updateAdv(){const n=['desc','mod','val','kind','ign'].filter(k=>F[k]).length,b=$('advN');b.hidden=!n;b.textContent=n;$('advBtn').title=n?`Filtros avançados: ${n} ativo(s)`:'Mostrar ou ocultar os filtros avançados'}
 function updateBanner(){ // aviso visível quando algum filtro está acionado
+  updateAdv();
   const a=activeFilters(),b=$('fbanner'),on=a.length&&['cons','comp','ins','tips','audit'].includes(TAB);
   b.hidden=!on;if(!on)return;
   b.innerHTML=`<b data-uid="banner.title">${LB('banner.title')}</b> ${a.map(x=>`<span class="chip2">${esc(x)}</span>`).join(' ')} <button class="sec" id="fbClear">${LB('btn.fx')}</button>`;
@@ -1026,7 +1061,10 @@ function moveFilters(){ // filtros unificados: período, busca e todos os dropdo
   if(!f||!q)return;
   f.classList.remove('card');f.classList.add('fbar');f.removeAttribute('data-bid');
   q.parentElement.insertBefore(f,q);
-  ['tdt','tc','tb','tds','tmo','tvl','tkd','tig'].forEach(id=>f.insertBefore($(id).closest('label'),$('fq')));
+  const adv=$('advFilters'),L=id=>$(id).closest('label');
+  ['tb','tc'].forEach(id=>f.insertBefore(L(id),$('fq')));                         // sempre visíveis: período, Banco, Categoria e busca
+  ['tdt','tds','tmo','tvl','tkd','tig'].forEach(id=>adv.appendChild(L(id)));      // gaveta "+ Filtros": os demais filtros
+  adv.appendChild($('ign').closest('label'));
   q.remove();
 }
 function relocate(){ // painel de entrada e configurações ganham abas próprias (IDs estruturais preservados)
@@ -1680,7 +1718,7 @@ $('v-audit').addEventListener('click',e=>{
   const dis=e.target.closest('[data-adis]'),rest=e.target.closest('[data-arest]'),view=e.target.closest('[data-aview]');
   if(dis){AUD.dismissed.push(dis.dataset.adis);saveAUD();renderAudit()}
   else if(rest){AUD.dismissed=AUD.dismissed.filter(k=>k!==rest.dataset.arest);saveAUD();renderAudit()}
-  else if(view){const m=AUDMAP[view.dataset.aview];if(!m)return;F=F0();AUTO=false;F.d0=F.d1=m.date;F.desc=m.desc;fillT();setTab('cons')}
+  else if(view){const m=AUDMAP[view.dataset.aview];if(!m)return;F=F0();AUTO=false;F.d0=F.d1=m.date;F.desc=m.desc;fillT();setAdv(true);setTab('cons')}
   else if(e.target.closest('#audRestore')){AUD.dismissed=[];saveAUD();renderAudit()}
 });
 $('audShow').onchange=e=>{AUDSHOW=e.target.checked;renderAudit()};
@@ -1770,6 +1808,7 @@ $('tdt').onchange=e=>{
 $('fq').oninput=e=>{F.q=e.target.value;render()};
 $('ign').onchange=e=>{UI.ex=e.target.checked;saveUI();render()};
 $('fx').onclick=clearFilters;
+$('advBtn').onclick=()=>setAdv(!ADV);
 $('fbanner').addEventListener('click',e=>{if(e.target.closest('#fbClear'))clearFilters()});
 [['tc','cat'],['tb','bank'],['tds','desc'],['tmo','mod'],['tvl','val'],['tkd','kind'],['tig','ign']].forEach(([id,k])=>{$(id).onchange=e=>{F[k]=e.target.value;filtersChanged()}});
 
@@ -1915,7 +1954,8 @@ $('lockInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
 $('lockProf').onchange=()=>{$('lockInput').value='';$('lockMsg').textContent='';try{$('lockInput').focus()}catch(e){}};
 $('lockNew').onclick=()=>openProfModal('new');
 $('lockSetupBtn').onclick=()=>openProfModal('new');
-$('pmSave').onclick=saveProfForm;$('pmTest').onclick=testProfForm;
+$('pmSave').onclick=saveProfForm;
+$('profModal').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')saveProfForm()});$('pmTest').onclick=testProfForm;
 $('pmCancel').onclick=()=>{$('profModal').hidden=true};
 $('pmPin').oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)};
 $('pmCopy').onclick=async()=>{try{await navigator.clipboard.writeText(SQL_SETUP);$('pmMsg').textContent='SQL copiado. Cole no SQL Editor do Supabase e execute.'}catch(e){$('pmMsg').textContent='Não foi possível copiar: selecione o texto do SQL manualmente.'}};
