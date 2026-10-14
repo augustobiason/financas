@@ -72,6 +72,35 @@ input[type=text],input[type=number]{border:1px solid var(--bd);border-radius:8px
 td input[type=date],td select{width:100%;padding:3px 4px;font-size:.85rem;border-radius:6px}
 .xbtn{background:none;border:0;color:var(--mut);cursor:pointer;font-size:1rem}.xbtn:hover{color:var(--neg)}
 tr.ex td{opacity:.5}
+body.locked>header,body.locked>.navw,body.locked>main{display:none!important}
+button.ic{font-size:1.15rem;line-height:1;padding:7px 10px}
+.syncchip{font-size:.8rem;border:1px solid var(--bd);border-radius:999px;padding:3px 10px;background:var(--card);white-space:nowrap}
+.syncchip.ok{border-color:var(--pos);color:var(--pos)}.syncchip.offline,.syncchip.error,.syncchip.conflict{border-color:var(--neg);color:var(--neg);background:var(--negb)}
+.syncalert{background:var(--negb);border:1px solid var(--neg);border-radius:10px;padding:8px 12px;margin:0 0 12px;font-size:.9rem;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.lock{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
+.lock[hidden],.modal[hidden],.toast[hidden]{display:none}
+.lockbox,.mbox{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:22px;max-width:440px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.lockbox{text-align:center}.lockbox label{display:flex;flex-direction:column;gap:4px;text-align:left;font-size:.85rem;color:var(--mut);margin:10px 0}
+.lockbox input{width:100%;margin:6px 0 10px;text-align:center;font-size:1.4rem;letter-spacing:.5em;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+.lockbox select{width:100%}.lockic{font-size:2.2rem}.mt{font-size:1.15rem;font-weight:700;margin:4px 0 10px}
+.modal{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.mbox{max-width:520px;max-height:92vh;overflow:auto}
+.mbox pre{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:10px;font-size:.78rem;overflow:auto;white-space:pre-wrap}
+.pmenu{min-width:230px}.pmenu hr{border:0;border-top:1px solid var(--bd);margin:8px 0}
+.pmi{display:block;width:100%;text-align:left;margin:0 0 4px}.pmi.on{border-color:var(--ac);color:var(--ac);font-weight:700}.pmi.danger{background:var(--neg);color:#fff;border-color:var(--neg)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:120;background:#111827;color:#fff;padding:10px 16px;border-radius:10px;font-size:.9rem;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.fbanner{background:var(--warnb);border:1px solid var(--warn);border-radius:10px;padding:8px 12px;margin:0 0 12px;font-size:.9rem;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.chip2{background:var(--card);border:1px solid var(--warn);border-radius:999px;padding:2px 10px;font-size:.82rem}
+.subnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.subnav button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 16px;border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+.subnav button[aria-pressed="true"]{background:var(--acb);border-color:var(--ac);color:var(--ac)}
+#cfgBtn[aria-pressed="true"]{background:var(--ac);border-color:var(--ac);color:#fff}
+.dupw{cursor:help}
+.aud{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;margin-bottom:8px}
+.aud.off{opacity:.5}.aud .acts{display:flex;gap:6px;flex:none}
+.atag{display:inline-block;background:var(--warnb);color:var(--warn);border-radius:6px;padding:1px 8px;font-size:.78rem;font-weight:700}
+.lb2 small{display:block;font-size:.72rem;color:var(--mut)}
+.lb2{gap:4px;min-width:170px}
 #tbl tbody tr[style*="--bc"] td{background:color-mix(in srgb,var(--bc) 11%,transparent)}
 #tbl tbody tr[style*="--bc"] td:first-child{box-shadow:inset 4px 0 0 var(--bc)}
 #tbl tbody tr.sel td{background:var(--acb)}
@@ -105,21 +134,23 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 .rform label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--mut)}.rform input,.rform select{width:100%}
 </style>
 </head>
-<body>
+<body class="locked">
 <header class="top">
   <div><b>Painel Financeiro</b> <span class="mut sm" id="src"></span></div>
-  <div class="row"><button class="sec" id="editReset" hidden>Restaurar interface padrão</button><button class="sec" id="editToggle" aria-pressed="false">✎ Modo de Edição</button></div>
+  <div class="row"><span class="syncchip local" id="syncChip">💾 Local</span><button class="sec" id="editReset" hidden>Restaurar interface padrão</button><button class="sec ic" id="cfgBtn" aria-pressed="false" title="Configurações" aria-label="Configurações">⚙️</button><button class="sec ic" id="editToggle" aria-pressed="false" title="Modo de Edição" aria-label="Modo de Edição">✎</button><div class="dd"><button class="sec ic" id="profBtn" title="Perfil" aria-label="Perfil">👤</button><div class="menu pmenu" id="profMenu" hidden></div></div></div>
 </header>
 <div class="navw"><nav class="nav" id="nav">
+  <button data-t="entry">Painel de entrada</button>
   <button data-t="cons">Consolidado</button>
   <button data-t="comp">Comparativo mês a mês</button>
   <button data-t="ins">Gargalos e insights</button>
   <button data-t="tips">Dicas de economia</button>
-  <button data-t="rules">Regras</button>
-  <button data-t="fmts">Configuração de formatos</button>
+  <button data-t="audit">Irregularidades e auditoria</button>
 </nav></div>
 
 <main>
+<div class="syncalert" id="syncAlert" hidden></div>
+<div class="fbanner" id="fbanner" hidden></div>
 <div class="editbar" id="editBar" hidden><b>Modo de Edição ativo.</b> Dê dois cliques em um botão, aba, título ou legenda para renomear (abas continuam navegando com um clique) · arraste os cabeçalhos da tabela para reordenar colunas · arraste a alça ⠿ no canto superior direito de um bloco para movê-lo.</div>
 <section id="v-cons">
 <section class="card" id="panel">
@@ -128,7 +159,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <label class="lbl" for="fmt">Selecione o Formato do Extrato</label>
   <select id="fmt" style="min-width:260px;max-width:100%"></select>
   <p class="hint" id="hint"></p>
-  <div class="lbl" data-uid="l.panel.last" style="margin-top:12px">Data do último lançamento processado</div>
+  <div class="lbl" data-uid="l.panel.last" style="margin-top:12px">Datas do primeiro e do último lançamento processado, por banco</div>
   <div class="lastbank" id="lastBank"></div>
   <div class="lbl" style="margin-top:14px">Dados brutos</div>
   <textarea id="inp" placeholder="Cole aqui o extrato (com a linha de cabeçalho)..." spellcheck="false"></textarea>
@@ -155,7 +186,6 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <div class="card row">
     <label class="row sm">De <input type="date" id="f0"></label>
     <label class="row sm">Até <input type="date" id="f1"></label>
-    <select id="fb" aria-label="Banco ou cartão"></select>
     <input type="search" id="fq" placeholder="Pesquisar por descrição, categoria ou banco...">
     <label class="row sm"><input type="checkbox" id="ign" checked> Ignorar fatura e investimentos nas análises</label>
     <button class="sec" id="fx">Limpar filtros</button>
@@ -186,7 +216,6 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
       <label class="row sm" data-uid="lb.cons.fval">Valor <select id="tvl"></select></label>
       <label class="row sm" data-uid="lb.cons.fkind">Tipo <select id="tkd"></select></label>
       <label class="row sm" data-uid="lb.cons.fign">Ignorar nos Gráficos <select id="tig"></select></label>
-      <button class="sec" id="tx">Limpar Filtros</button>
     </div>
     <div class="bulk" id="bulk" hidden>
       <b>Ações em Massa</b> <span class="mut sm" id="bulkN"></span>
@@ -293,8 +322,62 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
     <p class="mut sm" id="catmsg" style="margin:10px 0 0"></p>
   </div>
 </section>
+<section id="v-entry" hidden data-nodrag></section>
+<section id="v-audit" hidden>
+  <div class="card row">
+    <label class="row"><input type="checkbox" id="audShow"> Mostrar avisos ignorados</label>
+    <button class="sec" id="audRestore">Restaurar todos os avisos ignorados</button>
+    <span class="mut sm">Os filtros ativos também valem aqui. Duplicidade: mesma data, mesma descrição e mesmo valor. Valor atípico: muito acima do padrão da própria descrição ou da categoria.</span>
+  </div>
+  <div class="cards" id="audCards"></div>
+  <div class="card"><h3>Transações duplicadas</h3><div id="audDup"></div></div>
+  <div class="card"><h3>Valores atípicos</h3><div id="audOut"></div></div>
+</section>
+<section id="v-cfg" hidden data-nodrag>
+  <div class="subnav" id="subnav">
+    <button id="subBank" data-sub="bank" aria-pressed="true">Banco</button>
+    <button id="subCat" data-sub="cat" aria-pressed="false">Categorias</button>
+    <button id="subRules" data-sub="rules" aria-pressed="false">Regras</button>
+  </div>
+  <div id="sp-bank"></div><div id="sp-cat" hidden></div><div id="sp-rules" hidden></div>
+</section>
 </main>
 <div class="tt" id="tt" hidden></div>
+<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Bloqueio do painel">
+  <div class="lockbox">
+    <div class="lockic">🔒</div>
+    <div class="mt">Painel Financeiro</div>
+    <div id="lockSetup" hidden><p class="mut">Crie o primeiro perfil para começar.</p><button class="act" id="lockSetupBtn">Criar perfil</button></div>
+    <div id="lockPin" hidden>
+      <label>Perfil <select id="lockProf"></select></label>
+      <input type="password" id="lockInput" inputmode="numeric" maxlength="4" placeholder="Senha de 4 dígitos" autocomplete="off" aria-label="Senha de 4 dígitos">
+      <button class="act" id="lockGo">Entrar</button>
+      <p class="mut sm" id="lockMsg" role="status"></p>
+      <button class="sec" id="lockNew">＋ Novo perfil</button>
+    </div>
+  </div>
+</div>
+<div class="modal" id="profModal" hidden><div class="mbox" role="dialog" aria-modal="true">
+  <div class="mt" id="pmTitle">Novo perfil</div>
+  <div class="rform">
+    <label>Nome do Usuário<input type="text" id="pmName" autocomplete="off"></label>
+    <label id="pmPinL">Senha de 4 dígitos<input type="password" id="pmPin" inputmode="numeric" maxlength="4" autocomplete="new-password"></label>
+    <label>SUPABASE_URL<input type="text" id="pmUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></label>
+    <label>SUPABASE_ANON_KEY<input type="password" id="pmKey" autocomplete="off"></label>
+  </div>
+  <p class="mut sm" id="pmMsg" role="status" style="margin:10px 0"></p>
+  <div class="row"><button class="act" id="pmSave">Salvar</button><button class="sec" id="pmTest">Testar conexão</button><button class="sec" id="pmCancel">Cancelar</button></div>
+  <details style="margin-top:12px"><summary>SQL para criar a tabela no Supabase (SQL Editor)</summary><pre id="pmSql"></pre><button class="sec" id="pmCopy">Copiar SQL</button></details>
+  <p class="mut sm" style="margin:10px 0 0">URL e chave podem ficar em branco para usar o perfil só neste aparelho. A chave anon é pública por natureza: quem tiver a URL e a chave acessa a tabela. Use um projeto próprio para os seus dados e não compartilhe esses valores.</p>
+</div></div>
+<div class="modal" id="cfModal" hidden><div class="mbox" role="dialog" aria-modal="true">
+  <div class="mt">Conflito de sincronização</div>
+  <p id="cfText"></p>
+  <div class="row"><button class="act" id="cfCloud">Usar os dados da nuvem</button><button class="sec" id="cfLocal">Manter os dados deste aparelho</button></div>
+  <p class="mut sm" style="margin:10px 0 0">"Usar a nuvem" descarta as alterações pendentes deste aparelho; "Manter" sobrescreve a nuvem com a versão deste aparelho.</p>
+</div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
 <textarea id="lbed" hidden rows="1" aria-label="Novo nome"></textarea>
 
 <script>
@@ -311,7 +394,7 @@ const mlab=k=>MES[+k.slice(5)-1]+' '+k.slice(0,4);
 const monthsOf=rs=>[...new Set(rs.map(r=>r.date.slice(0,7)))].sort();
 const PAL=['#2563eb','#e11d48','#16a34a','#f59e0b','#7c3aed','#0891b2','#ea580c','#db2777','#65a30d','#4f46e5','#0d9488','#be123c'],GRAY='#94a3b8';
 let EXCL=['Fatura de Cartão','Investimentos']; // fora das análises: evitam dupla contagem
-const SRC_KEY='painel-consolidador-bancos:v1',UI_KEY='painel-financeiro-ui:v1';
+const SRC_KEY='lancamentos',UI_KEY='ui'; // chaves lógicas: cada perfil tem seu espaço no LocalStorage e, na nuvem, uma linha por chave
 
 
 
@@ -475,9 +558,9 @@ function demo(){
     for(let i=0;i<n(2);i++)add(day(),'Santander','Drogaria SP','Saúde/Bem-Estar/Estética',-rnd(28,92));
     add(day(),'Nubank','Ferreiro Barber Club','Saúde/Bem-Estar/Estética',-55);
     add(day(),'Nubank','Shopee*Web Pires Embal','Casa',-rnd(45,120));
-    if(mi===1){add(11,'Nubank','C PERNAMBUCANAS LJ 632','Vestuário',-189.9);add(24,'Santander','Kalunga','Serviços e tecnologia',-134);add(6,'Nubank','Animall Vet','Outros',-180);add(25,'Nubank','Estorno compra Shopee','Casa',89.9)}
+    if(mi===1){add(11,'Nubank','C PERNAMBUCANAS LJ 632','Vestuário',-189.9);add(24,'Santander','Kalunga','Serviços e tecnologia',-134);add(6,'Nubank','Animall Vet','Outros',-180);add(25,'Nubank','Estorno compra Shopee','Casa',89.9);add(12,'Nubank','Uber *Trip','Transporte',-37.9);add(12,'Nubank','Uber *Trip','Transporte',-37.9)}
     if(mi===2){add(8,'Nubank','Loja 31 - Sapattu Mani','Presentes',-150);add(19,'Nubank','SPFC INGRESSOS','SPFC',-120);add(4,'Nubank','LATAM Airlines - voos','Viagens',-780);add(4,'Nubank','Booking.com - hotel','Viagens',-520)}
-    if(mi===3){add(13,'Nubank','Shopee *VELJStore','Vestuário',-259);add(20,'Nubank','Banca do Paulo Afonso','Lazer',-42);add(7,'Nubank','Animall Vet','Outros',-150);add(21,'Nubank','Estorno Uber *Trip','Transporte',32.4)}
+    if(mi===3){add(13,'Nubank','Shopee *VELJStore','Vestuário',-259);add(20,'Nubank','Banca do Paulo Afonso','Lazer',-42);add(7,'Nubank','Animall Vet','Outros',-150);add(21,'Nubank','Estorno Uber *Trip','Transporte',32.4);add(18,'Nubank','Extra Supermercado','Alimentação (Mercado)',-1480)}
   });
   out.forEach(r=>{r.orig=r.desc;r.kind='';r.ign=false;r.quem=r.bank==='Nubank'?(R()<.3?'Ambos':'Eu'):'';applyRule(r,SEED);{const c=catMap(r.cat);r.cat=ALLCATS.includes(c)?c:''}});
   return out.sort((a,b)=>a.date<b.date?-1:1);
@@ -485,7 +568,7 @@ function demo(){
 
 
 /* ===== regras personalizadas (aprendizado) ===== */
-const RKEY='painel-financeiro-regras:v1';
+const RKEY='regras';
 let ALLCATS=[...new Set([...CATS,...CATS_IN_ALL])];
 const SEED=[ // exemplos pré-carregados; podem ser excluídos na aba Regras ('' = não definir)
  {kw:'netflix',bank:'',cat:'Lazer e Entretenimento',kind:'fixa',mod:'',ign:'nao',quem:'',simp:'Netflix'},
@@ -498,8 +581,8 @@ const SEED=[ // exemplos pré-carregados; podem ser excluídos na aba Regras (''
 ];
 let CR=[];
 const normRule=r=>({id:r.id,kw:r.kw,bank:r.bank||'',cat:r.cat||'',kind:r.kind||'',mod:r.mod||'',quem:r.quem||'',simp:r.simp||'',ign:typeof r.ign==='boolean'?(r.ign?'sim':'nao'):(r.ign||'')});
-function loadRules(){try{const o=JSON.parse(localStorage.getItem(RKEY)||'null');if(o&&Array.isArray(o.rules)){CR=o.rules.filter(r=>r&&r.kw).map(normRule);return true}}catch(e){}return false}
-function saveRules(){try{localStorage.setItem(RKEY,JSON.stringify({v:2,rules:CR}))}catch(e){}}
+function loadRules(){try{const o=JSON.parse(kvGet(RKEY)||'null');if(o&&Array.isArray(o.rules)){CR=o.rules.filter(r=>r&&r.kw).map(normRule);return true}}catch(e){}return false}
+function saveRules(){kvSet(RKEY,{v:2,rules:CR})}
 function applyRule(row,rules){ // campos em branco na regra não alteram nada; regras mais específicas (palavra-chave maior) vencem as genéricas
   const txt=norm((row.orig||'')+' '+row.desc);
   const hit=rules.filter(r=>{const k=norm(r.kw);return k&&txt.includes(k)}).sort((a,b)=>norm(a.kw).length-norm(b.kw).length);
@@ -520,13 +603,287 @@ const cn=r=>r.cat||'Sem categoria';
 const ccol=c=>c==='Sem categoria'?GRAY:PAL[Math.max(0,ALLCATS.indexOf(c))%PAL.length]; // cor estável por categoria (posição na lista A-Z)
 function classify(d,v,b){const c=catMap(classify0(d,v,b));return ALLCATS.includes(c)?c:''} // categoria excluída ⇒ em branco
 
+/* ===== perfis, bloqueio por senha e sincronização com o Supabase ===== */
+const PROFKEY='painel-financeiro-perfis:v1'; // perfis deste aparelho (credenciais criptografadas com a senha)
+const LEGACY={lancamentos:'painel-consolidador-bancos:v1',regras:'painel-financeiro-regras:v1',formatos:'painel-financeiro-formatos:v1',categorias:'painel-financeiro-categorias:v1',interface:'painel-financeiro-interface:v1',auditoria:'painel-financeiro-auditoria:v1',ui:'painel-financeiro-ui:v1'};
+const CLOUDKEYS=['lancamentos','formatos','regras','categorias','auditoria','interface']; // 'ui' (largura de colunas etc.) fica só no aparelho
+const SQL_SETUP=`create table if not exists public.painel_dados (
+  chave text primary key,
+  valor jsonb not null,
+  rev integer not null default 1,
+  atualizado_em timestamptz not null default now()
+);
+alter table public.painel_dados enable row level security;
+drop policy if exists "painel_anon_all" on public.painel_dados;
+create policy "painel_anon_all" on public.painel_dados
+  for all to anon using (true) with check (true);`;
+let PID=null,SESSION=null,PROFS={v:1,active:null,profiles:[]},PMODE='new',PDEL=false;
+const SYNC={on:false,state:'local',msg:'',dirty:new Set(),ver:{},revs:{},busy:false,timer:null,retry:null,conflict:[],last:'',url:'',key:'',booted:false,poll:null};
+const nowHM=()=>new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+function reloadPage(){location.reload()}
+
+/* --- armazenamento local por perfil + fila de envio --- */
+const nsKey=n=>`pf:${PID}:${n}`;
+const rawLocal=n=>{try{return localStorage.getItem(nsKey(n))}catch(e){return null}};
+const putLocal=(n,str)=>{try{localStorage.setItem(nsKey(n),str)}catch(e){}};
+const kvGet=n=>PID?rawLocal(n):null;
+function kvSet(n,obj){
+  if(!PID)return;
+  const str=JSON.stringify(obj);
+  if(rawLocal(n)===str)return; // nada mudou: não marca para envio
+  putLocal(n,str);
+  if(CLOUDKEYS.includes(n)){SYNC.dirty.add(n);SYNC.ver[n]=(SYNC.ver[n]||0)+1;persistMeta();schedulePush()}
+}
+function persistMeta(){try{localStorage.setItem(nsKey('sync'),JSON.stringify({dirty:[...SYNC.dirty],revs:SYNC.revs}))}catch(e){}}
+function loadMeta(){try{const o=JSON.parse(localStorage.getItem(nsKey('sync'))||'null');SYNC.dirty=new Set(o&&o.dirty||[]);SYNC.revs=o&&o.revs||{}}catch(e){SYNC.dirty=new Set();SYNC.revs={}}}
+function adoptLegacy(){ // dados de versões sem perfil passam para o primeiro perfil que entrar
+  if(localStorage.getItem('painel-financeiro-legado')==='1')return;
+  let moved=false;
+  for(const[n,k] of Object.entries(LEGACY)){const v=localStorage.getItem(k);if(v!==null&&rawLocal(n)===null){putLocal(n,v);moved=true;if(CLOUDKEYS.includes(n))SYNC.dirty.add(n)}localStorage.removeItem(k)}
+  if(moved)persistMeta();
+  localStorage.setItem('painel-financeiro-legado','1');
+}
+
+/* --- senha de 4 dígitos: PBKDF2 + AES-GCM (quando o navegador oferece WebCrypto) --- */
+const SECURE=!!(window.crypto&&crypto.subtle&&window.TextEncoder);
+const b64=u8=>btoa(String.fromCharCode(...u8)),unb64=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0));
+const weakHash=x=>{let h=5381;for(const ch of x)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return String(h)};
+async function deriveKeys(pin,salt){
+  const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);
+  const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},km,512));
+  return{hash:b64(bits.slice(0,32)),aes:await crypto.subtle.importKey('raw',bits.slice(32),'AES-GCM',false,['encrypt','decrypt'])};
+}
+async function seal(aes,obj){const iv=crypto.getRandomValues(new Uint8Array(12));return{iv:b64(iv),ct:b64(new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},aes,new TextEncoder().encode(JSON.stringify(obj)))))}}
+async function unseal(aes,c){return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(c.iv)},aes,unb64(c.ct))))}
+const plainEnc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))),plainDec=x=>JSON.parse(decodeURIComponent(escape(atob(x))));
+async function makeProfile(name,pin,cred){
+  const id=Math.random().toString(36).slice(2,10);
+  if(SECURE){const salt=crypto.getRandomValues(new Uint8Array(16)),k=await deriveKeys(pin,salt);return{p:{id,name,enc:1,salt:b64(salt),hash:k.hash,cred:await seal(k.aes,cred)},aes:k.aes}}
+  const salt=Math.random().toString(36).slice(2);return{p:{id,name,enc:0,salt,hash:weakHash(pin+salt),cred:{plain:plainEnc(cred)}},aes:null};
+}
+async function openProfile(p,pin){ // {cred,aes} ou null (senha errada)
+  if(p.enc){if(!SECURE)return null;const k=await deriveKeys(pin,unb64(p.salt));if(k.hash!==p.hash)return null;try{return{cred:await unseal(k.aes,p.cred),aes:k.aes}}catch(e){return null}}
+  return weakHash(pin+p.salt)===p.hash?{cred:plainDec(p.cred.plain),aes:null}:null;
+}
+function loadProfs(){try{const o=JSON.parse(localStorage.getItem(PROFKEY)||'null');if(o&&Array.isArray(o.profiles))PROFS=o}catch(e){}}
+const saveProfs=()=>{try{localStorage.setItem(PROFKEY,JSON.stringify(PROFS))}catch(e){}};
+const lockState=id=>{try{return JSON.parse(localStorage.getItem(`pf:${id}:lock`)||'{}')}catch(e){return{}}};
+const saveLock=(id,o)=>{try{localStorage.setItem(`pf:${id}:lock`,JSON.stringify(o))}catch(e){}};
+
+/* --- cliente do Supabase (PostgREST) --- */
+const normUrl=u=>(u||'').trim().replace(/\/+$/,'').replace(/\/rest\/v1$/,'');
+async function sbWith(url,key,path,opt){
+  const ctrl=typeof AbortController!=='undefined'?new AbortController():null,to=setTimeout(()=>ctrl&&ctrl.abort(),10000);
+  try{return await fetch(url+'/rest/v1/'+path,{...(opt||{}),signal:ctrl&&ctrl.signal,headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json',...((opt&&opt.headers)||{})}})}
+  finally{clearTimeout(to)}
+}
+const sb=(path,opt)=>sbWith(SYNC.url,SYNC.key,path,opt);
+async function httpErr(r){let t='';try{t=await r.text()}catch(e){}return Object.assign(new Error('HTTP '+r.status),{status:r.status,body:t})}
+function classifyErr(e){
+  const st=e&&e.status;
+  if(st===401||st===403)return{kind:'auth',msg:'chave incorreta ou sem permissão (confira a SUPABASE_ANON_KEY e as políticas RLS)'};
+  if(st===404)return{kind:'table',msg:'tabela "painel_dados" não encontrada ou URL incorreta (rode o SQL de configuração)'};
+  if(st)return{kind:'http',msg:`o Supabase respondeu com erro ${st}`};
+  if(e&&e.name==='AbortError')return{kind:'net',msg:'tempo esgotado ao falar com o Supabase'};
+  return{kind:'net',msg:'sem conexão com o Supabase (ou URL incorreta)'};
+}
+async function cloudPull(){const r=await sb('painel_dados?select=chave,valor,rev');if(!r.ok)throw await httpErr(r);return r.json()}
+
+/* --- estado da sincronização e alertas visuais --- */
+const CHIP={local:['💾','Local'],syncing:['☁️','…'],ok:['☁️','Sincronizado'],offline:['⚠️','Offline'],error:['⚠️','Erro'],conflict:['⚠️','Conflito']};
+function setSync(state,msg){
+  SYNC.state=state;SYNC.msg=msg||'';
+  const c=CHIP[state],chip=$('syncChip'),a=$('syncAlert');
+  chip.textContent=`${c[0]} ${c[1]}`;chip.className='syncchip '+state;
+  chip.title=state==='local'?'Somente neste aparelho: nenhum Supabase configurado neste perfil':state==='ok'?`Sincronizado com o Supabase${SYNC.last?' às '+SYNC.last:''}`:state==='syncing'?'Sincronizando com o Supabase':state==='conflict'?'Conflito de sincronização a resolver':`Modo offline: ${msg}`;
+  if(state==='offline'||state==='error'){
+    a.hidden=false;
+    a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o Supabase'}</b> — ${esc(msg)}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':''}. <button class="sec" id="saRetry">Tentar novamente</button>${state==='error'?' <button class="sec" id="saEdit">Editar conexão</button>':''}`;
+  }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b>⚠️ Conflito de sincronização</b> — os dados mudaram na nuvem enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
+  else a.hidden=true;
+}
+function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{e.hidden=true},4500)}
+function handleSyncError(e){
+  const c=classifyErr(e);setSync(c.kind==='net'?'offline':'error',c.msg);
+  clearTimeout(SYNC.retry);if(c.kind==='net'||c.kind==='http')SYNC.retry=setTimeout(()=>resync(),20000);
+}
+
+/* --- motor de sincronização: uma linha por chave, com controle de revisão (sem sobrescrever sem avisar) --- */
+function schedulePush(){if(!SYNC.on||!['ok','syncing'].includes(SYNC.state))return;clearTimeout(SYNC.timer);SYNC.timer=setTimeout(pushDirty,350)}
+async function pushDirty(){
+  if(!SYNC.on||SYNC.busy||!SYNC.dirty.size||!['ok','syncing'].includes(SYNC.state))return;
+  SYNC.busy=true;setSync('syncing');
+  try{
+    for(const n of [...SYNC.dirty]){
+      const v0=SYNC.ver[n]||0,val=JSON.parse(rawLocal(n)||'null'),rev=SYNC.revs[n];
+      if(rev===undefined){
+        const r=await sb('painel_dados',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({chave:n,valor:val,rev:1})});
+        if(r.status===409){SYNC.conflict=[n];setSync('conflict');openConflict();return}
+        if(!r.ok)throw await httpErr(r);
+        SYNC.revs[n]=1;
+      }else{
+        const r=await sb(`painel_dados?chave=eq.${encodeURIComponent(n)}&rev=eq.${rev}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({valor:val,rev:rev+1,atualizado_em:new Date().toISOString()})});
+        if(!r.ok)throw await httpErr(r);
+        if(!(await r.json()).length){SYNC.conflict=[n];setSync('conflict');openConflict();return}
+        SYNC.revs[n]=rev+1;
+      }
+      if((SYNC.ver[n]||0)===v0)SYNC.dirty.delete(n);
+      persistMeta();
+    }
+    SYNC.last=nowHM();setSync('ok');
+  }catch(e){handleSyncError(e)}
+  finally{SYNC.busy=false;if(SYNC.state==='ok'&&SYNC.dirty.size)schedulePush()}
+}
+async function syncCore(){ // baixa a nuvem e reconcilia; devolve as chaves atualizadas a partir da nuvem
+  if(SYNC.busy)return null;SYNC.busy=true;
+  try{
+    const rows=await cloudPull(),cloud={},changed=[],conf=[];
+    rows.forEach(r=>{cloud[r.chave]=r});
+    for(const n of CLOUDKEYS){
+      const c=cloud[n],dirty=SYNC.dirty.has(n);
+      if(c){
+        if(dirty){if(c.rev!==SYNC.revs[n])conf.push(n)}
+        else if(c.rev!==SYNC.revs[n]||rawLocal(n)===null){putLocal(n,JSON.stringify(c.valor));SYNC.revs[n]=c.rev;changed.push(n)}
+      }else{delete SYNC.revs[n];if(rawLocal(n)!==null)SYNC.dirty.add(n)}
+    }
+    persistMeta();SYNC.last=nowHM();
+    if(conf.length){SYNC.conflict=conf;setSync('conflict');if(SYNC.booted)openConflict();return null}
+    setSync('ok');return changed;
+  }catch(e){handleSyncError(e);return null}
+  finally{SYNC.busy=false}
+}
+async function resync(quiet){
+  if(!SYNC.on||SYNC.busy||SYNC.state==='conflict')return;
+  if(!quiet)setSync('syncing');
+  const ch=await syncCore();
+  if(ch&&ch.length){reloadFromStore();toast('Dados atualizados a partir da nuvem.')}
+  if(SYNC.state==='ok')pushDirty();
+}
+function openConflict(){$('cfText').textContent=`Os dados "${SYNC.conflict.join('", "')}" foram alterados na nuvem (em outro dispositivo) e também neste aparelho. Escolha qual versão manter:`;$('cfModal').hidden=false}
+async function resolveConflict(choice){
+  const names=SYNC.conflict.slice();$('cfModal').hidden=true;SYNC.conflict=[];
+  try{
+    const cloud={};(await cloudPull()).forEach(r=>{cloud[r.chave]=r});
+    for(const n of names){
+      const c=cloud[n];
+      if(choice==='cloud'){if(c){putLocal(n,JSON.stringify(c.valor));SYNC.revs[n]=c.rev}else delete SYNC.revs[n];SYNC.dirty.delete(n)}
+      else{if(c)SYNC.revs[n]=c.rev;else delete SYNC.revs[n];SYNC.dirty.add(n);SYNC.ver[n]=(SYNC.ver[n]||0)+1}
+    }
+    persistMeta();setSync('ok');
+    if(choice==='cloud'&&SYNC.booted)reloadFromStore();
+    pushDirty();
+  }catch(e){handleSyncError(e)}
+}
+function reloadFromStore(){ // aplica no painel o que acabou de chegar da nuvem (mantém os filtros)
+  loadRules();loadFormats();ensureColors();loadCats();syncCats();fillCatSelects();loadIFC();applyLabels();applyLayout();loadAUD();
+  const rows=userRows();if(rows.length||SRC==='user'){SRC='user';DATA=rows;seq=Math.max(0,...DATA.map(r=>r.id))}
+  fillFmt();buildMenu();refresh();
+}
+function startPolling(){
+  if(SYNC.poll)return;
+  const tick=()=>{if(SYNC.on&&SYNC.state==='ok'&&!SYNC.busy&&!SYNC.dirty.size)resync(true)};
+  SYNC.poll=setInterval(tick,30000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
+}
+
+/* --- tela de bloqueio e entrada no perfil --- */
+function fillLockSelect(){
+  $('lockProf').innerHTML=PROFS.profiles.map(p=>`<option value="${p.id}"${p.id===PROFS.active?' selected':''}>${esc(p.name)}</option>`).join('');
+}
+function bootLock(){
+  loadProfs();
+  $('lock').hidden=false;
+  if(!PROFS.profiles.length){$('lockPin').hidden=true;$('lockSetup').hidden=false;openProfModal('new');return}
+  PROFS.active=PROFS.profiles.some(p=>p.id===PROFS.active)?PROFS.active:PROFS.profiles[0].id;
+  fillLockSelect();$('lockSetup').hidden=true;$('lockPin').hidden=false;$('lockInput').value='';$('lockMsg').textContent='';
+  try{$('lockInput').focus()}catch(e){}
+}
+async function tryUnlock(){
+  const p=PROFS.profiles.find(x=>x.id===$('lockProf').value),pin=$('lockInput').value;
+  if(!p||SYNC.entering)return;
+  const ls=lockState(p.id);
+  if(ls.until&&Date.now()<ls.until){$('lockMsg').textContent=`Muitas tentativas. Aguarde ${Math.ceil((ls.until-Date.now())/1000)} s.`;return}
+  if(!/^\d{4}$/.test(pin)){$('lockMsg').textContent='Digite a senha de 4 dígitos.';return}
+  $('lockMsg').textContent='Verificando…';
+  const r=await openProfile(p,pin);
+  if(!r){const n=(ls.n||0)+1;saveLock(p.id,{n,until:n%5===0?Date.now()+30000:0});$('lockMsg').textContent='Senha incorreta.';$('lockInput').value='';return}
+  saveLock(p.id,{n:0,until:0});PROFS.active=p.id;saveProfs();
+  await enter(p,r);
+}
+async function enter(p,r){
+  if(SYNC.entering)return;SYNC.entering=true;
+  PID=p.id;SESSION={profile:p,aes:r.aes,cred:r.cred};
+  SYNC.url=normUrl(r.cred.url);SYNC.key=r.cred.key||'';SYNC.on=!!(SYNC.url&&SYNC.key);
+  loadMeta();adoptLegacy();
+  $('lockMsg').textContent=SYNC.on?'Sincronizando com o Supabase…':'Abrindo…';
+  await startApp();
+}
+
+/* --- cadastro de perfis (modal) e menu do ícone 👤 --- */
+function openProfModal(mode){
+  PMODE=mode;
+  $('pmTitle').textContent=mode==='new'?(SESSION?'Novo perfil':'Criar perfil'):'Editar conexão do perfil';
+  $('pmName').value=mode==='edit'?SESSION.profile.name:'';$('pmName').disabled=mode==='edit';
+  $('pmPin').value='';$('pmPinL').hidden=mode==='edit';
+  $('pmUrl').value=mode==='edit'?SESSION.cred.url||'':'';$('pmKey').value=mode==='edit'?SESSION.cred.key||'':'';
+  $('pmMsg').textContent=SECURE?'':'Este navegador/ambiente não oferece criptografia forte (WebCrypto): as credenciais ficam apenas ofuscadas neste aparelho.';
+  $('pmCancel').hidden=!SESSION&&!PROFS.profiles.length;
+  $('pmSql').textContent=SQL_SETUP;
+  $('profModal').hidden=false;try{($(mode==='edit'?'pmUrl':'pmName')).focus()}catch(e){}
+}
+function readProfForm(){
+  const name=$('pmName').value.trim(),pin=$('pmPin').value,url=normUrl($('pmUrl').value),key=$('pmKey').value.trim();
+  if(PMODE==='new'){
+    if(!name)return{err:'Informe o nome do usuário.'};
+    if(PROFS.profiles.some(p=>norm(p.name)===norm(name)))return{err:'Já existe um perfil com esse nome.'};
+    if(!/^\d{4}$/.test(pin))return{err:'A senha deve ter exatamente 4 dígitos.'};
+  }
+  if((url||key)&&!(url&&key))return{err:'Para usar a nuvem, informe SUPABASE_URL e SUPABASE_ANON_KEY.'};
+  if(url&&!/^https?:\/\/[^\s]+$/.test(url))return{err:'SUPABASE_URL inválida (ex.: https://xxxx.supabase.co).'};
+  return{name,pin,url,key};
+}
+async function saveProfForm(){
+  const f=readProfForm();if(f.err){$('pmMsg').textContent=f.err;return}
+  const cred={url:f.url,key:f.key};
+  if(PMODE==='new'){
+    const{p,aes}=await makeProfile(f.name,f.pin,cred);
+    PROFS.profiles.push(p);PROFS.active=p.id;saveProfs();$('profModal').hidden=true;
+    if(!SESSION){await enter(p,{cred,aes})}else{PROFS.active=SESSION.profile.id;saveProfs();toast(`Perfil "${f.name}" criado. Use o ícone 👤 para alternar.`);renderProfMenu()}
+  }else{
+    const p=SESSION.profile;p.cred=p.enc?await seal(SESSION.aes,cred):{plain:plainEnc(cred)};saveProfs();
+    SESSION.cred=cred;SYNC.url=f.url;SYNC.key=f.key;SYNC.on=!!(f.url&&f.key);$('profModal').hidden=true;
+    clearTimeout(SYNC.retry);
+    if(SYNC.on){SYNC.state='syncing';SYNC.conflict=[];await resync()}else setSync('local');
+    refresh();toast('Conexão atualizada.');
+  }
+}
+async function testProfForm(){
+  const url=normUrl($('pmUrl').value),key=$('pmKey').value.trim();
+  if(!url||!key){$('pmMsg').textContent='Informe SUPABASE_URL e SUPABASE_ANON_KEY para testar.';return}
+  $('pmMsg').textContent='Testando…';
+  try{const r=await sbWith(url,key,'painel_dados?select=chave&limit=1');if(!r.ok)throw await httpErr(r);$('pmMsg').textContent='✅ Conexão e tabela "painel_dados" funcionando.'}
+  catch(e){$('pmMsg').textContent='❌ '+classifyErr(e).msg}
+}
+function renderProfMenu(){
+  const cur=SESSION&&SESSION.profile.id;
+  $('profMenu').innerHTML=PROFS.profiles.map(p=>`<button class="sec pmi${p.id===cur?' on':''}" data-pswitch="${p.id}">${p.id===cur?'✓ ':''}${esc(p.name)}</button>`).join('')+
+   '<hr><button class="sec pmi" data-pact="new">＋ Novo perfil</button><button class="sec pmi" data-pact="edit">🔌 Editar conexão</button><button class="sec pmi" data-pact="lock">🔒 Bloquear agora</button>'+
+   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?'Confirmar: excluir este perfil':'🗑 Excluir este perfil'}</button>`;
+}
+function deleteCurrentProfile(){
+  const id=SESSION.profile.id;
+  PROFS.profiles=PROFS.profiles.filter(p=>p.id!==id);PROFS.active=PROFS.profiles[0]?PROFS.profiles[0].id:null;saveProfs();
+  for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith(`pf:${id}:`))localStorage.removeItem(k)}
+  reloadPage();
+}
+
 /* ===== interface customizável: rótulos, ordem de colunas e layout (tudo por IDs estruturais) ===== */
-const IFKEY='painel-financeiro-interface:v1';
+const IFKEY='interface';
 let IFC={labels:{},order:[],layout:{}},EDITM=false,LED=null;
 const DEF={},DEFLAY={};
-const DYNDEF={'h.tips.plan':'Plano de economia sugerido','h.ins.fv':'Despesas fixas x variáveis','h.ins.recd':'Despesas recorrentes','h.ins.recr':'Receitas recorrentes','t.rank':'maior peso nas saídas','comp.catcol':'Categoria','comp.total':'Total de despesas'};
-function loadIFC(){try{const o=JSON.parse(localStorage.getItem(IFKEY)||'null');if(o&&o.labels)IFC={labels:o.labels||{},order:o.order||[],layout:o.layout||{}}}catch(e){}}
-const saveIFC=()=>{try{localStorage.setItem(IFKEY,JSON.stringify(IFC))}catch(e){}};
+const DYNDEF={'h.tips.plan':'Plano de economia sugerido','h.ins.fv':'Despesas fixas x variáveis','h.ins.recd':'Despesas recorrentes','h.ins.recr':'Receitas recorrentes','t.rank':'maior peso nas saídas','comp.catcol':'Categoria','comp.total':'Total de despesas','t.first':'Primeiro lançamento','t.last':'Último lançamento','banner.title':'Análise restrita a:','t.aud.dup':'Transações duplicadas','t.aud.out':'Valores atípicos','t.aud.off':'Avisos ignorados'};
+function loadIFC(){try{const o=JSON.parse(kvGet(IFKEY)||'null');if(o&&o.labels)IFC={labels:o.labels||{},order:o.order||[],layout:o.layout||{}}}catch(e){}}
+const saveIFC=()=>kvSet(IFKEY,IFC);
 const LB=uid=>IFC.labels[uid]!==undefined?IFC.labels[uid]:(DEF[uid]||'');
 function lblNode(el){for(const n of el.childNodes)if(n.nodeType===3&&n.nodeValue.trim())return n;return null}
 const getLbl=el=>{const n=lblNode(el);return(n?n.nodeValue:el.textContent).trim()};
@@ -538,9 +895,9 @@ function initUid(){
   document.querySelectorAll('[data-uid]:not([data-st])').forEach(el=>reg(el,el.dataset.uid)); // elementos com ID estrutural fixo no HTML
   const next=(el,p)=>{const k=p+'.'+SEC(el);cnt[k]=(cnt[k]||0)+1;return k+'.'+cnt[k]};
   document.querySelectorAll('#nav button[data-t]').forEach(b=>reg(b,'nav.'+b.dataset.t));
-  document.querySelectorAll('main button[id],header button[id]').forEach(b=>{if(!['editToggle','editReset'].includes(b.id))reg(b,'btn.'+b.id)});
+  document.querySelectorAll('main button[id],header button[id]').forEach(b=>{if(!['editToggle','editReset','cfgBtn','profBtn'].includes(b.id))reg(b,'btn.'+b.id)});
   document.querySelectorAll('h2,h3,.lbl,.k span,.top b,.bulk b,#panel > p.mut').forEach(el=>{if(!el.dataset.uid)reg(el,next(el,el.tagName.toLowerCase()==='span'?'k':el.className.includes('lbl')?'l':'t'))});
-  document.querySelectorAll('label').forEach(l=>{
+  document.querySelectorAll('main label').forEach(l=>{
     const n=lblNode(l);if(!n||l.dataset.uid||l.querySelector('[data-uid]'))return;
     const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(n.nodeValue),sp=document.createElement('span');
     sp.textContent=m[2];n.replaceWith(document.createTextNode(m[1]),sp,document.createTextNode(m[3]));reg(sp,next(l,'lb'));
@@ -548,7 +905,7 @@ function initUid(){
 }
 function applyLabels(){document.querySelectorAll('[data-st]').forEach(el=>setLbl(el,LB(el.dataset.uid)))}
 function initBlocks(){
-  document.querySelectorAll('main > section').forEach(sec=>{
+  document.querySelectorAll('main > section:not([data-nodrag])').forEach(sec=>{
     [sec,...[...sec.children].filter(x=>x.classList.contains('grid2'))].forEach((c,ci)=>{
       const cid=c===sec?sec.id:`${sec.id}.g${ci}`;c.dataset.cid=cid;
       [...c.children].forEach((b,i)=>{b.dataset.bid=`${cid}.${i}`});
@@ -587,14 +944,14 @@ function setEdit(on){
 /* ===== persistência: lançamentos e formatos ===== */
 const STORE=(()=>{try{localStorage.setItem('_p','1');localStorage.removeItem('_p');return true}catch(e){return false}})();
 function userRows(){
-  try{const o=JSON.parse(localStorage.getItem(SRC_KEY)||'null');
+  try{const o=JSON.parse(kvGet(SRC_KEY)||'null');
     return o&&Array.isArray(o.rows)?o.rows.filter(r=>r&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)&&isFinite(r.val)).map((r,i)=>({id:i+1,date:r.date,bank:String(r.bank||''),desc:String(r.desc||''),cat:String(r.cat||'Outros'),val:+r.val,mod:String(r.mod||''),kind:r.kind==='fixa'||r.kind==='variavel'?r.kind:'',ign:!!r.ign,orig:String(r.orig||''),quem:String(r.quem||'')})):[];
   }catch(e){return[]}
 }
-function save(){try{localStorage.setItem(SRC_KEY,JSON.stringify({v:1,rows:DATA}))}catch(e){}}
-const FKEY='painel-financeiro-formatos:v1';
+function save(){kvSet(SRC_KEY,{v:1,rows:DATA})}
+const FKEY='formatos';
 const DECL={auto:'Automático',',':'Vírgula','.':'Ponto'};
-const SEED_FMT=[ // exemplos pré-carregados; edite ou exclua na aba Configuração de formatos
+const SEED_FMT=[ // exemplos pré-carregados; edite ou exclua em Configurações › Banco
  {name:'Nubank',mode:'cols',cData:'date',cDesc:'title',cValor:'amount',cQuem:'Quem',cBank:'',cCat:'',inv:true,dec:'.',mod:'Crédito'},
  {name:'Santander',mode:'cols',cData:'Data',cDesc:'Descrição',cValor:'Valor',cQuem:'',cBank:'',cCat:'',inv:false,dec:',',mod:''},
  {name:'Amazon',mode:'amazon',cData:'',cDesc:'',cValor:'',cQuem:'',cBank:'',cCat:'',inv:true,dec:',',mod:'Crédito'},
@@ -604,32 +961,33 @@ const SEED_FMT=[ // exemplos pré-carregados; edite ou exclua na aba Configuraç
 const MIGR_FMT=['Amazon','BB','Planilha Integral']; // formatos novos incluídos em cadastros já existentes
 function migrateFormats(){let n=0;SEED_FMT.forEach(f=>{if(MIGR_FMT.includes(f.name)&&!FM.some(x=>norm(x.name)===norm(f.name))){FM.push({...f,id:Date.now()+n++})}});if(n)saveFormats()}
 let FM=[];
-function loadFormats(){try{const o=JSON.parse(localStorage.getItem(FKEY)||'null');if(o&&Array.isArray(o.formats)){FM=o.formats.filter(f=>f&&f.name).map(f=>({mode:'cols',...f}));return true}}catch(e){}return false}
-function saveFormats(){try{localStorage.setItem(FKEY,JSON.stringify({v:1,formats:FM}))}catch(e){}}
+function loadFormats(){try{const o=JSON.parse(kvGet(FKEY)||'null');if(o&&Array.isArray(o.formats)){FM=o.formats.filter(f=>f&&f.name).map(f=>({mode:'cols',...f}));return true}}catch(e){}return false}
+function saveFormats(){kvSet(FKEY,{v:1,formats:FM})}
 
 /* ===== estado ===== */
-const COLS=[{k:'sel',t:'Seleção',w:46},{k:'n',t:'#',w:52},{k:'date',t:'Data',w:125},{k:'bank',t:'Banco',w:130},{k:'desc',t:'Descrição',w:280},{k:'mod',t:'Modalidade',w:125},{k:'cat',t:'Categoria',w:215},{k:'kind',t:'Tipo',w:115},{k:'ign',t:'Ignorar',w:80},{k:'val',t:'Valor',w:125,r:1},{k:'x',t:'Ações',w:70}];
-const T0=()=>({cat:'',bank:'',date:'',desc:'',mod:'',val:'',kind:'',ign:''});
-let UI={hide:[],w:{},ex:true},DATA=[],SRC='demo',TAB='cons',SORT={k:'date',d:-1},SEL=new Set(),SELR=new Set(),F={d0:'',d1:'',bank:'',q:''},T=T0(),AUTO=true,seq=0,undoRows=[],EDITF=null;
-try{const o=JSON.parse(localStorage.getItem(UI_KEY)||'null');if(o&&Array.isArray(o.hide)&&o.w)UI={ex:true,...o}}catch(e){}
-const saveUI=()=>{try{localStorage.setItem(UI_KEY,JSON.stringify(UI))}catch(e){}};
+const COLS=[{k:'sel',t:'Seleção',w:46},{k:'n',t:'#',w:52},{k:'date',t:'Data',w:125},{k:'bank',t:'Banco',w:130},{k:'desc',t:'Descrição',w:280},{k:'mod',t:'Modalidade',w:125},{k:'cat',t:'Categoria',w:215},{k:'kind',t:'Tipo',w:115},{k:'ign',t:'Ignorar',w:80},{k:'quem',t:'Quem',w:90},{k:'val',t:'Valor',w:125,r:1},{k:'x',t:'Ações',w:70}];
+const F0=()=>({d0:'',d1:'',q:'',cat:'',bank:'',desc:'',mod:'',val:'',kind:'',ign:''}); // filtros unificados
+const DEFHIDE=['sel','n','mod','kind','ign','quem']; // tabela essencial por padrão: Data, Banco, Descrição, Categoria, Valor, Ações
+let UI={hide:DEFHIDE.slice(),w:{},ex:true,v:2},DATA=[],SRC='demo',TAB='cons',SORT={k:'date',d:-1},SEL=new Set(),SELR=new Set(),F=F0(),AUTO=true,seq=0,undoRows=[],EDITF=null;
+function loadUI(){UI={hide:DEFHIDE.slice(),w:{},ex:true,v:2};try{const o=JSON.parse(kvGet(UI_KEY)||'null');if(o&&Array.isArray(o.hide)&&o.w)UI={ex:true,...o}}catch(e){}if(UI.v!==2){UI.hide=DEFHIDE.slice();UI.v=2;kvSet(UI_KEY,UI)}} // v2: aplica a tabela essencial uma vez
+const saveUI=()=>kvSet(UI_KEY,UI);
 const W=k=>UI.w[k]||COLS.find(c=>c.k===k).w;
 const az=(a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'});
+const catCmp=(a,b)=>{const o=catMap('Outros');return(a===o)-(b===o)||az(a,b)}; // categorias: A-Z, com "Outros" sempre por último
+const catCmpIn=(a,b)=>{const s=catMap('Salário');return(b===s)-(a===s)||catCmp(a,b)}; // entradas: "Salário" primeiro, depois A-Z, "Outros" por último
 const exc=r=>r.ign||(UI.ex&&EXCL.includes(r.cat)); // ignorados, fatura e investimentos: fora das análises, visíveis na tabela
-const inRange=r=>(!F.d0||r.date>=F.d0)&&(!F.d1||r.date<=F.d1)&&(!F.bank||r.bank===F.bank);
 const qmatch=r=>{const q=norm(F.q);return !q||norm(r.desc+' '+r.cat+' '+r.bank).includes(q)};
 const VR={neg:'Saídas (negativos)',pos:'Entradas (positivos)',r0:'Até R$ 50',r1:'R$ 50 a 200',r2:'R$ 200 a 1.000',r3:'Acima de R$ 1.000'};
 const vmatch=(r,v)=>{const a=Math.abs(r.val);return v==='neg'?r.val<0:v==='pos'?r.val>0:v==='r0'?a<=50:v==='r1'?a>50&&a<=200:v==='r2'?a>200&&a<=1000:a>1000};
-const tmatch=r=>(!T.cat||(T.cat==='__none__'?!r.cat:r.cat===T.cat))&&(!T.bank||r.bank===T.bank)
- &&(!T.date||(T.date.startsWith('m:')?r.date.startsWith(T.date.slice(2)):r.date===T.date.slice(2)))
- &&(!T.desc||r.desc===T.desc)&&(!T.mod||(T.mod==='__none__'?!r.mod:r.mod===T.mod))&&(!T.val||vmatch(r,T.val))
- &&(!T.kind||(T.kind==='__none__'?!r.kind:r.kind===T.kind))&&(!T.ign||(T.ign==='sim'?!!r.ign:!r.ign));
-const base=()=>DATA.filter(r=>!exc(r)&&inRange(r));
-const shown=()=>base().filter(qmatch);
-const catsFor=r=>{const l=r.val>0?CATS_IN_ALL:CATS;return !r.cat||l.includes(r.cat)?l:[...l,r.cat].sort(az)};
+const fmatch=r=>(!F.d0||r.date>=F.d0)&&(!F.d1||r.date<=F.d1)&&qmatch(r)&&(!F.bank||r.bank===F.bank)&&(!F.cat||(F.cat==='__none__'?!r.cat:r.cat===F.cat))
+ &&(!F.desc||r.desc===F.desc)&&(!F.mod||(F.mod==='__none__'?!r.mod:r.mod===F.mod))&&(!F.val||vmatch(r,F.val))
+ &&(!F.kind||(F.kind==='__none__'?!r.kind:r.kind===F.kind))&&(!F.ign||(F.ign==='sim'?!!r.ign:!r.ign));
+const base=()=>DATA.filter(r=>!exc(r)&&fmatch(r)); // as mesmas linhas alimentam a tabela e TODAS as análises
+const shown=base;
+const catsFor=r=>{const l=r.val>0?CATS_IN_ALL:CATS;return !r.cat||l.includes(r.cat)?l:[...l,r.cat].sort(r.val>0?catCmpIn:catCmp)};
 function tableView(){
   const bm=SORT.k==='bank'?Object.fromEntries(allBanks().map((b,i)=>[b,i])):null; // coluna Banco ordena pela ordem definida na configuração
-  return DATA.filter(r=>inRange(r)&&qmatch(r)&&tmatch(r)).sort((a,b)=>{
+  return DATA.filter(fmatch).sort((a,b)=>{
     const x=a[SORT.k],y=b[SORT.k],c=bm?(bm[x]??999)-(bm[y]??999):typeof x==='number'?x-y:String(x||'').localeCompare(String(y||''),'pt-BR');return(c||a.id-b.id)*SORT.d});
 }
 function fullMonths(rs){ // descarta o último mês se for parcial
@@ -637,33 +995,65 @@ function fullMonths(rs){ // descarta o último mês se for parcial
   const l=ms[ms.length-1],md=Math.max(...rs.filter(r=>r.date.startsWith(l)).map(r=>+r.date.slice(8)));
   return md<25?ms.slice(0,-1):ms;
 }
-const flt=()=>`Período ${F.d0?dmy(F.d0):'—'} a ${F.d1?dmy(F.d1):'—'} · ${F.bank||'Todos os bancos'} (ajuste na aba ${LB('nav.cons')})`;
-function renderLast(){ // data do último lançamento por banco/formato real (sem "Planilha Integral/Geral")
-  const names=SRC==='user'?allBanks():realFormats().map(f=>f.name),last={}; // na demonstração só os formatos cadastrados
-  DATA.forEach(r=>{if(r.bank&&(!last[r.bank]||r.date>last[r.bank]))last[r.bank]=r.date});
-  $('lastBank').innerHTML=names.length?names.map(n=>`<div class="lb2${last[n]?'':' none'}" style="--bc:${bcol(n)}"><span>${esc(n)}</span><b>${last[n]?dmy(last[n]):'sem lançamentos'}</b></div>`).join(''):'<span class="mut sm">Nenhum banco cadastrado.</span>';
+function activeFilters(){ // lista legível dos filtros acionados
+  const a=[],ds=DATA.map(r=>r.date).sort();
+  if((F.d0&&F.d0!==(ds[0]||''))||(F.d1&&F.d1!==(ds[ds.length-1]||'')))a.push(`Período: ${F.d0?dmy(F.d0):'início'} a ${F.d1?dmy(F.d1):'hoje'}`);
+  if(F.q.trim())a.push(`Busca: "${F.q.trim()}"`);
+  if(F.cat)a.push('Categoria: '+(F.cat==='__none__'?'(sem categoria)':F.cat));
+  if(F.bank)a.push('Banco/Cartão: '+F.bank);
+  if(F.desc)a.push('Descrição: '+F.desc);
+  if(F.mod)a.push('Modalidade: '+(F.mod==='__none__'?'(sem modalidade)':F.mod));
+  if(F.val)a.push('Valor: '+VR[F.val]);
+  if(F.kind)a.push('Tipo: '+(F.kind==='fixa'?'Fixa/Recorrente':F.kind==='variavel'?'Variável':'(sem tipo)'));
+  if(F.ign)a.push('Ignorar nos gráficos: '+(F.ign==='sim'?'Sim':'Não'));
+  return a;
 }
-function moveFilters(){ // período, banco e busca descem para logo acima da tabela (a numeração de IDs foi gerada antes)
-  const f=document.querySelector('#v-cons > .card.row'),q=$('tx').parentElement;
+const flt=()=>{const a=activeFilters();return a.length?`Análise restrita a: ${a.join(' · ')}`:'Sem filtros ativos: todos os lançamentos'};
+function updateBanner(){ // aviso visível quando algum filtro está acionado
+  const a=activeFilters(),b=$('fbanner'),on=a.length&&['cons','comp','ins','tips','audit'].includes(TAB);
+  b.hidden=!on;if(!on)return;
+  b.innerHTML=`<b data-uid="banner.title">${LB('banner.title')}</b> ${a.map(x=>`<span class="chip2">${esc(x)}</span>`).join(' ')} <button class="sec" id="fbClear">${LB('btn.fx')}</button>`;
+}
+function clearFilters(){AUTO=true;F=F0();$('fq').value='';refresh()}
+function filtersChanged(){fillT();render()}
+function bankDates(){const first={},last={};DATA.forEach(r=>{if(!r.bank)return;if(!first[r.bank]||r.date<first[r.bank])first[r.bank]=r.date;if(!last[r.bank]||r.date>last[r.bank])last[r.bank]=r.date});return{first,last}}
+function renderLast(){ // primeiro e último lançamento processado por banco/formato real (sem "Planilha Integral/Geral")
+  const names=SRC==='user'?allBanks():realFormats().map(f=>f.name),bd=bankDates(),d=x=>x?dmy(x):'—';
+  $('lastBank').innerHTML=names.length?names.map(n=>`<div class="lb2${bd.last[n]?'':' none'}" style="--bc:${bcol(n)}"><span>${esc(n)}</span><div><small data-uid="t.first">${LB('t.first')}</small><b>${d(bd.first[n])}</b></div><div><small data-uid="t.last">${LB('t.last')}</small><b>${d(bd.last[n])}</b></div></div>`).join(''):'<span class="mut sm">Nenhum banco cadastrado.</span>';
+}
+function moveFilters(){ // filtros unificados: período, busca e todos os dropdowns numa só barra, logo acima da tabela
+  const f=document.querySelector('#v-cons > .card.row'),q=$('tc').closest('label').parentElement;
   if(!f||!q)return;
   f.classList.remove('card');f.classList.add('fbar');f.removeAttribute('data-bid');
   q.parentElement.insertBefore(f,q);
+  ['tdt','tc','tb','tds','tmo','tvl','tkd','tig'].forEach(id=>f.insertBefore($(id).closest('label'),$('fq')));
+  q.remove();
 }
-function fillT(){
-  const cats=[...new Set(DATA.map(r=>r.cat).filter(Boolean))].sort(az),noCat=DATA.some(r=>!r.cat);
+function relocate(){ // painel de entrada e configurações ganham abas próprias (IDs estruturais preservados)
+  $('v-entry').appendChild($('panel'));$('panel').removeAttribute('data-bid');
+  $('sp-bank').appendChild($('v-fmts'));$('sp-rules').appendChild($('v-rules'));
+  $('v-fmts').hidden=false;$('v-rules').hidden=false;
+  $('sp-cat').appendChild($('catPanel'));$('catPanel').removeAttribute('data-bid');
+}
+function fillT(){ // sincroniza os controles com o estado único de filtros F
+  const cats=[...new Set(DATA.map(r=>r.cat).filter(Boolean))].sort(catCmp),noCat=DATA.some(r=>!r.cat);
   const banks=orderBanks(DATA.map(r=>r.bank).filter(Boolean));
   const days=[...new Set(DATA.map(r=>r.date))].sort().reverse(),months=[...new Set(DATA.map(r=>r.date.slice(0,7)))].sort().reverse();
   const descs=[...new Set(DATA.map(r=>r.desc))].sort(az);
-  if(T.cat&&T.cat!=='__none__'&&!cats.includes(T.cat))T.cat='';if(T.cat==='__none__'&&!noCat)T.cat='';
-  if(T.bank&&!banks.includes(T.bank))T.bank='';
-  if(T.date&&!(T.date.startsWith('m:')?months.includes(T.date.slice(2)):days.includes(T.date.slice(2))))T.date='';
-  if(T.desc&&!descs.includes(T.desc))T.desc='';
+  if(F.cat&&F.cat!=='__none__'&&!cats.includes(F.cat))F.cat='';if(F.cat==='__none__'&&!noCat)F.cat='';
+  if(F.bank&&!banks.includes(F.bank))F.bank='';
+  if(F.desc&&!descs.includes(F.desc))F.desc='';
   const o=(list,cur)=>list.map(x=>`<option value="${esc(x)}"${x===cur?' selected':''}>${esc(x)}</option>`).join('');
-  $('tc').innerHTML='<option value="">Todas as categorias</option>'+o(cats,T.cat)+(noCat?`<option value="__none__"${T.cat==='__none__'?' selected':''}>(sem categoria)</option>`:'');
-  $('tb').innerHTML='<option value="">Todos os bancos/cartões</option>'+o(banks,T.bank);
-  $('tdt').innerHTML='<option value="">Todas as datas</option><optgroup label="Mês">'+months.map(m=>`<option value="m:${m}"${T.date==='m:'+m?' selected':''}>${mlab(m)}</option>`).join('')+'</optgroup><optgroup label="Dia">'+days.map(d=>`<option value="d:${d}"${T.date==='d:'+d?' selected':''}>${dmy(d)}</option>`).join('')+'</optgroup>';
-  $('tds').innerHTML='<option value="">Todas as descrições</option>'+o(descs,T.desc);
-  $('tmo').value=T.mod;$('tvl').value=T.val;$('tkd').value=T.kind;$('tig').value=T.ign;
+  const eom=m=>{const[y,mm]=m.split('-').map(Number);return `${m}-${String(new Date(y,mm,0).getDate()).padStart(2,'0')}`};
+  const ds=DATA.map(r=>r.date).sort(),full=AUTO||(F.d0===(ds[0]||'')&&F.d1===(ds[ds.length-1]||''));
+  const mm=months.find(m=>F.d0===m+'-01'&&F.d1===eom(m));
+  const cur=full?'':(F.d0&&F.d0===F.d1&&days.includes(F.d0)?'d:'+F.d0:mm?'m:'+mm:'custom');
+  $('tc').innerHTML='<option value="">Todas as categorias</option>'+o(cats,F.cat)+(noCat?`<option value="__none__"${F.cat==='__none__'?' selected':''}>(sem categoria)</option>`:'');
+  $('tb').innerHTML='<option value="">Todos os bancos/cartões</option>'+o(banks,F.bank);
+  $('tdt').innerHTML='<option value="">Todas as datas</option><optgroup label="Mês">'+months.map(m=>`<option value="m:${m}"${cur==='m:'+m?' selected':''}>${mlab(m)}</option>`).join('')+'</optgroup><optgroup label="Dia">'+days.map(d=>`<option value="d:${d}"${cur==='d:'+d?' selected':''}>${dmy(d)}</option>`).join('')+'</optgroup>'+(cur==='custom'?'<option value="custom" selected>Período personalizado</option>':'');
+  $('tds').innerHTML='<option value="">Todas as descrições</option>'+o(descs,F.desc);
+  $('tmo').value=F.mod;$('tvl').value=F.val;$('tkd').value=F.kind;$('tig').value=F.ign;
+  $('f0').value=F.d0;$('f1').value=F.d1;
   $('banklist').innerHTML=allBanks().map(b=>`<option value="${esc(b)}">`).join('');
 }
 
@@ -682,17 +1072,15 @@ function bcol(n){const f=FM.find(x=>x.name===n);if(f&&f.color)return f.color;let
 /* ===== atualização ===== */
 function setSource(s){
   SRC=s;DATA=s==='user'?userRows():demo();seq=Math.max(0,...DATA.map(r=>r.id));
-  AUTO=true;F.q='';F.bank='';T=T0();$('fq').value='';SEL.clear();SELR.clear();undoRows=[];$('undo').hidden=true;
+  AUTO=true;F=F0();$('fq').value='';SEL.clear();SELR.clear();undoRows=[];$('undo').hidden=true;
   refresh();
 }
 function refresh(){
   const ds=DATA.map(r=>r.date).sort();
   if(AUTO){F.d0=ds[0]||'';F.d1=ds[ds.length-1]||'';$('f0').value=F.d0;$('f1').value=F.d1}
-  const banks=orderBanks(DATA.map(r=>r.bank).filter(Boolean));if(F.bank&&!banks.includes(F.bank))F.bank='';
-  $('fb').innerHTML='<option value="">Todos os bancos/cartões</option>'+banks.map(b=>`<option${b===F.bank?' selected':''}>${esc(b)}</option>`).join('');
   fillT();renderLast();fillRuleSelects();
   $('src').textContent=SRC==='user'?`· seus lançamentos (${DATA.length})`:'· dados fictícios de demonstração (substituídos ao adicionar o primeiro lançamento; não são salvos)';
-  $('sv').textContent=SRC==='user'?(STORE?'· salvo automaticamente neste navegador':'· salvamento local indisponível neste ambiente'):'· modo demonstração';
+  $('sv').textContent=SRC==='user'?(STORE?(SYNC.on?'· salvo neste aparelho e sincronizado com o Supabase':'· salvo automaticamente neste navegador'):'· salvamento local indisponível neste ambiente'):'· modo demonstração';
   render();
 }
 function commit(){if(SRC==='user')save();if(DATA.length)$('undo').hidden=true;refresh()}
@@ -706,7 +1094,7 @@ function pie(id,rs,sign,grp){
   if(!tot){$(id).innerHTML='<p class="mut">Sem lançamentos no período.</p>';return}
   if(e.length>8)e=[...e.slice(0,7),['Outras',sum(e.slice(7).map(x=>x[1]))]];
   const bi=grp==='bank'?Object.fromEntries(allBanks().map((b,i)=>[b,i])):null; // legenda: bancos na ordem configurada, categorias em A-Z
-  e.sort((x,y)=>x[0]==='Outras'?1:y[0]==='Outras'?-1:bi?(bi[x[0]]??999)-(bi[y[0]]??999)||az(x[0],y[0]):az(x[0],y[0]));
+  e.sort((x,y)=>x[0]==='Outras'?1:y[0]==='Outras'?-1:bi?(bi[x[0]]??999)-(bi[y[0]]??999)||az(x[0],y[0]):(sign>0?catCmpIn:catCmp)(x[0],y[0]));
   let a=-Math.PI/2;
   const it=e.map(([n,v],i)=>{
     const f=v/tot,a1=a+f*2*Math.PI,mid=(a+a1)/2,col=n==='Outras'?GRAY:(grp==='bank'?bcol(n):ccol(n)),tip=`${n}: ${brl(v)} (${pct(f*100)})`;
@@ -731,18 +1119,20 @@ function renderTable(){
   const vis=orderedCols().filter(c=>!UI.hide.includes(c.k)),rs=tableView(),nEx=rs.filter(exc).length;
   const ids=new Set(rs.map(r=>r.id));SELR.forEach(id=>{if(!ids.has(id))SELR.delete(id)}); // seleção só vale para linhas visíveis
   $('cnt').textContent=`(${rs.length} ${rs.length===1?'lançamento':'lançamentos'})`;
-  $('tmsg').textContent=!vis.length?`Todas as colunas estão ocultas. Use "${LB('btn.gear')}" para exibir.`:!rs.length?(DATA.length?'Nenhum lançamento para os filtros atuais.':'Nenhum lançamento ainda. Cole um extrato no painel acima ou adicione um lançamento.'):nEx?`${nEx} lançamento(s) esmaecidos (fatura, investimentos ou marcados para ignorar) ficam fora de cards, gráficos e análises.`:'';
+  $('tmsg').textContent=!vis.length?`Todas as colunas estão ocultas. Use "${LB('btn.gear')}" para exibir.`:!rs.length?(DATA.length?'Nenhum lançamento para os filtros atuais.':`Nenhum lançamento ainda. Cole um extrato em ${LB('nav.entry')} ou adicione um lançamento.`):nEx?`${nEx} lançamento(s) esmaecidos (fatura, investimentos ou marcados para ignorar) ficam fora de cards, gráficos e análises.`:'';
   if(!vis.length){$('tbl').innerHTML='';renderBulk();return}
   $('tbl').style.width=sum(vis.map(c=>W(c.k)))+'px';$('tbl').style.minWidth='100%';
   const cell=(c,r,i)=>c==='sel'?`<input type="checkbox" data-sel="${r.id}"${SELR.has(r.id)?' checked':''} aria-label="Selecionar linha">`:
     c==='n'?i+1:c==='date'?dmy(r.date):
-    c==='desc'?`${r.ign?'<span class="tag t-f">ignorado</span> ':''}${esc(r.desc)}`:
+    c==='desc'?`${dupW(r)}${r.ign?'<span class="tag t-f">ignorado</span> ':''}${esc(r.desc)}`:
     c==='mod'?`<select data-id="${r.id}" data-f="mod">${MODS.map(m=>`<option value="${m}"${m===r.mod?' selected':''}>${m||'—'}</option>`).join('')}</select>`:
     c==='cat'?`<select data-id="${r.id}" data-f="cat"><option value=""${r.cat?'':' selected'}>—</option>${catsFor(r).map(x=>`<option${x===r.cat?' selected':''}>${esc(x)}</option>`).join('')}</select>`:
     c==='kind'?`<select data-id="${r.id}" data-f="kind"><option value="">—</option><option value="fixa"${r.kind==='fixa'?' selected':''}>Fixa</option><option value="variavel"${r.kind==='variavel'?' selected':''}>Variável</option></select>`:
     c==='ign'?`<input type="checkbox" data-id="${r.id}" data-f="ign"${r.ign?' checked':''} title="Ignorar nos gráficos">`:
     c==='val'?brl(r.val):c==='x'?`<button class="xbtn" data-del="${r.id}" title="Remover">✕</button>`:esc(r[c]||'—');
-  const ED=['date','desc','val'],iv=vis.findIndex(c=>c.k==='val'),tot=sum(rs.filter(r=>!exc(r)).map(r=>r.val));
+  const DC={};DATA.forEach(r=>{const k=dupKey(r);DC[k]=(DC[k]||0)+1});
+  const dupW=r=>{const k=dupKey(r);return DC[k]>1&&!AUD.dismissed.includes('dup|'+k)?`<span class="dupw" data-tip="${esc(`Possível duplicidade: há ${DC[k]} lançamentos idênticos (mesma data, descrição e valor). Veja a aba ${LB('nav.audit')} para ignorar o aviso.`)}">⚠️</span> `:''};
+  const ED=['date','desc','val','quem'],iv=vis.findIndex(c=>c.k==='val'),tot=sum(rs.filter(r=>!exc(r)).map(r=>r.val));
   $('tbl').innerHTML=`<colgroup>${vis.map(c=>`<col data-k="${c.k}" style="width:${W(c.k)}px">`).join('')}</colgroup>
    <thead><tr>${vis.map(c=>`<th data-k="${c.k}"${c.k==='sel'?'':` data-uid="col.${c.k}"`} class="${c.r?'r':''}"${EDITM&&c.k!=='sel'?' draggable="true"':''}>${c.k==='sel'?'<input type="checkbox" id="selAllRows" title="Selecionar todas as linhas visíveis" aria-label="Selecionar todas">':['n','x'].includes(c.k)?LB('col.'+c.k):LB('col.'+c.k)+(SORT.k===c.k?(SORT.d>0?' ▲':' ▼'):'')}<i class="rz" data-k="${c.k}"></i></th>`).join('')}</tr></thead>
    <tbody>${rs.map((r,i)=>`<tr data-rid="${r.id}"${r.bank?` style="--bc:${bcol(r.bank)}"`:''} class="${[exc(r)?'ex':'',SELR.has(r.id)?'sel':''].filter(Boolean).join(' ')}">${vis.map(c=>`<td${ED.includes(c.k)?` data-edit="${c.k}" data-id="${r.id}"`:''} class="${[c.r?'r '+(r.val<0?'neg':'pos'):'',ED.includes(c.k)?'ed':''].filter(Boolean).join(' ')}" title="${esc(ED.includes(c.k)&&c.k!=='desc'?'Clique duas vezes para editar':['bank','desc'].includes(c.k)?r[c.k]||'':'')}">${cell(c.k,r,i)}</td>`).join('')}</tr>`).join('')}</tbody>`+
@@ -789,11 +1179,11 @@ function rowClick(tr,e){
 }
 
 /* ===== gerenciamento de categorias ===== */
-const CATKEY='painel-financeiro-categorias:v1';
+const CATKEY='categorias';
 let CEDIT=null,CDEL=null;
-function loadCats(){try{const o=JSON.parse(localStorage.getItem(CATKEY)||'null');if(o&&Array.isArray(o.out)&&Array.isArray(o.inn)){CATS=o.out.slice();CATS_IN_ALL=o.inn.slice();RENC=o.ren||{};if(Array.isArray(o.excl))EXCL=o.excl.slice();return true}}catch(e){}return false}
-function saveCats(){try{localStorage.setItem(CATKEY,JSON.stringify({v:1,out:CATS,inn:CATS_IN_ALL,ren:RENC,excl:EXCL}))}catch(e){}}
-function syncCats(){CATS.sort(az);CATS_IN_ALL.sort(az);ALLCATS=[...new Set([...CATS,...CATS_IN_ALL])].sort(az)} // A-Z em qualquer lista
+function loadCats(){try{const o=JSON.parse(kvGet(CATKEY)||'null');if(o&&Array.isArray(o.out)&&Array.isArray(o.inn)){CATS=o.out.slice();CATS_IN_ALL=o.inn.slice();RENC=o.ren||{};if(Array.isArray(o.excl))EXCL=o.excl.slice();return true}}catch(e){}return false}
+function saveCats(){kvSet(CATKEY,{v:1,out:CATS,inn:CATS_IN_ALL,ren:RENC,excl:EXCL})}
+function syncCats(){CATS.sort(catCmp);CATS_IN_ALL.sort(catCmpIn);ALLCATS=[...new Set([...CATS,...CATS_IN_ALL])].sort(catCmp)} // saídas: A-Z; entradas: Salário primeiro e depois A-Z; "Outros" sempre por último
 function fillCatSelects(){
   const o=ALLCATS.map(c=>`<option>${esc(c)}</option>`).join('');
   $('rcat').innerHTML='<option value="">— (não definir)</option>'+o;
@@ -970,15 +1360,15 @@ function fillFmt(){
 }
 function showHint(){
   const f=FM.find(x=>String(x.id)===$('fmt').value),m=f&&(f.mode||'cols');
-  $('hint').textContent=!f?`Cadastre um formato na aba ${LB('nav.fmts')} para colar extratos.`:
+  $('hint').textContent=!f?`Cadastre um formato em Configurações (⚙️) › ${LB('btn.subBank')} para colar extratos.`:
    m==='amazon'?'Cole o extrato em texto corrido: o painel acha data (DD/MM), descrição e valor por padrões de texto, sem precisar de colunas. Pagamentos, estornos e valores com "-" no fim entram como créditos.':
    m==='bb'?'Cole as linhas do extrato do BB (com data). O painel identifica Pix, Débito, Tarifa, Boleto e outros tipos, preenche a modalidade e limpa códigos, agências e horários da descrição. COMGAS, CONDOMINIO EDIFICIO MANACA, ENEL e GRPQA: dividido por 2 e categoria Casa.':
    m==='sheet'?'Cole a planilha com as colunas: Data | Banco Origem | Descrição | Modalidade | Categoria | Valor | Tipo | Ignorar nos gráficos | Quem. A coluna Banco Origem define o destino de cada linha. As linhas entram fielmente, sem regras automáticas.':
    `Cabeçalhos esperados — Data: "${f.cData}" · Descrição: "${f.cDesc}" · Valor: "${f.cValor}"${f.cQuem?` · Quem: "${f.cQuem}" (Ambos divide o valor por 2)`:''}${f.inv?' · Sinal do valor invertido.':''}`;
 }
 function renderFmts(){
-  const dash='<span class="mut">—</span>';
-  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Ordem</th><th>Cor</th><th>Formato</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map((f,i)=>{const c=(f.mode||'cols')==='cols';return `<tr><td style="white-space:nowrap"><button class="sec mv" data-fup="${f.id}" title="Subir"${i===0?' disabled':''}>▲</button> <button class="sec mv" data-fdn="${f.id}" title="Descer"${i===FM.length-1?' disabled':''}>▼</button></td><td><input type="color" data-fcol="${f.id}" value="${f.color||'#2563eb'}" title="Cor do banco" aria-label="Cor do banco ${esc(f.name)}"></td><td><b>${esc(f.name)}</b></td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
+  const dash='<span class="mut">—</span>',bd=bankDates();
+  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Ordem</th><th>Cor</th><th>Formato</th><th>1º lançamento</th><th>Último lançamento</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map((f,i)=>{const c=(f.mode||'cols')==='cols';return `<tr><td style="white-space:nowrap"><button class="sec mv" data-fup="${f.id}" title="Subir"${i===0?' disabled':''}>▲</button> <button class="sec mv" data-fdn="${f.id}" title="Descer"${i===FM.length-1?' disabled':''}>▼</button></td><td><input type="color" data-fcol="${f.id}" value="${f.color||'#2563eb'}" title="Cor do banco" aria-label="Cor do banco ${esc(f.name)}"></td><td><b>${esc(f.name)}</b></td><td>${bd.first[f.name]?dmy(bd.first[f.name]):dash}</td><td>${bd.last[f.name]?dmy(bd.last[f.name]):dash}</td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
 }
 const FF=['fname','fcdata','fcdesc','fcval','fcquem','fcbank','fccat'];
 function resetFmtForm(){EDITF=null;FF.forEach(i=>$(i).value='');$('fmode').value='cols';$('finv').checked=false;$('fdec').value='auto';$('fmod').value='';setLbl($('fsave'),LB('btn.fsave'));$('fcancel').hidden=true}
@@ -997,7 +1387,7 @@ function addManual(){
 }
 function add(){
   const text=$('inp').value,f=FM.find(x=>String(x.id)===$('fmt').value);
-  if(!f){$('msg').textContent=`Cadastre e selecione um formato na aba ${LB('nav.fmts')}.`;return}
+  if(!f){$('msg').textContent=`Cadastre e selecione um formato em Configurações (⚙️) › ${LB('btn.subBank')}.`;return}
   if(!text.trim()){$('msg').textContent='Cole os dados do extrato primeiro.';return}
   let res;try{res=parseFormat(f,text)}catch(e){$('msg').textContent=String(e);return}
   if(!res.rows.length){$('msg').textContent=`Nenhuma linha válida no formato "${f.name}" (${MODEL[f.mode||'cols']}). Confira o texto colado, a data e o separador decimal.`;return}
@@ -1014,10 +1404,10 @@ function add(){
     }
     DATA.push(row);
   });
-  const outside=!AUTO&&res.rows.some(r=>(F.d0&&r.date<F.d0)||(F.d1&&r.date>F.d1));
   $('inp').value='';commit();
+  const hid=DATA.slice(-res.rows.length).filter(r=>!fmatch(r)).length;
   const e=res.rows[0];
-  $('msg').textContent=`${res.rows.length} lançamento(s) adicionado(s) pelo formato "${f.name}"${res.skipped?`; ${res.skipped} linha(s) ignorada(s)`:''}.${wasDemo?' Modo demonstração encerrado.':''}${outside?` Alguns ficam fora do período filtrado: use "${LB('btn.fx')}".`:''} Conferir 1ª linha: ${dmy(e.date)} · ${e.desc.slice(0,30)} · ${brl(e.val)}`;
+  $('msg').textContent=`${res.rows.length} lançamento(s) adicionado(s) pelo formato "${f.name}"${res.skipped?`; ${res.skipped} linha(s) ignorada(s)`:''}.${wasDemo?' Modo demonstração encerrado.':''}${hid?` ${hid} ficam fora dos filtros ativos: use "${LB('btn.fx')}".`:''} Conferir 1ª linha: ${dmy(e.date)} · ${e.desc.slice(0,30)} · ${brl(e.val)}`;
 }
 
 /* ===== aba Regras ===== */
@@ -1079,7 +1469,7 @@ function renderComp(){
   const shownM=CPER==='3'?all.slice(-3):CPER==='6'?all.slice(-6):CPER.startsWith('m:')?[CPER.slice(2)]:all;
   let ms=shownM;if(ms.length===1){const i=all.indexOf(ms[0]);if(i>0)ms=[all[i-1],ms[0]]} // um mês só: o gráfico mostra também o anterior
   const T={};rs.forEach(r=>{const g=gkey(r),c=T[g]=T[g]||{},k=r.date.slice(0,7);c[k]=(c[k]||0)-r.val});
-  const cats=CGRP==='bank'?orderBanks(Object.keys(T)):Object.keys(T).sort(az),col=CGRP==='bank'?bcol:ccol;
+  const cats=CGRP==='bank'?orderBanks(Object.keys(T)):Object.keys(T).sort(catCmp),col=CGRP==='bank'?bcol:ccol;
   [...SEL].forEach(c=>{if(!cats.includes(c))SEL.delete(c)});
   const tot={};cats.forEach(c=>tot[c]=sum(Object.values(T[c])));
   $('catList').innerHTML=cats.map(c=>`<label><input type="checkbox" data-c="${esc(c)}"${SEL.has(c)?' checked':''}><i style="background:${col(c)}"></i>${esc(c)} <span class="mut sm">${brl(tot[c])}</span></label>`).join('');
@@ -1247,11 +1637,69 @@ $('cp').onclick=async()=>{
 };
 
 
+/* ===== auditoria: duplicidades e valores atípicos ===== */
+const AUDKEY='auditoria';
+let AUD={dismissed:[]},AUDSHOW=false,AUDMAP={};
+function loadAUD(){AUD={dismissed:[]};try{const o=JSON.parse(kvGet(AUDKEY)||'null');if(o&&Array.isArray(o.dismissed))AUD=o}catch(e){}}
+const saveAUD=()=>kvSet(AUDKEY,AUD);
+const dupKey=r=>`${r.date}|${r.desc}|${r.val.toFixed(2)}`; // mesma data, mesma descrição e mesmo valor
+function dupGroups(){const g={};DATA.forEach(r=>{(g[dupKey(r)]=g[dupKey(r)]||[]).push(r)});return Object.entries(g).filter(([,l])=>l.length>1).map(([k,l])=>({key:'dup|'+k,rows:l}))}
+const med=a=>{const v=[...a].sort((x,y)=>x-y),n=v.length;return n?(n%2?v[(n-1)/2]:(v[n/2-1]+v[n/2])/2):0};
+function outliers(){ // saídas muito acima do padrão: histórico da própria descrição (recorrentes) ou da categoria
+  const ex=DATA.filter(r=>r.val<0&&!exc(r)),byKey={};
+  ex.forEach(r=>{(byKey[key(r.desc)]=byKey[key(r.desc)]||[]).push(r)});
+  const reg=new Set(Object.keys(byKey).filter(k=>byKey[k].length>=4)),byCat={};
+  ex.forEach(r=>{if(!reg.has(key(r.desc)))(byCat[cn(r)]=byCat[cn(r)]||[]).push(r)});
+  const out=[];
+  ex.forEach(r=>{
+    const a=Math.abs(r.val),k=key(r.desc);let why='';
+    if(reg.has(k)){
+      const h=byKey[k].map(x=>Math.abs(x.val)),m=med(h),mad=med(h.map(x=>Math.abs(x-m)));
+      if(a>m*2.5&&a-m>Math.max(80,4*1.4826*mad))why=`${pct((a/m-1)*100)} acima do valor habitual de "${r.desc}" (mediana ${brl(m)} em ${h.length} lançamentos)`;
+    }else{
+      const h=(byCat[cn(r)]||[]).map(x=>Math.abs(x.val));
+      if(h.length>=8){const m=med(h),mad=med(h.map(x=>Math.abs(x-m)));
+        if(a>2*m&&a>m+3.5*1.4826*Math.max(mad,m*.1))why=`${(a/m).toLocaleString('pt-BR',{maximumFractionDigits:1})}× a mediana da categoria "${cn(r)}" (${brl(m)})`}
+    }
+    if(why)out.push({key:`out|${r.date}|${r.desc}|${r.val.toFixed(2)}|${r.bank}`,row:r,why});
+  });
+  return out.sort((a,b)=>Math.abs(b.row.val)-Math.abs(a.row.val));
+}
+function renderAudit(){
+  const dups=dupGroups().filter(g=>g.rows.some(fmatch)),outs=outliers().filter(o=>fmatch(o.row));
+  const off=x=>AUD.dismissed.includes(x.key),dl=dups.filter(g=>!off(g)),ol=outs.filter(o=>!off(o));
+  AUDMAP={};
+  $('audCards').innerHTML=`<div class="k out"><span data-uid="t.aud.dup">${LB('t.aud.dup')}</span><b>${dl.length}</b></div><div class="k out"><span data-uid="t.aud.out">${LB('t.aud.out')}</span><b>${ol.length}</b></div><div class="k"><span data-uid="t.aud.off">${LB('t.aud.off')}</span><b>${dups.length-dl.length+outs.length-ol.length}</b></div>`;
+  const acts=x=>`<span class="acts"><button class="sec" data-aview="${esc(x.key)}">Ver na tabela</button>${off(x)?`<button class="sec" data-arest="${esc(x.key)}">Restaurar aviso</button>`:`<button class="sec" data-adis="${esc(x.key)}">Ignorar aviso</button>`}</span>`;
+  const dv=AUDSHOW?dups:dl,ov=AUDSHOW?outs:ol;
+  $('audDup').innerHTML=dv.length?dv.map(g=>{const r=g.rows[0];AUDMAP[g.key]={date:r.date,desc:r.desc};return`<div class="aud${off(g)?' off':''}"><div><span class="atag">⚠️ Duplicado ×${g.rows.length}</span> <b>${esc(r.desc)}</b> · ${dmy(r.date)} · ${brl(r.val)}<div class="mut sm">Bancos: ${esc([...new Set(g.rows.map(x=>x.bank||'—'))].join(', '))}</div></div>${acts(g)}</div>`}).join(''):'<p class="mut" style="margin:0">Nenhuma transação duplicada encontrada.</p>';
+  $('audOut').innerHTML=ov.length?ov.map(o=>{const r=o.row;AUDMAP[o.key]={date:r.date,desc:r.desc};return`<div class="aud${off(o)?' off':''}"><div><span class="atag">📈 Atípico</span> <b>${esc(r.desc)}</b> · ${dmy(r.date)} · <b class="neg">${brl(r.val)}</b> · ${esc(cn(r))} · ${esc(r.bank||'—')}<div class="mut sm">${esc(o.why)}</div></div>${acts(o)}</div>`}).join(''):'<p class="mut" style="margin:0">Nenhum valor atípico encontrado.</p>';
+  $('audShow').checked=AUDSHOW;
+}
+$('v-audit').addEventListener('click',e=>{
+  const dis=e.target.closest('[data-adis]'),rest=e.target.closest('[data-arest]'),view=e.target.closest('[data-aview]');
+  if(dis){AUD.dismissed.push(dis.dataset.adis);saveAUD();renderAudit()}
+  else if(rest){AUD.dismissed=AUD.dismissed.filter(k=>k!==rest.dataset.arest);saveAUD();renderAudit()}
+  else if(view){const m=AUDMAP[view.dataset.aview];if(!m)return;F=F0();AUTO=false;F.d0=F.d1=m.date;F.desc=m.desc;fillT();setTab('cons')}
+  else if(e.target.closest('#audRestore')){AUD.dismissed=[];saveAUD();renderAudit()}
+});
+$('audShow').onchange=e=>{AUDSHOW=e.target.checked;renderAudit()};
+
 /* ===== navegação ===== */
-const TABS=['cons','comp','ins','tips','rules','fmts'];
-function render(){({cons:renderCons,comp:renderComp,ins:renderIns,tips:renderTips,rules:renderRules,fmts:renderFmts})[TAB]()}
-function setTab(t){TAB=t;document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));for(const k of TABS)$('v-'+k).hidden=k!==t;render()}
+const TABS=['entry','cons','comp','ins','tips','audit','cfg'];
+let CFGSUB='bank';
+function renderEntry(){renderLast();showHint()}
+function setSub(k){
+  CFGSUB=k;document.querySelectorAll('#subnav [data-sub]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sub===k));
+  [['bank','sp-bank'],['cat','sp-cat'],['rules','sp-rules']].forEach(([a,id])=>{$(id).hidden=a!==k});
+  if(k==='bank')renderFmts();else if(k==='cat')renderCats();else{fillRuleSelects();renderRules()}
+}
+const renderCfg=()=>setSub(CFGSUB);
+function render(){updateBanner();({entry:renderEntry,cons:renderCons,comp:renderComp,ins:renderIns,tips:renderTips,audit:renderAudit,cfg:renderCfg})[TAB]()}
+function setTab(t){TAB=t;document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));$('cfgBtn').setAttribute('aria-pressed',t==='cfg');for(const k of TABS)$('v-'+k).hidden=k!==t;render()}
 $('nav').onclick=e=>{const b=e.target.closest('[data-t]');if(b)setTab(b.dataset.t)};
+$('cfgBtn').onclick=()=>setTab('cfg');
+$('subnav').onclick=e=>{const b=e.target.closest('[data-sub]');if(b)setSub(b.dataset.sub)};
 
 /* ===== entrada de dados ===== */
 $('fmt').onchange=showHint;
@@ -1308,21 +1756,28 @@ $('rtbl').addEventListener('click',e=>{
 });
 $('rapply').onclick=()=>{let n=0;DATA.forEach(r=>{if(applyRule(r,CR))n++});commit();$('rmsg').textContent=`${n} lançamento(s) correspondem às regras e foram atualizados.`};
 
-/* ===== filtros ===== */
-$('f0').onchange=e=>{F.d0=e.target.value;AUTO=false;render()};
-$('f1').onchange=e=>{F.d1=e.target.value;AUTO=false;render()};
-$('fb').onchange=e=>{F.bank=e.target.value;render()};
+/* ===== filtros (um único conjunto: tabela e todas as análises) ===== */
+$('f0').onchange=e=>{F.d0=e.target.value;AUTO=false;filtersChanged()};
+$('f1').onchange=e=>{F.d1=e.target.value;AUTO=false;filtersChanged()};
+$('tdt').onchange=e=>{
+  const v=e.target.value;
+  if(v==='')AUTO=true;
+  else if(v.startsWith('m:')){const m=v.slice(2),[y,mm]=m.split('-').map(Number);AUTO=false;F.d0=m+'-01';F.d1=`${m}-${String(new Date(y,mm,0).getDate()).padStart(2,'0')}`}
+  else if(v.startsWith('d:')){AUTO=false;F.d0=F.d1=v.slice(2)}
+  else return;
+  refresh();
+};
 $('fq').oninput=e=>{F.q=e.target.value;render()};
 $('ign').onchange=e=>{UI.ex=e.target.checked;saveUI();render()};
-$('fx').onclick=()=>{AUTO=true;F.q='';F.bank='';$('fq').value='';refresh()};
-[['tc','cat'],['tb','bank'],['tdt','date'],['tds','desc'],['tmo','mod'],['tvl','val'],['tkd','kind'],['tig','ign']].forEach(([id,k])=>{$(id).onchange=e=>{T[k]=e.target.value;renderTable()}});
-$('tx').onclick=()=>{T=T0();fillT();renderTable()};
+$('fx').onclick=clearFilters;
+$('fbanner').addEventListener('click',e=>{if(e.target.closest('#fbClear'))clearFilters()});
+[['tc','cat'],['tb','bank'],['tds','desc'],['tmo','mod'],['tvl','val'],['tkd','kind'],['tig','ign']].forEach(([id,k])=>{$(id).onchange=e=>{F[k]=e.target.value;filtersChanged()}});
 
 /* ===== tabela: colunas, ordenação, seleção e edição ===== */
-$('gear').onclick=e=>{e.stopPropagation();$('menu').hidden=!$('menu').hidden};
-document.addEventListener('click',e=>{if(!e.target.closest('.dd'))$('menu').hidden=true});
+$('gear').onclick=e=>{e.stopPropagation();$('profMenu').hidden=true;$('menu').hidden=!$('menu').hidden};
+document.addEventListener('click',e=>{if(!e.target.closest('.dd')){$('menu').hidden=true;$('profMenu').hidden=true}});
 $('menu').addEventListener('change',e=>{const k=e.target.dataset.k;if(!k)return;UI.hide=e.target.checked?UI.hide.filter(x=>x!==k):[...UI.hide,k];saveUI();renderTable()});
-$('menu').addEventListener('click',e=>{if(e.target.id==='mreset'){UI={hide:[],w:{},ex:UI.ex};saveUI();buildMenu();renderTable()}});
+$('menu').addEventListener('click',e=>{if(e.target.id==='mreset'){UI={hide:DEFHIDE.slice(),w:{},ex:UI.ex,v:2};saveUI();buildMenu();renderTable()}});
 $('tbl').addEventListener('click',e=>{
   SHIFT=e.shiftKey;
   const x=e.target.closest('[data-del]');if(x){DATA=DATA.filter(r=>r.id!=x.dataset.del);commit();return}
@@ -1345,13 +1800,14 @@ $('tbl').addEventListener('dblclick',e=>{ // edição direta: Data, Descrição 
   const f=td.dataset.edit,inp=document.createElement('input');
   inp.className='cin';
   if(f==='date'){inp.type='date';inp.value=r.date}
-  else{inp.type='text';inp.value=f==='val'?r.val.toFixed(2).replace('.',','):r.desc;if(f==='val')inp.inputMode='decimal'}
+  else{inp.type='text';inp.value=f==='val'?r.val.toFixed(2).replace('.',','):f==='quem'?(r.quem||''):r.desc;if(f==='val')inp.inputMode='decimal'}
   td.textContent='';td.appendChild(inp);inp.focus();try{inp.select()}catch(_){}
   let done=false;
   const finish=ok=>{if(done)return;done=true;
     if(ok){
       if(f==='date'){if(inp.value)r.date=inp.value}
       else if(f==='desc'){const v=inp.value.trim();if(v)r.desc=v}
+      else if(f==='quem'){r.quem=inp.value.trim()}
       else{DEC='auto';const n=num(inp.value);if(isFinite(n))r.val=Math.round(n*100)/100}
     }
     commit(); // salva no LocalStorage e recalcula cards e gráficos
@@ -1416,7 +1872,7 @@ $('lbed').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.prev
 $('lbed').addEventListener('blur',()=>closeEd(true));
 document.addEventListener('click',e=>{ // no modo de edição, cliques em rótulos não executam ações (as abas continuam navegando)
   if(!EDITM)return;const el=e.target.closest('[data-uid]');
-  if(el&&!el.closest('#nav')&&!e.target.closest('#editToggle,#editReset,#lbed')){e.preventDefault();e.stopImmediatePropagation()}
+  if(el&&!el.closest('#nav,#subnav')&&el.id!=='cfgBtn'&&!e.target.closest('#editToggle,#editReset,#lbed')){e.preventDefault();e.stopImmediatePropagation()}
 },true);
 document.addEventListener('dblclick',e=>{if(!EDITM)return;const el=e.target.closest('[data-uid]');if(el){e.preventDefault();openEd(el)}},true);
 let DB=null,DC=null;
@@ -1452,21 +1908,63 @@ document.addEventListener('drop',e=>{
 document.addEventListener('dragend',()=>{if(DB){DB.draggable=false;DB.classList.remove('dragging');DB=null}DC=null});
 document.addEventListener('mouseup',()=>{if(DB&&!DB.classList.contains('dragging')){DB.draggable=false;DB=null}});
 
-/* ===== início ===== */
-$('md').value=new Date().toISOString().slice(0,10);
-$('mmod').innerHTML=MODS.map(m=>`<option value="${m}">${m||'Modalidade (—)'}</option>`).join('');
-$('ign').checked=UI.ex;
-$('tmo').innerHTML='<option value="">Todas as modalidades</option>'+MODS.filter(Boolean).map(m=>`<option>${m}</option>`).join('')+'<option value="__none__">(sem modalidade)</option>';
-$('tvl').innerHTML='<option value="">Todos os valores</option>'+Object.entries(VR).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
-$('tkd').innerHTML='<option value="">Todos os tipos</option><option value="fixa">Fixa/Recorrente</option><option value="variavel">Variável</option><option value="__none__">(sem tipo)</option>';
-$('tig').innerHTML='<option value="">Todos</option><option value="sim">Sim (ignorados)</option><option value="nao">Não (contam)</option>';
-if(!loadRules()){CR=SEED.map((r,i)=>({...r,id:i+1}));saveRules()}
-if(!loadFormats()){FM=SEED_FMT.map((f,i)=>({...f,id:i+1}));saveFormats()}else migrateFormats();
-ensureColors();
-loadCats();syncCats();saveCats();fillCatSelects();renderCats();
-loadIFC();Object.assign(DEF,DYNDEF);COLS.forEach(c=>{DEF['col.'+c.k]=c.t});initUid();initBlocks();applyLabels();applyLayout();moveFilters();
-buildMenu();fillFmt();
-setSource(userRows().length?'user':'demo');setTab('cons');
+/* ===== perfis e sincronização: eventos ===== */
+$('lockGo').onclick=tryUnlock;
+$('lockInput').oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4);if(e.target.value.length===4)tryUnlock()};
+$('lockInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
+$('lockProf').onchange=()=>{$('lockInput').value='';$('lockMsg').textContent='';try{$('lockInput').focus()}catch(e){}};
+$('lockNew').onclick=()=>openProfModal('new');
+$('lockSetupBtn').onclick=()=>openProfModal('new');
+$('pmSave').onclick=saveProfForm;$('pmTest').onclick=testProfForm;
+$('pmCancel').onclick=()=>{$('profModal').hidden=true};
+$('pmPin').oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)};
+$('pmCopy').onclick=async()=>{try{await navigator.clipboard.writeText(SQL_SETUP);$('pmMsg').textContent='SQL copiado. Cole no SQL Editor do Supabase e execute.'}catch(e){$('pmMsg').textContent='Não foi possível copiar: selecione o texto do SQL manualmente.'}};
+$('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;PDEL=false;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
+$('profMenu').addEventListener('click',e=>{
+  const sw=e.target.closest('[data-pswitch]'),ac=e.target.closest('[data-pact]');
+  if(sw){if(sw.dataset.pswitch!==SESSION.profile.id){PROFS.active=sw.dataset.pswitch;saveProfs();reloadPage()}else $('profMenu').hidden=true}
+  else if(ac){
+    const a=ac.dataset.pact;
+    if(a==='new'){$('profMenu').hidden=true;openProfModal('new')}
+    else if(a==='edit'){$('profMenu').hidden=true;openProfModal('edit')}
+    else if(a==='lock')reloadPage();
+    else if(a==='del'){if(PDEL)deleteCurrentProfile();else{PDEL=true;renderProfMenu()}}
+  }
+});
+$('syncAlert').addEventListener('click',e=>{
+  if(e.target.closest('#saRetry')){SYNC.state='syncing';resync()}
+  else if(e.target.closest('#saEdit'))openProfModal('edit');
+  else if(e.target.closest('#saResolve'))openConflict();
+});
+$('cfCloud').onclick=()=>resolveConflict('cloud');
+$('cfLocal').onclick=()=>resolveConflict('local');
+
+/* ===== início (executa depois que o perfil é liberado) ===== */
+async function startApp(){
+  if(SYNC.on){setSync('syncing');await syncCore()}else setSync('local');
+  loadUI();loadAUD();
+  $('md').value=new Date().toISOString().slice(0,10);
+  $('mmod').innerHTML=MODS.map(m=>`<option value="${m}">${m||'Modalidade (—)'}</option>`).join('');
+  $('ign').checked=UI.ex;
+  $('tmo').innerHTML='<option value="">Todas as modalidades</option>'+MODS.filter(Boolean).map(m=>`<option>${m}</option>`).join('')+'<option value="__none__">(sem modalidade)</option>';
+  $('tvl').innerHTML='<option value="">Todos os valores</option>'+Object.entries(VR).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+  $('tkd').innerHTML='<option value="">Todos os tipos</option><option value="fixa">Fixa/Recorrente</option><option value="variavel">Variável</option><option value="__none__">(sem tipo)</option>';
+  $('tig').innerHTML='<option value="">Todos</option><option value="sim">Sim (ignorados)</option><option value="nao">Não (contam)</option>';
+  if(!loadRules()){CR=SEED.map((r,i)=>({...r,id:i+1}));saveRules()}
+  if(!loadFormats()){FM=SEED_FMT.map((f,i)=>({...f,id:i+1}));saveFormats()}else migrateFormats();
+  ensureColors();
+  loadCats();syncCats();saveCats();fillCatSelects();renderCats();
+  loadIFC();Object.assign(DEF,DYNDEF);COLS.forEach(c=>{DEF['col.'+c.k]=c.t});initUid();initBlocks();applyLabels();applyLayout();relocate();moveFilters();
+  buildMenu();fillFmt();
+  $('profBtn').title='Perfil: '+SESSION.profile.name;
+  setSource(userRows().length?'user':'demo');setTab('cons');
+  SYNC.booted=true;
+  document.body.classList.remove('locked');$('lock').hidden=true;$('profModal').hidden=true;
+  if(SYNC.state==='conflict')openConflict();
+  else if(SYNC.on&&SYNC.state==='ok')pushDirty();
+  startPolling();
+}
+bootLock();
 </script>
 </body>
 </html>
