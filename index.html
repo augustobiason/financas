@@ -72,6 +72,12 @@ input[type=text],input[type=number]{border:1px solid var(--bd);border-radius:8px
 td input[type=date],td select{width:100%;padding:3px 4px;font-size:.85rem;border-radius:6px}
 .xbtn{background:none;border:0;color:var(--mut);cursor:pointer;font-size:1rem}.xbtn:hover{color:var(--neg)}
 tr.ex td{opacity:.5}
+.bigbtn{width:100%;padding:14px;font-size:1.05rem}
+.help{margin:12px 0;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.help summary{cursor:pointer;font-weight:600}.help ol{padding-left:1.25rem;margin:10px 0}.help li{margin-bottom:6px;font-size:.9rem}
+.help pre{max-height:200px}
+.syncalert.info{background:var(--warnb);border-color:var(--warn)}
+.syncchip.readonly{border-color:var(--warn);color:var(--warn)}
 .adv{flex:1 1 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 16px;padding:12px;margin-top:4px;border:1px dashed var(--ac);border-radius:10px;background:var(--card);animation:advdrop .18s ease}
 .adv .advt{grid-column:1/-1;margin:0}
 .adv label{display:flex;flex-direction:column;align-items:stretch;gap:4px;font-size:.82rem;color:var(--mut)}
@@ -370,17 +376,32 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   </div>
 </div>
 <div class="modal" id="profModal" hidden><div class="mbox" role="dialog" aria-modal="true">
-  <div class="mt" id="pmTitle">Novo perfil</div>
-  <div class="rform">
-    <label>Nome do Usuário<input type="text" id="pmName" autocomplete="off"></label>
+  <div class="mt" id="pmTitle">Configuração inicial</div>
+  <p class="mut sm" style="margin:0 0 12px">Crie o perfil e conecte a planilha do Google que será a base de dados. Cada perfil guarda a própria planilha, protegida pela senha de 4 dígitos.</p>
+  <button class="act bigbtn" id="pmBase" type="button">📄 Criar Planilha Base</button>
+  <details id="pmHelp" class="help"><summary>Passo a passo: como preparar a planilha</summary>
+    <ol>
+      <li>Clique em <b>Criar Planilha Base</b>. Uma planilha em branco abre no seu Google Drive (se você configurou um modelo, abre a tela "Fazer uma cópia"). O script de apoio é copiado automaticamente.</li>
+      <li>Na planilha, abra <b>Extensões › Apps Script</b>, apague o código que estiver lá, cole o script (botão abaixo) e salve. Escolha a função <b>configurar</b> e clique em <b>Executar</b> (autorize o acesso). Ela cria as abas Lançamentos, Formatos, Regras e Config.</li>
+      <li>Ainda no Apps Script: <b>Implantar › Nova implantação › App da Web</b>, com "Executar como: Eu" e "Quem tem acesso: Qualquer pessoa". Copie a URL do app da Web (termina em <code>/exec</code>).</li>
+      <li>Na planilha, copie o código longo da URL, o trecho entre <code>/d/</code> e <code>/edit</code>, e cole em <b>Google Sheet ID</b>.</li>
+      <li>Cole a URL do passo 3 em <b>URL do Apps Script</b>. O <b>Token do script</b> já vem preenchido e é o mesmo que está dentro do script copiado.</li>
+      <li>Opcional, só para leitura direta: a <b>Google API Key</b> exige compartilhar a planilha como "Qualquer pessoa com o link pode ler" e ativar a Google Sheets API. Uma API Key <b>não consegue gravar</b>, mesmo com a planilha compartilhada para edição; por isso a gravação automática passa pelo Apps Script.</li>
+    </ol>
+    <pre id="pmCode"></pre><button class="sec" id="pmCopy" type="button">Copiar script</button>
+    <p class="mut sm" style="margin:10px 0 0">Privacidade: com o Apps Script a planilha pode continuar privada. Compartilhar como "Qualquer pessoa com o link" deixa os dados legíveis por quem tiver o link.</p>
+  </details>
+  <div class="rform" style="margin-top:12px">
+    <label>Nome do Perfil<input type="text" id="pmName" autocomplete="off"></label>
     <label id="pmPinL">Senha de 4 dígitos<input type="password" id="pmPin" inputmode="numeric" maxlength="4" autocomplete="new-password"></label>
-    <label>SUPABASE_URL<input type="text" id="pmUrl" placeholder="https://xxxx.supabase.co" autocomplete="off"></label>
-    <label>SUPABASE_ANON_KEY<input type="password" id="pmKey" autocomplete="off"></label>
+    <label>Google Sheet ID<input type="text" id="pmSheet" placeholder="código entre /d/ e /edit da URL" autocomplete="off"></label>
+    <label>Google API Key<input type="password" id="pmKey" placeholder="opcional (leitura direta)" autocomplete="off"></label>
+    <label>URL do Apps Script (gravação)<input type="text" id="pmScript" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+    <label>Token do script<input type="text" id="pmToken" autocomplete="off"></label>
   </div>
   <p class="mut sm" id="pmMsg" role="status" style="margin:10px 0"></p>
   <div class="row"><button class="act" id="pmSave">Salvar</button><button class="sec" id="pmTest">Testar conexão</button><button class="sec" id="pmCancel">Cancelar</button></div>
-  <details style="margin-top:12px"><summary>SQL para criar a tabela no Supabase (SQL Editor)</summary><pre id="pmSql"></pre><button class="sec" id="pmCopy">Copiar SQL</button></details>
-  <p class="mut sm" style="margin:10px 0 0">URL e chave podem ficar em branco para usar o perfil só neste aparelho. A chave anon é pública por natureza: quem tiver a URL e a chave acessa a tabela. Use um projeto próprio para os seus dados e não compartilhe esses valores.</p>
+  <p class="mut sm" style="margin:10px 0 0">Planilha, API Key e token em branco: o perfil funciona só neste aparelho e você conecta depois pelo ícone 👤 › Editar conexão.</p>
 </div></div>
 <div class="modal" id="cfModal" hidden><div class="mbox" role="dialog" aria-modal="true">
   <div class="mt">Conflito de sincronização</div>
@@ -615,27 +636,94 @@ const cn=r=>r.cat||'Sem categoria';
 const ccol=c=>c==='Sem categoria'?GRAY:PAL[Math.max(0,ALLCATS.indexOf(c))%PAL.length]; // cor estável por categoria (posição na lista A-Z)
 function classify(d,v,b){const c=catMap(classify0(d,v,b));return ALLCATS.includes(c)?c:''} // categoria excluída ⇒ em branco
 
-/* ===== perfis, bloqueio por senha e sincronização com o Supabase ===== */
+/* ===== perfis, bloqueio por senha e sincronização com o Google Sheets ===== */
 const PROFKEY='painel-financeiro-perfis:v1'; // perfis deste aparelho (credenciais criptografadas com a senha)
 const LEGACY={lancamentos:'painel-consolidador-bancos:v1',regras:'painel-financeiro-regras:v1',formatos:'painel-financeiro-formatos:v1',categorias:'painel-financeiro-categorias:v1',interface:'painel-financeiro-interface:v1',auditoria:'painel-financeiro-auditoria:v1',ui:'painel-financeiro-ui:v1'};
 const CLOUDKEYS=['lancamentos','formatos','regras','categorias','auditoria','interface']; // 'ui' (largura de colunas etc.) fica só no aparelho
-const SQL_SETUP=`create table if not exists public.painel_dados (
-  chave text primary key,
-  valor jsonb not null,
-  rev integer not null default 1,
-  atualizado_em timestamptz not null default now()
-);
-alter table public.painel_dados enable row level security;
-drop policy if exists "painel_anon_all" on public.painel_dados;
-create policy "painel_anon_all" on public.painel_dados
-  for all to anon using (true) with check (true);`;
+const SHEET_TEMPLATE_ID=''; // opcional: ID de uma planilha-modelo sua (já com as abas); se preenchido, "Criar Planilha Base" abre a tela "Fazer uma cópia"
+const GTABS={lancamentos:'Lançamentos',formatos:'Formatos',regras:'Regras'}; // categorias, auditoria e interface ficam na aba Config
+const GHEAD={
+ lancamentos:['Data','Banco Origem','Descrição','Modalidade','Categoria','Valor','Tipo','Ignorar nos gráficos','Quem','Original'],
+ formatos:['Nome','Leitura','Cabeçalho Data','Cabeçalho Descrição','Cabeçalho Valor','Cabeçalho Quem','Cabeçalho Banco','Cabeçalho Categoria','Inverter sinal','Decimal','Modalidade','Cor','ID'],
+ regras:['Palavra-chave','Banco','Tipo','Modalidade','Categoria','Ignorar','Quem','Descrição simplificada','ID']};
+const GFMT={lancamentos:['t','t','t','t','t','n','t','t','t','t'],formatos:Array(13).fill('t'),regras:Array(9).fill('t')};
+const SCRIPT_TPL=`// Painel Financeiro: script de apoio (cole em Extensões > Apps Script e salve).
+// 1) Escolha a função "configurar" e clique em Executar (cria as abas). 2) Implantar > Nova implantação > App da Web:
+//    Executar como: Eu | Quem tem acesso: Qualquer pessoa. 3) Copie a URL terminada em /exec para o painel.
+var TOKEN = __TOKEN__; // precisa ser igual ao campo "Token do script" do painel
+var ABAS = {lancamentos:'Lançamentos', formatos:'Formatos', regras:'Regras', config:'Config'};
+var CAB = __CAB__;
+function configurar(){ garantirAbas(SpreadsheetApp.getActiveSpreadsheet()); }
+function garantirAbas(ss){
+  Object.keys(ABAS).forEach(function(k){
+    var n = ABAS[k], sh = ss.getSheetByName(n);
+    if(!sh) sh = ss.insertSheet(n);
+    if(sh.getLastRow() === 0){
+      var h = CAB[n];
+      sh.getRange(1, 1, 1, h.length).setValues([h]).setFontWeight('bold');
+      sh.setFrozenRows(1);
+    }
+  });
+  ss.getSheetByName('Config').getRange(1, 2, 50, 1).setNumberFormat('@');
+}
+function out(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+function doGet(){ return out({ok: true, painel: 'financeiro'}); }
+function doPost(e){
+  var b;
+  try { b = JSON.parse(e.postData.contents); } catch(err){ return out({error: 'json'}); }
+  if(b.token !== TOKEN) return out({error: 'token'});
+  var lock = LockService.getScriptLock();
+  lock.waitLock(25000);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    garantirAbas(ss);
+    if(b.action === 'read') return out({ok: true, ranges: lerTudo(ss)});
+    if(b.action === 'save') return out(salvar(ss, b));
+    return out({error: 'acao'});
+  } catch(err){
+    return out({error: String(err)});
+  } finally {
+    lock.releaseLock();
+  }
+}
+function lerTudo(ss){
+  var tz = ss.getSpreadsheetTimeZone(), r = {};
+  Object.keys(ABAS).forEach(function(k){
+    var sh = ss.getSheetByName(ABAS[k]);
+    var v = sh && sh.getLastRow() > 0 ? sh.getDataRange().getValues() : [];
+    r[k] = v.map(function(l){ return l.map(function(c){ return c instanceof Date ? Utilities.formatDate(c, tz, 'yyyy-MM-dd') : c; }); });
+  });
+  return r;
+}
+function salvar(ss, b){
+  var cfg = ss.getSheetByName('Config'), n = cfg.getLastRow() - 1;
+  var dados = n > 0 ? cfg.getRange(2, 1, n, 4).getValues() : [];
+  var lin = -1;
+  for(var i = 0; i < dados.length; i++){ if(String(dados[i][0]) === b.name){ lin = i; break; } }
+  var atual = lin >= 0 ? (Number(dados[lin][2]) || 0) : 0;
+  if((Number(b.rev) || 0) !== atual) return {conflict: true, rev: atual};
+  if(b.aba && b.values && b.values.length){
+    var sh = ss.getSheetByName(b.aba), nr = b.values.length, nc = b.values[0].length;
+    sh.clearContents();
+    for(var c = 0; c < nc; c++){ sh.getRange(1, c + 1, nr, 1).setNumberFormat(b.fmt[c] === 'n' ? 'General' : '@'); }
+    sh.getRange(1, 1, nr, nc).setValues(b.values);
+    sh.setFrozenRows(1);
+  }
+  var novo = atual + 1, agora = new Date().toISOString(), valor = b.aba ? '' : JSON.stringify(b.valor);
+  var linha = [[b.name, valor, novo, agora]];
+  if(lin >= 0) cfg.getRange(lin + 2, 1, 1, 4).setValues(linha);
+  else cfg.getRange(cfg.getLastRow() + 1, 1, 1, 4).setValues(linha);
+  return {ok: true, rev: novo};
+}
+`;
+function scriptSource(token){return SCRIPT_TPL.replace('__TOKEN__',()=>JSON.stringify(token||'TROQUE-ESTE-TOKEN')).replace('__CAB__',()=>JSON.stringify({'Lançamentos':GHEAD.lancamentos,'Formatos':GHEAD.formatos,'Regras':GHEAD.regras,'Config':['Chave','Valor','Rev','Atualizado em']}))}
 const MEM={};let MEMONLY=false; // se o navegador bloquear o LocalStorage, os dados ficam só na memória desta sessão
 function lsGet(k){if(k in MEM)return MEM[k];try{const v=localStorage.getItem(k);return v===undefined?null:v}catch(e){MEMONLY=true;return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v);delete MEM[k]}catch(e){MEMONLY=true;MEM[k]=String(v)}}
 function lsDel(k){delete MEM[k];try{localStorage.removeItem(k)}catch(e){MEMONLY=true}}
 function lsKeys(){const o=new Set(Object.keys(MEM));try{for(let i=0;i<localStorage.length;i++)o.add(localStorage.key(i))}catch(e){MEMONLY=true}return[...o]}
 let PID=null,SESSION=null,PROFS={v:1,active:null,profiles:[]},PMODE='new',PDEL=false;
-const SYNC={on:false,state:'local',msg:'',dirty:new Set(),ver:{},revs:{},busy:false,timer:null,retry:null,conflict:[],last:'',url:'',key:'',booted:false,poll:null};
+const SYNC={on:false,mode:'local',state:'local',msg:'',dirty:new Set(),ver:{},revs:{},hashes:{},busy:false,timer:null,retry:null,conflict:[],last:'',sheet:'',key:'',script:'',token:'',booted:false,poll:null};
 const nowHM=()=>new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 function reloadPage(){location.reload()}
 
@@ -651,8 +739,8 @@ function kvSet(n,obj){
   putLocal(n,str);
   if(CLOUDKEYS.includes(n)){SYNC.dirty.add(n);SYNC.ver[n]=(SYNC.ver[n]||0)+1;persistMeta();schedulePush()}
 }
-function persistMeta(){try{lsSet(nsKey('sync'),JSON.stringify({dirty:[...SYNC.dirty],revs:SYNC.revs}))}catch(e){}}
-function loadMeta(){try{const o=JSON.parse(lsGet(nsKey('sync'))||'null');SYNC.dirty=new Set(o&&o.dirty||[]);SYNC.revs=o&&o.revs||{}}catch(e){SYNC.dirty=new Set();SYNC.revs={}}}
+function persistMeta(){try{lsSet(nsKey('sync'),JSON.stringify({dirty:[...SYNC.dirty],revs:SYNC.revs,hashes:SYNC.hashes}))}catch(e){}}
+function loadMeta(){try{const o=JSON.parse(lsGet(nsKey('sync'))||'null');SYNC.dirty=new Set(o&&o.dirty||[]);SYNC.revs=o&&o.revs||{};SYNC.hashes=o&&o.hashes||{}}catch(e){SYNC.dirty=new Set();SYNC.revs={};SYNC.hashes={}}}
 function adoptLegacy(){ // dados de versões sem perfil passam para o primeiro perfil que entrar
   if(lsGet('painel-financeiro-legado')==='1')return;
   let moved=false;
@@ -687,36 +775,105 @@ const saveProfs=()=>{try{lsSet(PROFKEY,JSON.stringify(PROFS))}catch(e){}};
 const lockState=id=>{try{return JSON.parse(lsGet(`pf:${id}:lock`)||'{}')}catch(e){return{}}};
 const saveLock=(id,o)=>{try{lsSet(`pf:${id}:lock`,JSON.stringify(o))}catch(e){}};
 
-/* --- cliente do Supabase (PostgREST) --- */
-const normUrl=u=>(u||'').trim().replace(/\/+$/,'').replace(/\/rest\/v1$/,'');
-async function sbWith(url,key,path,opt){
-  const ctrl=typeof AbortController!=='undefined'?new AbortController():null,to=setTimeout(()=>ctrl&&ctrl.abort(),10000);
-  try{return await fetch(url+'/rest/v1/'+path,{...(opt||{}),signal:ctrl&&ctrl.signal,headers:{apikey:key,...(/^eyJ/.test(key)?{Authorization:'Bearer '+key}:{}),'Content-Type':'application/json',...((opt&&opt.headers)||{})}})}
-  finally{clearTimeout(to)}
+/* --- Google Sheets: conversão entre as abas da planilha e os dados do painel --- */
+const hashStr=x=>{let h=5381;for(let i=0;i<x.length;i++)h=((h<<5)+h+x.charCodeAt(i))>>>0;return h.toString(36)+x.length};
+const yn=b=>b?'Sim':'Não',txt=x=>String(x==null?'':x).trim();
+function toTab(name,v){ // dados do painel → matriz da aba (cabeçalho + linhas)
+  if(name==='lancamentos')return{values:[GHEAD.lancamentos,...(v.rows||[]).map(r=>[r.date,txt(r.bank),txt(r.desc),txt(r.mod),txt(r.cat),r.val,KL[r.kind]||'',yn(r.ign),txt(r.quem),String(r.orig||'')])],fmt:GFMT.lancamentos};
+  if(name==='formatos')return{values:[GHEAD.formatos,...(v.formats||[]).map(f=>[txt(f.name),MODEL[f.mode||'cols'],txt(f.cData),txt(f.cDesc),txt(f.cValor),txt(f.cQuem),txt(f.cBank),txt(f.cCat),yn(f.inv),DECL[f.dec||'auto'],txt(f.mod),txt(f.color),String(f.id)])],fmt:GFMT.formatos};
+  return{values:[GHEAD.regras,...(v.rules||[]).map(r=>[txt(r.kw),txt(r.bank),r.kind==='fixa'?'Fixa':r.kind==='variavel'?'Variável':'',txt(r.mod),txt(r.cat),r.ign==='sim'?'Sim':r.ign==='nao'?'Não':'',txt(r.quem),txt(r.simp),String(r.id)])],fmt:GFMT.regras};
 }
-const sb=(path,opt)=>sbWith(SYNC.url,SYNC.key,path,opt);
+const canon=(n,v)=>GTABS[n]?JSON.stringify(toTab(n,v).values):JSON.stringify(v);
+function normDate(x){
+  if(typeof x==='number')return new Date(Math.round((x-25569)*864e5)).toISOString().slice(0,10); // data serial do Sheets
+  x=txt(x);if(/^\d{4}-\d{2}-\d{2}/.test(x))return x.slice(0,10);
+  return date(x,new Date().getFullYear());
+}
+const toNum=x=>{if(typeof x==='number')return x;DEC='auto';return num(txt(x))};
+function fromTab(name,vals){ // matriz da aba → dados do painel (lê pelo nome do cabeçalho: a ordem das colunas pode mudar)
+  const H=(vals[0]||[]).map(h=>norm(txt(h))),rows=vals.slice(1).filter(r=>r.some(c=>txt(c)!==''));
+  const ix=(...ks)=>H.findIndex(h=>ks.some(k=>h===norm(k))),g=(r,i)=>i<0||r[i]==null?'':r[i];
+  const yes=x=>/^(sim|s|1|true|x)/.test(norm(txt(x)));
+  const ident=(r,i,k)=>{const n=+txt(g(r,i));return Number.isFinite(n)&&n>0?n:Date.now()+k};
+  if(name==='lancamentos'){
+    const I={d:ix('Data'),b:ix('Banco Origem','Banco'),s:ix('Descrição','Descricao'),m:ix('Modalidade'),c:ix('Categoria'),v:ix('Valor'),k:ix('Tipo'),g:ix('Ignorar nos gráficos','Ignorar'),q:ix('Quem'),o:ix('Original')},out=[];
+    rows.forEach(r=>{const dt=normDate(g(r,I.d)),n=toNum(g(r,I.v));if(!dt||!isFinite(n))return;out.push({date:dt,bank:txt(g(r,I.b)),desc:txt(g(r,I.s)),mod:MODN(g(r,I.m)),cat:txt(g(r,I.c)),val:Math.round(n*100)/100,kind:KINDN(g(r,I.k)),ign:yes(g(r,I.g)),quem:txt(g(r,I.q)),orig:String(g(r,I.o)||'')})});
+    return{v:1,rows:out.map((r,i)=>({id:i+1,...r}))};
+  }
+  if(name==='formatos'){
+    const I={n:ix('Nome'),m:ix('Leitura'),d:ix('Cabeçalho Data'),s:ix('Cabeçalho Descrição'),v:ix('Cabeçalho Valor'),q:ix('Cabeçalho Quem'),b:ix('Cabeçalho Banco'),c:ix('Cabeçalho Categoria'),i:ix('Inverter sinal'),e:ix('Decimal'),o:ix('Modalidade'),k:ix('Cor'),id:ix('ID')};
+    const mk=x=>Object.keys(MODEL).find(k=>k===txt(x)||norm(MODEL[k])===norm(txt(x)))||'cols',dk=x=>Object.keys(DECL).find(k=>norm(DECL[k])===norm(txt(x)))||'auto';
+    return{v:1,formats:rows.filter(r=>txt(g(r,I.n))).map((r,i)=>({id:ident(r,I.id,i),name:txt(g(r,I.n)),mode:mk(g(r,I.m)),cData:txt(g(r,I.d)),cDesc:txt(g(r,I.s)),cValor:txt(g(r,I.v)),cQuem:txt(g(r,I.q)),cBank:txt(g(r,I.b)),cCat:txt(g(r,I.c)),inv:yes(g(r,I.i)),dec:dk(g(r,I.e)),mod:MODN(g(r,I.o)),color:txt(g(r,I.k))}))};
+  }
+  const I={w:ix('Palavra-chave'),b:ix('Banco'),k:ix('Tipo'),m:ix('Modalidade'),c:ix('Categoria'),g:ix('Ignorar'),q:ix('Quem'),s:ix('Descrição simplificada'),id:ix('ID')};
+  return{v:2,rules:rows.filter(r=>txt(g(r,I.w))).map((r,i)=>({id:ident(r,I.id,i),kw:txt(g(r,I.w)),bank:txt(g(r,I.b)),kind:KINDN(g(r,I.k)),mod:MODN(g(r,I.m)),cat:txt(g(r,I.c)),ign:/^sim/.test(norm(txt(g(r,I.g))))?'sim':/^n/.test(norm(txt(g(r,I.g))))?'nao':'',quem:txt(g(r,I.q)),simp:txt(g(r,I.s))}))};
+}
+function fromTabs(tabs){ // abas → [{chave,valor,rev,hash}] (mesmo formato que o motor de sincronização usa)
+  const cfg={};
+  (tabs.config||[]).slice(1).forEach(r=>{if(r[0]){let v=null;try{v=r[1]?JSON.parse(r[1]):null}catch(e){}cfg[txt(r[0])]={valor:v,rev:Number(r[2])||0}}});
+  const out=[];
+  for(const n of CLOUDKEYS){
+    let valor=null,rev=cfg[n]?cfg[n].rev:0;
+    if(GTABS[n]){const v=fromTab(n,tabs[n]||[]);if((v.rows||v.formats||v.rules).length||cfg[n])valor=v}
+    else if(cfg[n]&&cfg[n].valor)valor=cfg[n].valor;
+    if(valor)out.push({chave:n,valor,rev,hash:hashStr(canon(n,valor))});
+  }
+  return out;
+}
+
+/* --- transporte: Apps Script (leitura e gravação) ou API do Sheets com API Key (somente leitura) --- */
+const credNow=()=>({sheet:SYNC.sheet,key:SYNC.key,script:SYNC.script,token:SYNC.token});
+const normSheet=x=>{x=(x||'').trim();const m=/\/d\/([A-Za-z0-9_-]+)/.exec(x);return m?m[1]:x};
+async function tfetch(url,opt,ms){
+  const ctrl=typeof AbortController!=='undefined'?new AbortController():null,to=setTimeout(()=>ctrl&&ctrl.abort(),ms||12000);
+  try{return await fetch(url,{...(opt||{}),signal:ctrl&&ctrl.signal})}finally{clearTimeout(to)}
+}
 async function httpErr(r){let t='';try{t=await r.text()}catch(e){}return Object.assign(new Error('HTTP '+r.status),{status:r.status,body:t})}
-function classifyErr(e){
-  const st=e&&e.status;
-  if(st===401||st===403)return{kind:'auth',msg:'chave incorreta ou sem permissão (confira a SUPABASE_ANON_KEY e as políticas RLS)'};
-  if(st===404)return{kind:'table',msg:'tabela "painel_dados" não encontrada ou URL incorreta (rode o SQL de configuração)'};
-  if(st)return{kind:'http',msg:`o Supabase respondeu com erro ${st}`};
-  if(e&&e.name==='AbortError')return{kind:'net',msg:'tempo esgotado ao falar com o Supabase'};
-  return{kind:'net',msg:'sem conexão com o Supabase (ou URL incorreta)'};
+async function scriptCall(c,payload){
+  const r=await tfetch(c.script,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:c.token,...payload}),redirect:'follow'},30000);
+  if(!r.ok)throw await httpErr(r);
+  let j;try{j=JSON.parse(await r.text())}catch(e){throw Object.assign(new Error('script'),{kind:'script'})}
+  if(j.error==='token')throw Object.assign(new Error('token'),{kind:'token'});
+  if(j.error)throw Object.assign(new Error(j.error),{kind:'script',detail:j.error});
+  return j;
 }
-async function cloudPull(){const r=await sb('painel_dados?select=chave,valor,rev');if(!r.ok)throw await httpErr(r);return r.json()}
+async function gsTabs(c){
+  if(c.script&&c.token)return (await scriptCall(c,{action:'read'})).ranges;
+  const q=['Lançamentos','Formatos','Regras','Config'].map(n=>'ranges='+encodeURIComponent(`'${n}'`)).join('&');
+  const r=await tfetch(`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(c.sheet)}/values:batchGet?${q}&valueRenderOption=UNFORMATTED_VALUE&key=${encodeURIComponent(c.key)}`);
+  if(!r.ok)throw await httpErr(r);
+  const j=await r.json(),t={};
+  ['lancamentos','formatos','regras','config'].forEach((k,i)=>{t[k]=(j.valueRanges&&j.valueRanges[i]&&j.valueRanges[i].values)||[]});
+  return t;
+}
+const gsPull=async c=>fromTabs(await gsTabs(c));
+const gsPush=(n,val,rev)=>scriptCall(credNow(),GTABS[n]?{action:'save',name:n,rev,aba:GTABS[n],...toTab(n,val)}:{action:'save',name:n,rev,valor:val});
+function classifyErr(e){
+  const st=e&&e.status,b=(e&&e.body)||'';
+  if(e&&e.kind==='token')return{kind:'auth',msg:'token do Apps Script incorreto (o campo "Token do script" deve ser igual ao TOKEN dentro do script)'};
+  if(e&&e.kind==='script')return{kind:'script',msg:'o Apps Script não respondeu como esperado (implante como App da Web, "Executar como: Eu" e "Quem tem acesso: Qualquer pessoa", e confira a URL terminada em /exec)'};
+  if(st===400&&/API key not valid|API_KEY_INVALID/i.test(b))return{kind:'auth',msg:'Google API Key inválida'};
+  if(st===400)return{kind:'table',msg:'a planilha não tem as abas Lançamentos, Formatos, Regras e Config (rode a função "configurar" do script)'};
+  if(st===403)return{kind:'auth',msg:'planilha privada ou Google Sheets API não habilitada para esta chave (compartilhe como "Qualquer pessoa com o link" ou use o Apps Script)'};
+  if(st===404)return{kind:'table',msg:'planilha não encontrada (confira o Google Sheet ID ou a URL do script)'};
+  if(st)return{kind:'http',msg:`o Google respondeu com erro ${st}`};
+  if(e&&e.name==='AbortError')return{kind:'net',msg:'tempo esgotado ao falar com o Google'};
+  return{kind:'net',msg:'sem conexão com o Google (ou endereço incorreto)'};
+}
 
 /* --- estado da sincronização e alertas visuais --- */
-const CHIP={local:['💾','Local'],syncing:['☁️','…'],ok:['☁️','Sincronizado'],offline:['⚠️','Offline'],error:['⚠️','Erro'],conflict:['⚠️','Conflito']};
+const CHIP={local:['💾','Local'],syncing:['☁️','…'],ok:['☁️','Sincronizado'],readonly:['📖','Leitura'],offline:['⚠️','Offline'],error:['⚠️','Erro'],conflict:['⚠️','Conflito']};
 function setSync(state,msg){
   SYNC.state=state;SYNC.msg=msg||'';
-  const c=CHIP[state],chip=$('syncChip'),a=$('syncAlert');
-  chip.textContent=`${c[0]} ${c[1]}`;chip.className='syncchip '+state;
-  chip.title=state==='local'?'Somente neste aparelho: nenhum Supabase configurado neste perfil':state==='ok'?`Sincronizado com o Supabase${SYNC.last?' às '+SYNC.last:''}`:state==='syncing'?'Sincronizando com o Supabase':state==='conflict'?'Conflito de sincronização a resolver':`Modo offline: ${msg}`;
+  const ro=state==='ok'&&SYNC.mode==='ro',c=CHIP[ro?'readonly':state],chip=$('syncChip'),a=$('syncAlert');
+  chip.textContent=`${c[0]} ${c[1]}`;chip.className='syncchip '+(ro?'readonly':state);
+  chip.title=state==='local'?'Somente neste aparelho: nenhuma planilha do Google configurada neste perfil':ro?'Somente leitura: as alterações não são gravadas na planilha (configure o Apps Script)':state==='ok'?`Sincronizado com a planilha do Google${SYNC.last?' às '+SYNC.last:''}`:state==='syncing'?'Sincronizando com a planilha do Google':state==='conflict'?'Conflito de sincronização a resolver':`Modo offline: ${msg}`;
+  a.className='syncalert';
   if(state==='offline'||state==='error'){
     a.hidden=false;
-    a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o Supabase'}</b> — ${esc(msg)}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':''}. <button class="sec" id="saRetry">Tentar novamente</button>${state==='error'?' <button class="sec" id="saEdit">Editar conexão</button>':''}`;
-  }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b>⚠️ Conflito de sincronização</b> — os dados mudaram na nuvem enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
+    a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o Google'}</b> — ${esc(msg)}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':''}. <button class="sec" id="saRetry">Tentar novamente</button>${state==='error'?' <button class="sec" id="saEdit">Editar conexão</button>':''}`;
+  }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b>⚠️ Conflito de sincronização</b> — a planilha mudou (em outro aparelho ou à mão) enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
+  else if(ro){a.className='syncalert info';a.hidden=false;a.innerHTML='<b>📖 Modo somente leitura</b> — o painel lê a planilha pela Google API Key, mas as alterações ficam só neste aparelho (uma API Key não consegue gravar). Para gravar automaticamente, configure o Apps Script. <button class="sec" id="saEdit">Editar conexão</button>'}
   else a.hidden=true;
 }
 function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{e.hidden=true},4500)}
@@ -726,24 +883,15 @@ function handleSyncError(e){
 }
 
 /* --- motor de sincronização: uma linha por chave, com controle de revisão (sem sobrescrever sem avisar) --- */
-function schedulePush(){if(!SYNC.on||!['ok','syncing'].includes(SYNC.state))return;clearTimeout(SYNC.timer);SYNC.timer=setTimeout(pushDirty,350)}
-async function pushDirty(){
-  if(!SYNC.on||SYNC.busy||!SYNC.dirty.size||!['ok','syncing'].includes(SYNC.state))return;
+function schedulePush(){if(!SYNC.on||SYNC.mode!=='rw'||!['ok','syncing'].includes(SYNC.state))return;clearTimeout(SYNC.timer);SYNC.timer=setTimeout(pushDirty,350)}
+async function pushDirty(){ // grava na planilha, em segundo plano, o que mudou (uma chave por vez, com controle de revisão)
+  if(!SYNC.on||SYNC.mode!=='rw'||SYNC.busy||!SYNC.dirty.size||!['ok','syncing'].includes(SYNC.state))return;
   SYNC.busy=true;setSync('syncing');
   try{
     for(const n of [...SYNC.dirty]){
-      const v0=SYNC.ver[n]||0,val=JSON.parse(rawLocal(n)||'null'),rev=SYNC.revs[n];
-      if(rev===undefined){
-        const r=await sb('painel_dados',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify({chave:n,valor:val,rev:1})});
-        if(r.status===409){SYNC.conflict=[n];setSync('conflict');openConflict();return}
-        if(!r.ok)throw await httpErr(r);
-        SYNC.revs[n]=1;
-      }else{
-        const r=await sb(`painel_dados?chave=eq.${encodeURIComponent(n)}&rev=eq.${rev}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({valor:val,rev:rev+1,atualizado_em:new Date().toISOString()})});
-        if(!r.ok)throw await httpErr(r);
-        if(!(await r.json()).length){SYNC.conflict=[n];setSync('conflict');openConflict();return}
-        SYNC.revs[n]=rev+1;
-      }
+      const v0=SYNC.ver[n]||0,val=JSON.parse(rawLocal(n)||'null'),j=await gsPush(n,val,SYNC.revs[n]||0);
+      if(j.conflict){SYNC.conflict=[n];setSync('conflict');openConflict();return}
+      SYNC.revs[n]=j.rev;SYNC.hashes[n]=hashStr(canon(n,val));
       if((SYNC.ver[n]||0)===v0)SYNC.dirty.delete(n);
       persistMeta();
     }
@@ -751,17 +899,19 @@ async function pushDirty(){
   }catch(e){handleSyncError(e)}
   finally{SYNC.busy=false;if(SYNC.state==='ok'&&SYNC.dirty.size)schedulePush()}
 }
-async function syncCore(){ // baixa a nuvem e reconcilia; devolve as chaves atualizadas a partir da nuvem
+async function syncCore(){ // lê a planilha e reconcilia; devolve as chaves atualizadas a partir dela
   if(SYNC.busy)return null;SYNC.busy=true;
   try{
-    const rows=await cloudPull(),cloud={},changed=[],conf=[];
+    const rows=await gsPull(credNow()),cloud={},changed=[],conf=[];
     rows.forEach(r=>{cloud[r.chave]=r});
     for(const n of CLOUDKEYS){
       const c=cloud[n],dirty=SYNC.dirty.has(n);
       if(c){
-        if(dirty){if(c.rev!==SYNC.revs[n])conf.push(n)}
-        else if(c.rev!==SYNC.revs[n]||rawLocal(n)===null){putLocal(n,JSON.stringify(c.valor));SYNC.revs[n]=c.rev;changed.push(n)}
-      }else{delete SYNC.revs[n];if(rawLocal(n)!==null)SYNC.dirty.add(n)}
+        const ext=c.rev!==SYNC.revs[n]||(SYNC.hashes[n]!==undefined&&c.hash!==SYNC.hashes[n]); // mudou na planilha (outro aparelho ou edição manual)
+        if(dirty){if(ext&&SYNC.mode==='rw')conf.push(n)}
+        else if(ext||rawLocal(n)===null){putLocal(n,JSON.stringify(c.valor));SYNC.revs[n]=c.rev;SYNC.hashes[n]=c.hash;changed.push(n)}
+        else if(SYNC.hashes[n]===undefined)SYNC.hashes[n]=c.hash;
+      }else{delete SYNC.revs[n];delete SYNC.hashes[n];if(rawLocal(n)!==null&&SYNC.mode==='rw')SYNC.dirty.add(n)}
     }
     persistMeta();SYNC.last=nowHM();
     if(conf.length){SYNC.conflict=conf;setSync('conflict');if(SYNC.booted)openConflict();return null}
@@ -773,18 +923,18 @@ async function resync(quiet){
   if(!SYNC.on||SYNC.busy||SYNC.state==='conflict')return;
   if(!quiet)setSync('syncing');
   const ch=await syncCore();
-  if(ch&&ch.length){reloadFromStore();toast('Dados atualizados a partir da nuvem.')}
+  if(ch&&ch.length){reloadFromStore();toast('Dados atualizados a partir da planilha.')}
   if(SYNC.state==='ok')pushDirty();
 }
-function openConflict(){$('cfText').textContent=`Os dados "${SYNC.conflict.join('", "')}" foram alterados na nuvem (em outro dispositivo) e também neste aparelho. Escolha qual versão manter:`;$('cfModal').hidden=false}
+function openConflict(){$('cfText').textContent=`Os dados "${SYNC.conflict.join('", "')}" foram alterados na planilha (em outro aparelho ou à mão) e também neste aparelho. Escolha qual versão manter:`;$('cfModal').hidden=false}
 async function resolveConflict(choice){
   const names=SYNC.conflict.slice();$('cfModal').hidden=true;SYNC.conflict=[];
   try{
-    const cloud={};(await cloudPull()).forEach(r=>{cloud[r.chave]=r});
+    const cloud={};(await gsPull(credNow())).forEach(r=>{cloud[r.chave]=r});
     for(const n of names){
       const c=cloud[n];
-      if(choice==='cloud'){if(c){putLocal(n,JSON.stringify(c.valor));SYNC.revs[n]=c.rev}else delete SYNC.revs[n];SYNC.dirty.delete(n)}
-      else{if(c)SYNC.revs[n]=c.rev;else delete SYNC.revs[n];SYNC.dirty.add(n);SYNC.ver[n]=(SYNC.ver[n]||0)+1}
+      if(choice==='cloud'){if(c){putLocal(n,JSON.stringify(c.valor));SYNC.revs[n]=c.rev;SYNC.hashes[n]=c.hash}else{delete SYNC.revs[n];delete SYNC.hashes[n]}SYNC.dirty.delete(n)}
+      else{if(c){SYNC.revs[n]=c.rev;SYNC.hashes[n]=c.hash}else{delete SYNC.revs[n];delete SYNC.hashes[n]}SYNC.dirty.add(n);SYNC.ver[n]=(SYNC.ver[n]||0)+1}
     }
     persistMeta();setSync('ok');
     if(choice==='cloud'&&SYNC.booted)reloadFromStore();
@@ -831,9 +981,9 @@ async function enter(p,r){
   if(SYNC.entering)return;SYNC.entering=true;
   try{
     PID=p.id;SESSION={profile:p,aes:r.aes,cred:r.cred};
-    SYNC.url=normUrl(r.cred.url);SYNC.key=r.cred.key||'';SYNC.on=!!(SYNC.url&&SYNC.key);
+    applyCred(r.cred);
     loadMeta();adoptLegacy();
-    $('lockMsg').textContent=SYNC.on?'Sincronizando com o Supabase…':'Abrindo…';
+    $('lockMsg').textContent=SYNC.on?'Carregando a planilha do Google…':'Abrindo…';
     await startApp();
     if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: use a nuvem para não perder os dados ao fechar.');
   }catch(e){
@@ -844,27 +994,36 @@ async function enter(p,r){
 }
 
 /* --- cadastro de perfis (modal) e menu do ícone 👤 --- */
+function applyCred(c){ // define o modo: gravação (Apps Script + token), leitura (Sheet ID + API Key) ou só local
+  SYNC.sheet=normSheet(c.sheet);SYNC.key=(c.key||'').trim();SYNC.script=(c.script||'').trim();SYNC.token=c.token||'';
+  SYNC.mode=SYNC.script&&SYNC.token?'rw':SYNC.sheet&&SYNC.key?'ro':'local';SYNC.on=SYNC.mode!=='local';
+}
+function rndToken(){const a=new Uint8Array(12);try{crypto.getRandomValues(a)}catch(e){for(let i=0;i<12;i++)a[i]=Math.random()*256}return[...a].map(x=>x.toString(36).padStart(2,'0')).join('').slice(0,18)}
 function openProfModal(mode){
   PMODE=mode;
-  $('pmTitle').textContent=mode==='new'?(SESSION?'Novo perfil':'Criar perfil'):'Editar conexão do perfil';
+  $('pmTitle').textContent=mode==='new'?(SESSION?'Novo perfil':'Configuração inicial'):'Editar conexão do perfil';
   $('pmName').value=mode==='edit'?SESSION.profile.name:'';$('pmName').disabled=mode==='edit';
   $('pmPin').value='';$('pmPinL').hidden=mode==='edit';
-  $('pmUrl').value=mode==='edit'?SESSION.cred.url||'':'';$('pmKey').value=mode==='edit'?SESSION.cred.key||'':'';
+  const c=mode==='edit'?SESSION.cred:{};
+  $('pmSheet').value=c.sheet||'';$('pmKey').value=c.key||'';$('pmScript').value=c.script||'';$('pmToken').value=c.token||rndToken();
+  $('pmCode').textContent=scriptSource($('pmToken').value);
   $('pmMsg').textContent=(SECURE?'':'Este navegador/ambiente não oferece criptografia forte (WebCrypto): as credenciais ficam apenas ofuscadas neste aparelho. ')+(MEMONLY?'O navegador bloqueou o armazenamento local: o perfil só vale nesta sessão.':'');
   $('pmCancel').hidden=!SESSION&&!PROFS.profiles.length;
-  $('pmSql').textContent=SQL_SETUP;
-  $('profModal').hidden=false;try{($(mode==='edit'?'pmUrl':'pmName')).focus()}catch(e){}
+  $('profModal').hidden=false;try{$(mode==='edit'?'pmSheet':'pmName').focus()}catch(e){}
 }
 function readProfForm(){
-  const name=$('pmName').value.trim(),pin=$('pmPin').value,url=normUrl($('pmUrl').value),key=$('pmKey').value.trim();
+  const name=$('pmName').value.trim(),pin=$('pmPin').value,sheet=normSheet($('pmSheet').value),key=$('pmKey').value.trim(),script=$('pmScript').value.trim(),token=$('pmToken').value.trim();
   if(PMODE==='new'){
-    if(!name)return{err:'Informe o nome do usuário.'};
+    if(!name)return{err:'Informe o nome do perfil.'};
     if(PROFS.profiles.some(p=>norm(p.name)===norm(name)))return{err:'Já existe um perfil com esse nome.'};
     if(!/^\d{4}$/.test(pin))return{err:'A senha deve ter exatamente 4 dígitos.'};
   }
-  if((url||key)&&!(url&&key))return{err:'Para usar a nuvem, informe SUPABASE_URL e SUPABASE_ANON_KEY.'};
-  if(url&&!/^https?:\/\/[^\s]+$/.test(url))return{err:'SUPABASE_URL inválida (ex.: https://xxxx.supabase.co).'};
-  return{name,pin,url,key};
+  if(sheet||key||script){
+    if(script&&!/^https:\/\/script\.google(usercontent)?\.com\/\S+/.test(script))return{err:'URL do Apps Script inválida (deve começar com https://script.google.com/macros/s/ e terminar em /exec).'};
+    if(script&&!token)return{err:'Informe o Token do script (o mesmo TOKEN que está dentro do script).'};
+    if(!(script&&token)&&!(sheet&&key))return{err:'Para conectar, informe o URL do Apps Script + Token (leitura e gravação) ou o Google Sheet ID + Google API Key (somente leitura).'};
+  }
+  return{name,pin,sheet,key,script,token:script?token:''};
 }
 async function saveProfForm(){
   const b=$('pmSave');if(b.disabled)return;b.disabled=true;
@@ -874,7 +1033,7 @@ async function saveProfForm(){
 }
 async function saveProfFormInner(){
   const f=readProfForm();if(f.err){$('pmMsg').textContent=f.err;return}
-  const cred={url:f.url,key:f.key};
+  const cred={sheet:f.sheet,key:f.key,script:f.script,token:f.token};
   $('pmMsg').textContent=PMODE==='new'?'Criando o perfil…':'Salvando…';
   if(PMODE==='new'){
     const{p,aes}=await makeProfile(f.name,f.pin,cred);
@@ -882,17 +1041,17 @@ async function saveProfFormInner(){
     if(!SESSION){await enter(p,{cred,aes})}else{PROFS.active=SESSION.profile.id;saveProfs();toast(`Perfil "${f.name}" criado. Use o ícone 👤 para alternar.`);renderProfMenu()}
   }else{
     const p=SESSION.profile;p.cred=p.enc?await seal(SESSION.aes,cred):{plain:plainEnc(cred)};saveProfs();
-    SESSION.cred=cred;SYNC.url=f.url;SYNC.key=f.key;SYNC.on=!!(f.url&&f.key);$('profModal').hidden=true;
-    clearTimeout(SYNC.retry);
-    if(SYNC.on){SYNC.state='syncing';SYNC.conflict=[];await resync()}else setSync('local');
+    SESSION.cred=cred;applyCred(cred);$('profModal').hidden=true;
+    clearTimeout(SYNC.retry);SYNC.conflict=[];
+    if(SYNC.on){SYNC.state='syncing';await resync()}else setSync('local');
     refresh();toast('Conexão atualizada.');
   }
 }
 async function testProfForm(){
-  const url=normUrl($('pmUrl').value),key=$('pmKey').value.trim();
-  if(!url||!key){$('pmMsg').textContent='Informe SUPABASE_URL e SUPABASE_ANON_KEY para testar.';return}
+  const c={sheet:normSheet($('pmSheet').value),key:$('pmKey').value.trim(),script:$('pmScript').value.trim(),token:$('pmToken').value.trim()};
+  if(!(c.script&&c.token)&&!(c.sheet&&c.key)){$('pmMsg').textContent='Informe o URL do Apps Script + Token, ou o Google Sheet ID + Google API Key, para testar.';return}
   $('pmMsg').textContent='Testando…';
-  try{const r=await sbWith(url,key,'painel_dados?select=chave&limit=1');if(!r.ok)throw await httpErr(r);$('pmMsg').textContent='✅ Conexão e tabela "painel_dados" funcionando.'}
+  try{const rows=await gsPull(c);$('pmMsg').textContent=`✅ Conexão funcionando (${c.script&&c.token?'leitura e gravação pelo Apps Script':'somente leitura pela API Key'}). ${rows.length?`Encontrei ${rows.length} grupo(s) de dados.`:'A planilha ainda está vazia: os dados deste aparelho serão enviados ao entrar.'}`}
   catch(e){$('pmMsg').textContent='❌ '+classifyErr(e).msg}
 }
 function renderProfMenu(){
@@ -1118,7 +1277,7 @@ function refresh(){
   if(AUTO){F.d0=ds[0]||'';F.d1=ds[ds.length-1]||'';$('f0').value=F.d0;$('f1').value=F.d1}
   fillT();renderLast();fillRuleSelects();
   $('src').textContent=SRC==='user'?`· seus lançamentos (${DATA.length})`:'· dados fictícios de demonstração (substituídos ao adicionar o primeiro lançamento; não são salvos)';
-  $('sv').textContent=SRC==='user'?(STORE?(SYNC.on?'· salvo neste aparelho e sincronizado com o Supabase':'· salvo automaticamente neste navegador'):'· salvamento local indisponível neste ambiente'):'· modo demonstração';
+  $('sv').textContent=SRC==='user'?(STORE?(SYNC.on?(SYNC.mode==='rw'?'· salvo neste aparelho e sincronizado com a planilha do Google':'· salvo neste aparelho (planilha do Google somente para leitura)'):'· salvo automaticamente neste navegador'):'· salvamento local indisponível neste ambiente'):'· modo demonstração';
   render();
 }
 function commit(){if(SRC==='user')save();if(DATA.length)$('undo').hidden=true;refresh()}
@@ -1958,7 +2117,14 @@ $('pmSave').onclick=saveProfForm;
 $('profModal').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')saveProfForm()});$('pmTest').onclick=testProfForm;
 $('pmCancel').onclick=()=>{$('profModal').hidden=true};
 $('pmPin').oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)};
-$('pmCopy').onclick=async()=>{try{await navigator.clipboard.writeText(SQL_SETUP);$('pmMsg').textContent='SQL copiado. Cole no SQL Editor do Supabase e execute.'}catch(e){$('pmMsg').textContent='Não foi possível copiar: selecione o texto do SQL manualmente.'}};
+$('pmToken').oninput=()=>{$('pmCode').textContent=scriptSource($('pmToken').value.trim())};
+$('pmCopy').onclick=async()=>{try{await navigator.clipboard.writeText(scriptSource($('pmToken').value.trim()));$('pmMsg').textContent='Script copiado. Cole em Extensões › Apps Script e salve.'}catch(e){$('pmMsg').textContent='Não foi possível copiar: selecione o texto do script manualmente.'}};
+$('pmBase').onclick=async()=>{ // abre uma planilha nova (ou a cópia do modelo) e copia o script de apoio
+  const url=SHEET_TEMPLATE_ID?`https://docs.google.com/spreadsheets/d/${SHEET_TEMPLATE_ID}/copy`:'https://sheets.new';
+  try{await navigator.clipboard.writeText(scriptSource($('pmToken').value.trim()))}catch(e){}
+  $('pmHelp').open=true;window.open(url,'_blank','noopener');
+  $('pmMsg').textContent=SHEET_TEMPLATE_ID?'Abrindo a tela "Fazer uma cópia". O script de apoio foi copiado: siga os passos abaixo.':'Abrindo uma planilha em branco no seu Google Drive. O script de apoio foi copiado: siga os passos abaixo.';
+};
 $('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;PDEL=false;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
 $('profMenu').addEventListener('click',e=>{
   const sw=e.target.closest('[data-pswitch]'),ac=e.target.closest('[data-pact]');
