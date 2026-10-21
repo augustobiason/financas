@@ -372,41 +372,14 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <div class="lockbox">
     <div class="lockic">🔒</div>
     <div class="mt">Painel Financeiro</div>
-    <div id="lockSetup" hidden>
-      <p class="mut">Entre com a sua conta Google. O painel guarda tudo na planilha "Painel Financeiro - Base de Dados", criada por ele no seu próprio Google Drive (acesso só aos arquivos criados pelo painel).</p>
-      <button class="gbtn" id="gBtn" type="button"><svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Entrar com o Google</button>
-    </div>
-    <div id="lockPin" hidden>
-      <label>Perfil <select id="lockProf"></select></label>
-      <input type="password" id="lockInput" inputmode="numeric" maxlength="4" placeholder="Senha de 4 dígitos" autocomplete="off" aria-label="Senha de 4 dígitos">
-      <button class="act" id="lockGo">Entrar</button>
-      <p class="mut sm" id="lockMsg" role="status"></p>
-      <button class="gbtn small" id="gBtn2" type="button"><svg viewBox="0 0 48 48" width="16" height="16" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Entrar com outra conta Google</button>
-    </div>
-    <p class="mut sm" id="gMsg" role="status"></p>
-    <details id="gcidCard" class="help" hidden style="text-align:left"><summary>Configuração única: Client ID do Google</summary>
-      <ol>
-        <li>No <b>Google Cloud Console</b>, crie um projeto.</li>
-        <li>Em <b>APIs e serviços › Biblioteca</b>, ative a <b>Google Drive API</b> e a <b>Google Sheets API</b>.</li>
-        <li>Em <b>Tela de permissão OAuth</b>, configure o app (tipo Externo). Enquanto o app estiver em teste, adicione os e-mails que vão usar o painel como usuários de teste.</li>
-        <li>Em <b>Credenciais › Criar credenciais › ID do cliente OAuth</b>, escolha <b>Aplicativo da Web</b> e, em "Origens JavaScript autorizadas", adicione: <code id="gOrigin"></code></li>
-        <li>Copie o ID do cliente (termina em <code>.apps.googleusercontent.com</code>) e cole abaixo. Ele é público e não é uma senha. Também pode ser fixado na constante <code>GOOGLE_CLIENT_ID</code> do código.</li>
-      </ol>
-      <input type="text" id="gcid" placeholder="000000000000-xxxx.apps.googleusercontent.com" style="text-align:left;letter-spacing:0;font-size:.85rem" autocomplete="off"><button class="act" id="gcidSave" type="button">Salvar Client ID</button>
-    </details>
+    <label style="display:block;text-align:left">Usuário
+      <input type="text" id="lockUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30" style="text-align:left;letter-spacing:0" aria-label="Usuário"></label>
+    <label style="display:block;text-align:left">Senha de 4 dígitos
+      <input type="password" id="lockInput" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password" aria-label="Senha de 4 dígitos"></label>
+    <button class="act" id="lockGo">Entrar</button>
+    <p class="mut sm" id="lockMsg" role="status"></p>
   </div>
 </div>
-<div class="modal" id="profModal" hidden><div class="mbox" role="dialog" aria-modal="true">
-  <div class="mt">Defina a senha de 4 dígitos</div>
-  <p class="mut sm" id="pmWho" style="margin:0 0 10px"></p>
-  <div class="rform">
-    <label id="pmPinL">Senha de 4 dígitos<input type="password" id="pmPin" inputmode="numeric" maxlength="4" autocomplete="new-password"></label>
-    <label>Repita a senha<input type="password" id="pmPin2" inputmode="numeric" maxlength="4" autocomplete="new-password"></label>
-  </div>
-  <p class="mut sm" id="pmMsg" role="status" style="margin:10px 0"></p>
-  <div class="row"><button class="act" id="pmSave">Salvar e entrar</button><button class="sec" id="pmCancel">Cancelar</button></div>
-  <p class="mut sm" style="margin:10px 0 0">A senha protege o painel neste aparelho, a cada vez que ele for aberto. Os dados ficam na planilha do seu Google Drive; outras pessoas que usem este aparelho só veem os dados delas com a conta e a senha delas.</p>
-</div></div>
 <div class="modal" id="cfModal" hidden><div class="mbox" role="dialog" aria-modal="true">
   <div class="mt">Conflito de sincronização</div>
   <p id="cfText"></p>
@@ -418,6 +391,14 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 <textarea id="lbed" hidden rows="1" aria-label="Novo nome"></textarea>
 
 <script>
+/* ====================== CONFIGURAÇÃO (preencha uma única vez antes de publicar) ======================
+   APPS_SCRIPT_URL: endereço do backend central (termina em /exec). Veja o passo a passo no topo do Codigo.gs.
+   A planilha central fica privada na sua conta Google e NÃO aparece aqui: não há ID de planilha, API Key nem token
+   neste arquivo. Quem abre o painel só enxerga o endereço do script, que exige usuário e senha para entregar dados. */
+const PAINEL_CONFIG={
+  APPS_SCRIPT_URL:''
+};
+/* ==================================================================================================== */
 /* ===== utilitários ===== */
 const $=id=>document.getElementById(id);
 const MES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -644,11 +625,6 @@ function classify(d,v,b){const c=catMap(classify0(d,v,b));return ALLCATS.include
 const PROFKEY='painel-financeiro-perfis:v1'; // perfis deste aparelho (credenciais criptografadas com a senha)
 const LEGACY={lancamentos:'painel-consolidador-bancos:v1',regras:'painel-financeiro-regras:v1',formatos:'painel-financeiro-formatos:v1',categorias:'painel-financeiro-categorias:v1',interface:'painel-financeiro-interface:v1',auditoria:'painel-financeiro-auditoria:v1',ui:'painel-financeiro-ui:v1'};
 const CLOUDKEYS=['lancamentos','formatos','regras','categorias','auditoria','interface']; // 'ui' (largura de colunas etc.) fica só no aparelho
-const GOOGLE_CLIENT_ID=''; // ID do cliente OAuth do Google (tipo "Aplicativo da Web"). É público. Se ficar vazio, a tela de entrada pede e explica o passo a passo.
-const GSCOPE='https://www.googleapis.com/auth/drive.file openid email profile'; // drive.file: só os arquivos criados por este painel
-const GFILE='Painel Financeiro - Base de Dados';
-const GCIDKEY='painel-financeiro-gcid';
-const SHEETS='https://sheets.googleapis.com/v4/spreadsheets',DRIVE='https://www.googleapis.com/drive/v3/files',UINFO='https://www.googleapis.com/oauth2/v3/userinfo';
 const GTABS={lancamentos:'Lançamentos',formatos:'Formatos',regras:'Regras'}; // categorias, auditoria e interface ficam na aba Config
 const GHEAD={
  lancamentos:['Data','Banco Origem','Descrição','Modalidade','Categoria','Valor','Tipo','Ignorar nos gráficos','Quem','Original'],
@@ -662,8 +638,7 @@ function lsDel(k){delete MEM[k];try{localStorage.removeItem(k)}catch(e){MEMONLY=
 function lsKeys(){const o=new Set(Object.keys(MEM));try{for(let i=0;i<localStorage.length;i++)o.add(localStorage.key(i))}catch(e){MEMONLY=true}return[...o]}
 let PID=null,SESSION=null,PROFS={v:1,active:null,profiles:[]},PMODE='new',PDEL=false;
 const SYNC={on:false,mode:'rw',state:'local',msg:'',kind:'',dirty:new Set(),ver:{},revs:{},hashes:{},busy:false,timer:null,retry:null,conflict:[],last:'',booted:false,poll:null,authErr:null};
-const GS={token:'',exp:0,file:'',grid:{}};
-const GLOGO='<svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+const AUTH={token:''}; // sessão do servidor (só em memória)
 const nowHM=()=>new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 function reloadPage(){location.reload()}
 
@@ -750,123 +725,52 @@ function fromTabs(tabs){ // abas → [{chave,valor,rev,hash}] (mesmo formato que
   return out;
 }
 
-/* --- login nativo do Google (token de acesso) e API do Drive/Sheets --- */
-const clientId=()=>GOOGLE_CLIENT_ID||lsGet(GCIDKEY)||'';
-let GIS_P=null;
-function loadGIS(){ // biblioteca oficial de login do Google
-  if(GIS_P)return GIS_P;
-  GIS_P=new Promise((res,rej)=>{
-    if(window.google&&google.accounts&&google.accounts.oauth2)return res();
-    const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;
-    sc.onload=()=>res();sc.onerror=()=>{GIS_P=null;rej(Object.assign(new Error('gis'),{kind:'gis'}))};
-    document.head.appendChild(sc);
-  });
-  return GIS_P;
-}
-function reqToken(hint,prompt){ // abre o login/consentimento do Google; sem janela nova se a pessoa já autorizou
-  return new Promise((res,rej)=>{
-    if(!(window.google&&google.accounts&&google.accounts.oauth2))return rej(Object.assign(new Error('gis'),{kind:'gis'}));
-    const id=clientId();if(!id)return rej(Object.assign(new Error('clientid'),{kind:'clientid'}));
-    const tc=google.accounts.oauth2.initTokenClient({client_id:id,scope:GSCOPE,
-      callback:r=>{if(r.error)return rej(Object.assign(new Error(r.error),{kind:'oauth',code:r.error}));GS.token=r.access_token;GS.exp=Date.now()+(+r.expires_in||3600)*1000;res(r.access_token)},
-      error_callback:e=>rej(Object.assign(new Error((e&&e.type)||'popup'),{kind:'popup',code:e&&e.type}))});
-    tc.requestAccessToken({prompt:prompt===undefined?'':prompt,...(hint?{hint}:{})});
-  });
-}
-async function ensureToken(){
-  if(GS.token&&Date.now()<GS.exp-60000)return GS.token;
-  try{return await reqToken(SESSION&&SESSION.profile.email)}catch(e){throw Object.assign(e,{kind:e.kind==='gis'?'gis':'authexp'})}
-}
+/* --- transporte: backend central (Apps Script na conta do desenvolvedor) --- */
+const backendOn=()=>/^https:\/\/script\.google\.com\//.test(PAINEL_CONFIG.APPS_SCRIPT_URL||'');
 async function tfetch(url,opt,ms){
   const ctrl=typeof AbortController!=='undefined'?new AbortController():null,to=setTimeout(()=>ctrl&&ctrl.abort(),ms||20000);
   try{return await fetch(url,{...(opt||{}),signal:ctrl&&ctrl.signal})}finally{clearTimeout(to)}
 }
 async function httpErr(r){let t='';try{t=await r.text()}catch(e){}return Object.assign(new Error('HTTP '+r.status),{status:r.status,body:t})}
-const JH={'Content-Type':'application/json'};
-async function gapi(url,opt,again){ // chamada autenticada (Bearer) ao Google; se o token for recusado, renova uma vez e repete
-  const tok=await ensureToken();
-  const r=await tfetch(url,{...(opt||{}),headers:{Authorization:'Bearer '+tok,...((opt&&opt.headers)||{})}});
-  if(r.status===401){
-    GS.token='';
-    if(!again){try{await reqToken(SESSION&&SESSION.profile.email)}catch(e){throw Object.assign(e,{kind:e.kind==='gis'?'gis':'authexp'})}return gapi(url,opt,true)}
-    throw Object.assign(new Error('HTTP 401'),{kind:'authexp',status:401})
-  }
+async function rawApi(action,payload){ // text/plain evita a pré-checagem CORS do navegador
+  if(!backendOn())throw Object.assign(new Error('config'),{kind:'config'});
+  const r=await tfetch(PAINEL_CONFIG.APPS_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload})},45000);
   if(!r.ok)throw await httpErr(r);
-  return r.status===204?null:r.json();
+  try{return await r.json()}catch(e){throw Object.assign(new Error('resposta inválida do servidor'),{kind:'server'})}
 }
-async function verifyAccount(p){ // a conta do login precisa ser a do perfil
-  const u=await gapi(UINFO);
-  if(p.sub&&u.sub!==p.sub){GS.token='';throw Object.assign(new Error('wrongacct'),{kind:'wrongacct',email:u.email,expected:p.email})}
-  if(!p.sub){p.sub=u.sub;p.email=u.email;p.name=p.name||u.name||u.email;saveProfs()}
+async function apiLogin(usuario,senha){
+  const j=await rawApi('login',{usuario,senha});
+  if(!j.ok)throw Object.assign(new Error(j.msg||'Não foi possível entrar.'),{kind:j.code==='locked'?'locked':'login'});
+  AUTH.token=j.token;return j;
 }
-async function writeHeaders(id,only){
-  const data=[['Lançamentos',GHEAD.lancamentos],['Formatos',GHEAD.formatos],['Regras',GHEAD.regras],['Config',['Chave','Valor','Rev','Atualizado em']]].filter(x=>!only||only.includes(x[0])).map(([t,h])=>({range:`'${t}'!A1`,values:[h]}));
-  await gapi(`${SHEETS}/${id}/values:batchUpdate`,{method:'POST',headers:JH,body:JSON.stringify({valueInputOption:'RAW',data})});
-}
-async function findOrCreateFile(){ // procura "Painel Financeiro - Base de Dados" no Drive da pessoa; se não existir, cria já estruturada
-  const have=SESSION&&SESSION.profile.fileId;
-  if(have){try{const f=await gapi(`${DRIVE}/${have}?fields=id,trashed`);if(f&&!f.trashed)return f.id}catch(e){if(e.status!==404)throw e}}
-  const q=encodeURIComponent(`name='${GFILE}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`);
-  const l=await gapi(`${DRIVE}?q=${q}&orderBy=${encodeURIComponent('modifiedTime desc')}&fields=${encodeURIComponent('files(id,name)')}`);
-  if(l&&l.files&&l.files.length)return l.files[0].id;
-  const c=await gapi(SHEETS,{method:'POST',headers:JH,body:JSON.stringify({properties:{title:GFILE,locale:'pt_BR'},sheets:['Lançamentos','Formatos','Regras','Config'].map(t=>({properties:{title:t}}))})});
-  await writeHeaders(c.spreadsheetId);
-  return c.spreadsheetId;
-}
-async function ensureFile(){if(!GS.file){GS.file=await findOrCreateFile();if(SESSION.profile.fileId!==GS.file){SESSION.profile.fileId=GS.file;saveProfs()}}}
-async function loadGrid(){const j=await gapi(`${SHEETS}/${GS.file}?fields=${encodeURIComponent('sheets(properties(sheetId,title,gridProperties))')}`);GS.grid={};(j.sheets||[]).forEach(x=>{GS.grid[x.properties.title]={id:x.properties.sheetId,rows:(x.properties.gridProperties||{}).rowCount||1000}})}
-async function repairTabs(){ // recria abas apagadas por engano
-  await loadGrid();const miss=['Lançamentos','Formatos','Regras','Config'].filter(t=>!GS.grid[t]);
-  if(!miss.length)return;
-  await gapi(`${SHEETS}/${GS.file}:batchUpdate`,{method:'POST',headers:JH,body:JSON.stringify({requests:miss.map(t=>({addSheet:{properties:{title:t}}}))})});
-  await writeHeaders(GS.file,miss);await loadGrid();
-}
-async function gsTabs(retry){
-  await ensureFile();
-  const q=['Lançamentos','Formatos','Regras','Config'].map(n=>'ranges='+encodeURIComponent(`'${n}'`)).join('&');
-  try{
-    const j=await gapi(`${SHEETS}/${GS.file}/values:batchGet?${q}&valueRenderOption=UNFORMATTED_VALUE`),t={};
-    ['lancamentos','formatos','regras','config'].forEach((k,i)=>{t[k]=(j.valueRanges&&j.valueRanges[i]&&j.valueRanges[i].values)||[]});
-    return t;
-  }catch(e){if(!retry&&e.status===400&&/Unable to parse range/i.test(e.body||'')){await repairTabs();return gsTabs(true)}throw e}
-}
-const gsPull=async()=>fromTabs(await gsTabs());
-async function gsPush(n,val,rev,retry){ // se alguma aba foi apagada, recria e tenta de novo uma vez
-  try{return await gsPush0(n,val,rev)}catch(e){if(!retry&&e.status===400&&/Unable to parse range/i.test(e.body||'')){await repairTabs();return gsPush(n,val,rev,true)}throw e}
-}
-async function gsPush0(n,val,rev){ // grava uma chave: confere a revisão, troca o conteúdo da aba e sobe a revisão (aba Config)
-  await ensureFile();const base=`${SHEETS}/${GS.file}`;
-  const cfg=await gapi(`${base}/values/${encodeURIComponent("'Config'!A2:D80")}?valueRenderOption=UNFORMATTED_VALUE`),rows=cfg.values||[];
-  const lin=rows.findIndex(r=>String(r[0])===n),atual=lin>=0?(Number(rows[lin][2])||0):0;
-  if((rev||0)!==atual)return{conflict:true,rev:atual};
-  if(GTABS[n]){
-    const tab=GTABS[n],{values}=toTab(n,val);
-    if(!GS.grid[tab])await loadGrid();
-    const g=GS.grid[tab];
-    if(g&&g.rows<values.length+10){await gapi(`${base}:batchUpdate`,{method:'POST',headers:JH,body:JSON.stringify({requests:[{appendDimension:{sheetId:g.id,dimension:'ROWS',length:values.length+200-g.rows}}]})});g.rows=values.length+200}
-    await gapi(`${base}/values:batchClear`,{method:'POST',headers:JH,body:JSON.stringify({ranges:[`'${tab}'`]})});
-    for(let i=0;i<values.length;i+=2000)await gapi(`${base}/values:batchUpdate`,{method:'POST',headers:JH,body:JSON.stringify({valueInputOption:'RAW',data:[{range:`'${tab}'!A${i+1}`,values:values.slice(i,i+2000)}]})});
+async function api(action,payload,again){ // chamada autenticada; se a sessão caiu, entra de novo em silêncio com a senha digitada
+  if(!AUTH.token){
+    if(SESSION&&SESSION.pin)await apiLogin(SESSION.profile.usuario,SESSION.pin);
+    else throw Object.assign(new Error('auth'),{kind:'authexp'});
   }
-  const novo=atual+1,r=(lin>=0?lin:rows.length)+2;
-  await gapi(`${base}/values:batchUpdate`,{method:'POST',headers:JH,body:JSON.stringify({valueInputOption:'RAW',data:[{range:`'Config'!A${r}:D${r}`,values:[[n,GTABS[n]?'':JSON.stringify(val),novo,new Date().toISOString()]]}]})});
-  return{ok:true,rev:novo};
+  const j=await rawApi(action,{...payload,token:AUTH.token});
+  if(!j.ok&&j.code==='auth'){AUTH.token='';if(!again)return api(action,payload,true);throw Object.assign(new Error('auth'),{kind:'authexp'})}
+  if(!j.ok&&!j.conflict)throw Object.assign(new Error(j.msg||'erro no servidor'),{kind:'server'});
+  return j;
+}
+async function gsTabs(){return (await api('pull',{})).tabs} // só as linhas do usuário logado
+const gsPull=async()=>fromTabs(await gsTabs());
+async function gsPush(n,val,rev){ // grava uma chave; o servidor confere a revisão (outro aparelho pode ter gravado antes)
+  const body={key:n,rev:rev||0};
+  if(GTABS[n])body.values=toTab(n,val).values;else body.json=JSON.stringify(val);
+  const j=await api('push',body);
+  return j.conflict?{conflict:true,rev:j.rev}:{ok:true,rev:j.rev};
 }
 function classifyErr(e){
-  const st=e&&e.status,b=(e&&e.body)||'',k=e&&e.kind;
-  if(k==='authexp'||st===401)return{kind:'auth',msg:'a sessão do Google expirou ou o login não foi concluído: entre com o Google para continuar'};
-  if(k==='popup')return{kind:'auth',msg:'o navegador bloqueou a janela de login do Google: clique em "Entrar com o Google"'};
-  if(k==='oauth')return{kind:'auth',msg:e.code==='access_denied'?'o acesso ao Google Drive foi negado: autorize o painel para continuar':`o Google recusou o login (${e.code})`};
-  if(k==='clientid')return{kind:'config',msg:'falta configurar o Client ID do Google (veja o passo a passo na tela de entrada)'};
-  if(k==='gis')return{kind:'net',msg:'não foi possível carregar o login do Google (sem internet ou bloqueado)'};
-  if(k==='wrongacct')return{kind:'auth',msg:`esta conta (${e.email}) não é a do perfil (${e.expected}): entre com a conta correta`};
-  if(st===403&&/accessNotConfigured|SERVICE_DISABLED|has not been used|is disabled/i.test(b))return{kind:'config',msg:'a API do Google Drive/Sheets não está ativada no projeto do Client ID'};
-  if(st===403)return{kind:'config',msg:'o Google negou o acesso à planilha'};
-  if(st===404)return{kind:'table',msg:'a planilha não foi encontrada (apagada ou sem acesso): reconecte para localizar ou criar de novo'};
-  if(st===400&&/Unable to parse range/i.test(b))return{kind:'table',msg:'a planilha perdeu alguma aba (Lançamentos, Formatos, Regras ou Config)'};
-  if(st===429)return{kind:'http',msg:'limite de uso do Google atingido: o painel tentará de novo'};
-  if(st)return{kind:'http',msg:`o Google respondeu com erro ${st}`};
-  if(e&&e.name==='AbortError')return{kind:'net',msg:'tempo esgotado ao falar com o Google'};
-  return{kind:'net',msg:'sem conexão com o Google'};
+  const st=e&&e.status,k=e&&e.kind;
+  if(k==='config')return{kind:'config',msg:'o painel ainda não foi conectado ao servidor (APPS_SCRIPT_URL vazio no código)'};
+  if(k==='authexp')return{kind:'auth',msg:'a sessão expirou: entre novamente com usuário e senha'};
+  if(k==='login')return{kind:'auth',msg:'a senha ou o acesso deste usuário foi alterado: entre novamente com a senha atual'};
+  if(k==='locked')return{kind:'auth',msg:e.message.replace(/\.$/,'')};
+  if(k==='server')return{kind:'http',msg:e.message||'erro no servidor'};
+  if(st)return{kind:'http',msg:`o servidor respondeu com erro ${st}`};
+  if(e&&e.name==='AbortError')return{kind:'net',msg:'tempo esgotado ao falar com o servidor'};
+  return{kind:'net',msg:'sem conexão com o servidor'};
 }
 
 /* --- estado da sincronização e alertas visuais --- */
@@ -875,11 +779,11 @@ function setSync(state,msg,kind){
   SYNC.state=state;SYNC.msg=msg||'';SYNC.kind=kind||'';
   const c=CHIP[state],chip=$('syncChip'),a=$('syncAlert');
   chip.textContent=`${c[0]} ${c[1]}`;chip.className='syncchip '+state;
-  chip.title=state==='local'?'Somente neste aparelho':state==='ok'?`Sincronizado com o Google Drive${SYNC.last?' às '+SYNC.last:''}`:state==='syncing'?'Sincronizando com o Google Drive':state==='conflict'?'Conflito de sincronização a resolver':`Modo offline: ${msg}`;
+  chip.title=state==='local'?'Somente neste aparelho':state==='ok'?`Sincronizado com a nuvem${SYNC.last?' às '+SYNC.last:''}`:state==='syncing'?'Sincronizando com a nuvem':state==='conflict'?'Conflito de sincronização a resolver':`Modo offline: ${msg}`;
   a.className='syncalert';
   if(state==='offline'||state==='error'){
     a.hidden=false;
-    a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o Google'}</b> — ${esc(msg)}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':'; as alterações ficam pendentes até a conexão ser restabelecida'}. ${kind==='auth'?'<button class="gbtn small" id="saLogin" type="button">'+GLOGO+' Entrar com o Google</button>':'<button class="sec" id="saRetry">Tentar novamente</button>'}`;
+    a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o servidor'}</b> — ${esc(String(msg).replace(/\.$/,''))}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':'; as alterações ficam pendentes até a conexão ser restabelecida'}. ${kind==='auth'?'<button class="sec" id="saLogin" type="button">Entrar novamente</button>':'<button class="sec" id="saRetry">Tentar novamente</button>'}`;
   }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b>⚠️ Conflito de sincronização</b> — a planilha mudou (em outro aparelho ou à mão) enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
   else a.hidden=true;
 }
@@ -961,92 +865,66 @@ function startPolling(){
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
 }
 
-/* --- tela de bloqueio, "Entrar com o Google" e perfis --- */
-let PENDING=null;
-function fillLockSelect(sel){$('lockProf').innerHTML=PROFS.profiles.map(p=>`<option value="${p.id}"${p.id===(sel||PROFS.active)?' selected':''}>${esc(p.name)}${p.email?' · '+esc(p.email):''}</option>`).join('')}
-function showPinScreen(sel){fillLockSelect(sel);$('lockSetup').hidden=true;$('lockPin').hidden=false;$('lockInput').value='';$('lockMsg').textContent='';try{$('lockInput').focus()}catch(e){}}
+/* --- tela de entrada (usuário + senha de 4 dígitos), validada no servidor --- */
+const LASTUSER='painel-financeiro-ultimo-usuario';
+let LOGGING=false;
 function bootLock(){
   loadProfs();$('lock').hidden=false;
-  loadGIS().catch(()=>{}); // pré-carrega o login do Google
-  $('gOrigin').textContent=location.origin;$('gcidCard').hidden=!!clientId();
-  if(!PROFS.profiles.length){$('lockPin').hidden=true;$('lockSetup').hidden=false;return}
-  PROFS.active=PROFS.profiles.some(p=>p.id===PROFS.active)?PROFS.active:PROFS.profiles[0].id;showPinScreen();
+  $('lockUser').value=lsGet(LASTUSER)||'';
+  if(!backendOn())$('lockMsg').textContent='Painel sem servidor: preencha APPS_SCRIPT_URL no topo do código.';
+  try{($('lockUser').value?$('lockInput'):$('lockUser')).focus()}catch(e){}
 }
 async function tryUnlock(){
-  const p=PROFS.profiles.find(x=>x.id===$('lockProf').value),pin=$('lockInput').value;
-  if(!p||SYNC.entering)return;
-  const ls=lockState(p.id);
-  if(ls.until&&Date.now()<ls.until){$('lockMsg').textContent=`Muitas tentativas. Aguarde ${Math.ceil((ls.until-Date.now())/1000)} s.`;return}
-  if(!/^\d{4}$/.test(pin)){$('lockMsg').textContent='Digite a senha de 4 dígitos.';return}
-  $('lockMsg').textContent='Verificando…';
-  if(!(await checkPin(p,pin))){const n=(ls.n||0)+1;saveLock(p.id,{n,until:n%5===0?Date.now()+30000:0});$('lockMsg').textContent='Senha incorreta.';$('lockInput').value='';return}
-  saveLock(p.id,{n:0,until:0});PROFS.active=p.id;saveProfs();
-  await enter(p,false);
-}
-async function googleSignIn(){ // botão oficial "Entrar com o Google" (tela de entrada, alerta ou menu do perfil)
-  const say=t=>{$('gMsg').textContent=t;if(SESSION&&t)toast(t)};
-  if(!clientId()){$('gcidCard').hidden=false;say('Antes de entrar, informe o Client ID do Google (card abaixo).');return}
-  say('Abrindo o login do Google…');
-  const keep={token:GS.token,exp:GS.exp};
+  if(SYNC.entering||LOGGING)return;
+  const usuario=$('lockUser').value.trim().toLowerCase(),pin=$('lockInput').value,msg=t=>{$('lockMsg').textContent=t};
+  if(!usuario){msg('Digite o usuário.');return}
+  if(!/^\d{4}$/.test(pin)){msg('Digite a senha de 4 dígitos.');return}
+  LOGGING=true;msg('Verificando…');
   try{
-    await loadGIS();await reqToken(undefined,'select_account');
-    const u=await gapi(UINFO);
-    if(SESSION){GS.token=keep.token;GS.exp=keep.exp}
-    const ex=PROFS.profiles.find(p=>p.sub===u.sub);
-    if(ex){
-      if(SESSION)say(`A conta ${u.email} já tem perfil neste aparelho.`);
-      else{showPinScreen(ex.id);$('lockMsg').textContent=`A conta ${u.email} já tem perfil neste aparelho: digite a senha dele.`;say('')}
-      return;
+    let r=null,err=null;
+    try{r=await apiLogin(usuario,pin)}catch(e){err=e}
+    if(r){ // o servidor confirmou: guarda um verificador local da senha para entrar offline depois
+      const p={id:r.uid,usuario,name:r.nome||usuario,...await makePin(pin)},i=PROFS.profiles.findIndex(x=>x.id===p.id);
+      if(i>=0)PROFS.profiles[i]=p;else PROFS.profiles.push(p);
+      PROFS.active=p.id;saveProfs();saveLock(p.id,{n:0,until:0});lsSet(LASTUSER,usuario);
+      await enter(p,pin,true);return;
     }
-    PENDING={u};openPinModal(u);say('');
-  }catch(e){if(SESSION){GS.token=keep.token;GS.exp=keep.exp}say('Não foi possível entrar: '+classifyErr(e).msg)}
+    if(err.kind==='login'||err.kind==='locked'){msg(err.message);$('lockInput').value='';return}
+    const lp=PROFS.profiles.find(x=>x.usuario===usuario); // servidor inacessível: só quem já entrou neste aparelho
+    if(!lp){msg(`Sem conexão (${classifyErr(err).msg}). Neste aparelho só entram offline usuários que já acessaram o painel antes.`);return}
+    const ls=lockState(lp.id);
+    if(ls.until&&Date.now()<ls.until){msg(`Muitas tentativas. Aguarde ${Math.ceil((ls.until-Date.now())/1000)} s.`);return}
+    if(!(await checkPin(lp,pin))){const n=(ls.n||0)+1;saveLock(lp.id,{n,until:n%5===0?Date.now()+30000:0});msg('Usuário ou senha incorretos.');$('lockInput').value='';return}
+    saveLock(lp.id,{n:0,until:0});lsSet(LASTUSER,usuario);
+    await enter(lp,pin,false);
+  }finally{LOGGING=false}
 }
-function openPinModal(u){
-  $('pmWho').textContent=`Conta Google: ${u.email}`;$('pmPin').value='';$('pmPin2').value='';$('pmMsg').textContent=(SECURE?'':'Este ambiente não oferece criptografia forte (WebCrypto): a senha fica protegida de forma simples. ')+(MEMONLY?'O navegador bloqueou o armazenamento local: o perfil só vale nesta sessão.':'');
-  $('profModal').hidden=false;try{$('pmPin').focus()}catch(e){}
+function adoptOldProfile(){ // traz os dados salvos pelas versões com login do Google ou sem servidor, uma única vez neste aparelho
+  if(rawLocal('lancamentos')!=null)return;
+  const old=PROFS.profiles.find(p=>p.id!==PID&&!p.usuario&&lsGet(`pf:${p.id}:lancamentos`)!=null);
+  if(!old)return;
+  [...CLOUDKEYS,'ui'].forEach(k=>{const v=lsGet(`pf:${old.id}:${k}`);if(v!=null){putLocal(k,v);if(CLOUDKEYS.includes(k))SYNC.dirty.add(k)}});
+  persistMeta();
 }
-async function savePin(){
-  const b=$('pmSave');if(b.disabled||!PENDING)return;const a=$('pmPin').value;
-  if(!/^\d{4}$/.test(a)){$('pmMsg').textContent='A senha deve ter exatamente 4 dígitos.';return}
-  if(a!==$('pmPin2').value){$('pmMsg').textContent='As senhas não conferem.';return}
-  b.disabled=true;
-  try{
-    const u=PENDING.u,p={id:Math.random().toString(36).slice(2,10),name:u.name||u.email,email:u.email,sub:u.sub,fileId:'',...await makePin(a)};
-    PENDING=null;PROFS.profiles.push(p);saveProfs();$('profModal').hidden=true;
-    if(!SESSION){PROFS.active=p.id;saveProfs();await enter(p,true)}else{toast(`Perfil de ${u.email} criado. Use o ícone 👤 para alternar.`);renderProfMenu()}
-  }catch(e){$('profModal').hidden=false;$('pmMsg').textContent='Não foi possível concluir: '+(e&&e.message||e)}
-  finally{b.disabled=false}
-}
-async function enter(p,fresh){
+async function enter(p,pin,online){
   if(SYNC.entering)return;SYNC.entering=true;
   try{
-    PID=p.id;SESSION={profile:p};SYNC.on=true;SYNC.mode='rw';loadMeta();adoptLegacy();
-    $('lockMsg').textContent='Conectando ao Google…';
-    try{
-      if(!(fresh&&GS.token))await reqToken(p.email); // a janela do Google fecha sozinha quando a conta já autorizou o painel
-      await verifyAccount(p);await ensureFile();SYNC.authErr=null;
-    }catch(e){SYNC.authErr=e}
+    PID=p.id;SESSION={profile:p,pin};SYNC.on=true;SYNC.mode='rw';loadMeta();adoptLegacy();adoptOldProfile();
+    SYNC.authErr=online?null:Object.assign(new Error('offline'),{kind:'net'});
     await startApp();
-    if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: o Google Drive guarda os dados, mas a senha do perfil não será lembrada.');
+    if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: os dados ficam na nuvem, mas o painel não lembra deste acesso offline.');
   }catch(e){
     SYNC.entering=false;document.body.classList.add('locked');$('lock').hidden=false;
     $('lockMsg').textContent='Erro ao abrir o painel: '+(e&&e.message||e);
   }
 }
-async function reconnect(){
-  try{
-    setSync('syncing');await reqToken(SESSION.profile.email);await verifyAccount(SESSION.profile);
-    GS.file='';await ensureFile();SYNC.conflict=[];SYNC.state='syncing';await resync();
-  }catch(e){handleSyncError(e)}
-}
 function renderProfMenu(){
-  const cur=SESSION&&SESSION.profile.id;
-  $('profMenu').innerHTML=PROFS.profiles.map(p=>`<button class="sec pmi${p.id===cur?' on':''}" data-pswitch="${p.id}">${p.id===cur?'✓ ':''}${esc(p.name)}${p.email&&p.email!==p.name?`<br><small class="mut">${esc(p.email)}</small>`:''}</button>`).join('')+
-   '<hr><button class="sec pmi" data-pact="new">＋ Entrar com outra conta Google</button>'+(GS.file?'<button class="sec pmi" data-pact="open">📂 Abrir a planilha no Google Drive</button>':'')+
-   '<button class="sec pmi" data-pact="reconnect">🔄 Reconectar com o Google</button><button class="sec pmi" data-pact="lock">🔒 Bloquear agora</button>'+
-   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?'Confirmar: remover este perfil do aparelho':'🗑 Remover este perfil do aparelho'}</button>`;
+  const pend=SYNC.dirty.size>0;
+  $('profMenu').innerHTML=`<div class="pmi on" style="cursor:default"><b>${esc(SESSION.profile.name)}</b><br><small class="mut">usuário: ${esc(SESSION.profile.usuario)}</small></div><hr>`+
+   '<button class="sec pmi" data-pact="sync">🔄 Sincronizar agora</button><button class="sec pmi" data-pact="lock">🔒 Bloquear / trocar de usuário</button>'+
+   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?(pend?'Há alterações não enviadas: confirmar apagar':'Confirmar: apagar os dados deste aparelho'):'🗑 Limpar os dados deste aparelho'}</button>`;
 }
-function deleteCurrentProfile(){ // remove só os dados locais; a planilha continua no Google Drive
+function deleteCurrentProfile(){ // apaga só o cache deste aparelho; os dados continuam na nuvem
   const id=SESSION.profile.id;
   PROFS.profiles=PROFS.profiles.filter(p=>p.id!==id);PROFS.active=PROFS.profiles[0]?PROFS.profiles[0].id:null;saveProfs();
   lsKeys().forEach(k=>{if(k.startsWith(`pf:${id}:`))lsDel(k)});
@@ -1263,7 +1141,7 @@ function refresh(){
   if(AUTO){F.d0=ds[0]||'';F.d1=ds[ds.length-1]||'';$('f0').value=F.d0;$('f1').value=F.d1}
   fillT();renderLast();fillRuleSelects();
   $('src').textContent=SRC==='user'?`· seus lançamentos (${DATA.length})`:'· dados fictícios de demonstração (substituídos ao adicionar o primeiro lançamento; não são salvos)';
-  $('sv').textContent=SRC==='user'?(STORE?(SYNC.on?'· salvo neste aparelho e sincronizado com o seu Google Drive':'· salvo automaticamente neste navegador'):'· salvamento local indisponível neste ambiente'):'· modo demonstração';
+  $('sv').textContent=SRC==='user'?(STORE?(SYNC.on?'· salvo neste aparelho e sincronizado com a nuvem':'· salvo automaticamente neste navegador'):'· salvamento local indisponível neste ambiente'):'· modo demonstração';
   render();
 }
 function commit(){if(SRC==='user')save();if(DATA.length)$('undo').hidden=true;refresh()}
@@ -2099,31 +1977,21 @@ document.addEventListener('drop',e=>{
 document.addEventListener('dragend',()=>{if(DB){DB.draggable=false;DB.classList.remove('dragging');DB=null}DC=null});
 document.addEventListener('mouseup',()=>{if(DB&&!DB.classList.contains('dragging')){DB.draggable=false;DB=null}});
 
-/* ===== login, perfis e sincronização: eventos ===== */
+/* ===== login, perfil e sincronização: eventos ===== */
 $('lockGo').onclick=tryUnlock;
-$('lockInput').oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4);if(e.target.value.length===4)tryUnlock()};
+$('lockInput').oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4);if(e.target.value.length===4&&$('lockUser').value.trim())tryUnlock()};
 $('lockInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
-$('lockProf').onchange=()=>{$('lockInput').value='';$('lockMsg').textContent='';try{$('lockInput').focus()}catch(e){}};
-$('gBtn').onclick=googleSignIn;$('gBtn2').onclick=googleSignIn;
-$('gcidSave').onclick=()=>{const v=$('gcid').value.trim();if(!/^[\w.-]+\.apps\.googleusercontent\.com$/.test(v)){$('gMsg').textContent='Client ID inválido: ele termina em .apps.googleusercontent.com';return}lsSet(GCIDKEY,v);$('gcidCard').hidden=true;$('gMsg').textContent='Client ID salvo. Clique em "Entrar com o Google".'};
-$('pmSave').onclick=savePin;
-$('pmCancel').onclick=()=>{PENDING=null;$('profModal').hidden=true};
-['pmPin','pmPin2'].forEach(i=>{$(i).oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4)};$(i).addEventListener('keydown',e=>{if(e.key==='Enter')savePin()})});
+$('lockUser').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();try{$('lockInput').focus()}catch(x){}}});
 $('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;PDEL=false;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
 $('profMenu').addEventListener('click',e=>{
-  const sw=e.target.closest('[data-pswitch]'),ac=e.target.closest('[data-pact]');
-  if(sw){if(sw.dataset.pswitch!==SESSION.profile.id){PROFS.active=sw.dataset.pswitch;saveProfs();reloadPage()}else $('profMenu').hidden=true}
-  else if(ac){
-    const a=ac.dataset.pact;
-    if(a==='new'){$('profMenu').hidden=true;googleSignIn()}
-    else if(a==='open'){$('profMenu').hidden=true;window.open(`https://docs.google.com/spreadsheets/d/${GS.file}`,'_blank','noopener')}
-    else if(a==='reconnect'){$('profMenu').hidden=true;reconnect()}
-    else if(a==='lock')reloadPage();
-    else if(a==='del'){if(PDEL)deleteCurrentProfile();else{PDEL=true;renderProfMenu()}}
-  }
+  const ac=e.target.closest('[data-pact]');if(!ac)return;
+  const a=ac.dataset.pact;
+  if(a==='sync'){$('profMenu').hidden=true;SYNC.state='syncing';resync()}
+  else if(a==='lock')reloadPage();
+  else if(a==='del'){if(PDEL)deleteCurrentProfile();else{PDEL=true;renderProfMenu()}}
 });
 $('syncAlert').addEventListener('click',e=>{
-  if(e.target.closest('#saLogin'))reconnect();
+  if(e.target.closest('#saLogin'))reloadPage();
   else if(e.target.closest('#saRetry')){SYNC.state='syncing';resync()}
   else if(e.target.closest('#saResolve'))openConflict();
 });
@@ -2151,7 +2019,7 @@ async function startApp(){
   $('profBtn').title='Perfil: '+SESSION.profile.name;
   setSource(userRows().length?'user':'demo');setTab('cons');
   SYNC.booted=true;
-  document.body.classList.remove('locked');$('lock').hidden=true;$('profModal').hidden=true;
+  document.body.classList.remove('locked');$('lock').hidden=true;
   if(SYNC.state==='conflict')openConflict();
   else if(SYNC.on&&SYNC.state==='ok')pushDirty();
   startPolling();
