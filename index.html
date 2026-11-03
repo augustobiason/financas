@@ -77,6 +77,8 @@ tr.ex td{opacity:.5}
 .dng{background:var(--neg);color:#fff;border:0;border-radius:6px;padding:4px 10px;font:inherit;font-size:.82rem;cursor:pointer;white-space:nowrap}.dng:hover{filter:brightness(1.1)}
 .agh td{background:var(--bg);font-size:.9rem}.agh .acts{float:right;display:inline-flex;gap:6px}
 tr.off td{opacity:.5}
+.perfbtn{display:block;width:100%;margin:6px 0;text-align:left;padding:10px 14px}
+.newp{margin-top:14px;border-top:1px solid var(--line,#ddd);padding-top:12px}.newp input{margin-bottom:8px}
 .toast .sec{color:#fff;border-color:#fff;background:transparent;margin-left:8px;padding:2px 10px}
 .lockbox details{margin-top:12px}.lockbox details input{margin:8px 0}
 .bigbtn{width:100%;padding:14px;font-size:1.05rem}
@@ -368,15 +370,15 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 </section>
 </main>
 <div class="tt" id="tt" hidden></div>
-<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Entrada no painel">
+<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Escolha do perfil">
   <div class="lockbox">
-    <div class="lockic">🔒</div>
+    <div class="lockic">👤</div>
     <div class="mt">Painel Financeiro</div>
-    <label style="display:block;text-align:left">Usuário
-      <input type="text" id="lockUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="30" style="text-align:left;letter-spacing:0" aria-label="Usuário"></label>
-    <label style="display:block;text-align:left">Senha de 4 dígitos
-      <input type="password" id="lockInput" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password" aria-label="Senha de 4 dígitos"></label>
-    <button class="act" id="lockGo">Entrar</button>
+    <p class="mut" id="perfHint"></p>
+    <div id="perfPick">
+      <div id="perfList"></div>
+      <div class="newp"><input type="text" id="newName" maxlength="30" placeholder="Novo perfil: digite o nome" autocomplete="off" style="text-align:left;letter-spacing:0" aria-label="Nome do novo perfil"><button class="act" id="newGo" type="button">Criar perfil</button></div>
+    </div>
     <p class="mut sm" id="lockMsg" role="status"></p>
   </div>
 </div>
@@ -393,10 +395,10 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 <script>
 /* ====================== CONFIGURAÇÃO (preencha uma única vez antes de publicar) ======================
    APPS_SCRIPT_URL: endereço do backend central (termina em /exec). Veja o passo a passo no topo do Codigo.gs.
-   A planilha central fica privada na sua conta Google e NÃO aparece aqui: não há ID de planilha, API Key nem token
-   neste arquivo. Quem abre o painel só enxerga o endereço do script, que exige usuário e senha para entregar dados. */
+   A planilha central fica na sua conta Google e NÃO aparece aqui: não há ID de planilha, API Key nem token neste arquivo.
+   Atenção: o painel não tem senha. Quem souber o endereço do painel (e, portanto, este script) enxerga todos os perfis. */
 const PAINEL_CONFIG={
-  APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbwvVZUpm5hkWccfzoPMJGi9IXrBrXtV79dpWPOOBx1GTArTMupQziTbViyMEZlqXvnz9A/exec
+  APPS_SCRIPT_URL:''
 };
 /* ==================================================================================================== */
 /* ===== utilitários ===== */
@@ -621,8 +623,8 @@ const cn=r=>r.cat||'Sem categoria';
 const ccol=c=>c==='Sem categoria'?GRAY:PAL[Math.max(0,ALLCATS.indexOf(c))%PAL.length]; // cor estável por categoria (posição na lista A-Z)
 function classify(d,v,b){const c=catMap(classify0(d,v,b));return ALLCATS.includes(c)?c:''} // categoria excluída ⇒ em branco
 
-/* ===== perfis, bloqueio por senha e sincronização com o Google Sheets ===== */
-const PROFKEY='painel-financeiro-perfis:v1'; // perfis deste aparelho (credenciais criptografadas com a senha)
+/* ===== perfis e sincronização com a planilha central ===== */
+const PROFKEY='painel-financeiro-perfis:v1'; // lista de perfis em cache neste aparelho
 const LEGACY={lancamentos:'painel-consolidador-bancos:v1',regras:'painel-financeiro-regras:v1',formatos:'painel-financeiro-formatos:v1',categorias:'painel-financeiro-categorias:v1',interface:'painel-financeiro-interface:v1',auditoria:'painel-financeiro-auditoria:v1',ui:'painel-financeiro-ui:v1'};
 const CLOUDKEYS=['lancamentos','formatos','regras','categorias','auditoria','interface']; // 'ui' (largura de colunas etc.) fica só no aparelho
 const GTABS={lancamentos:'Lançamentos',formatos:'Formatos',regras:'Regras'}; // categorias, auditoria e interface ficam na aba Config
@@ -638,7 +640,6 @@ function lsDel(k){delete MEM[k];try{localStorage.removeItem(k)}catch(e){MEMONLY=
 function lsKeys(){const o=new Set(Object.keys(MEM));try{for(let i=0;i<localStorage.length;i++)o.add(localStorage.key(i))}catch(e){MEMONLY=true}return[...o]}
 let PID=null,SESSION=null,PROFS={v:1,active:null,profiles:[]},PMODE='new',PDEL=false;
 const SYNC={on:false,mode:'rw',state:'local',msg:'',kind:'',dirty:new Set(),ver:{},revs:{},hashes:{},busy:false,timer:null,retry:null,conflict:[],last:'',booted:false,poll:null,authErr:null};
-const AUTH={token:''}; // sessão do servidor (só em memória)
 const nowHM=()=>new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 function reloadPage(){location.reload()}
 
@@ -656,28 +657,8 @@ function kvSet(n,obj){
 }
 function persistMeta(){try{lsSet(nsKey('sync'),JSON.stringify({dirty:[...SYNC.dirty],revs:SYNC.revs,hashes:SYNC.hashes}))}catch(e){}}
 function loadMeta(){try{const o=JSON.parse(lsGet(nsKey('sync'))||'null');SYNC.dirty=new Set(o&&o.dirty||[]);SYNC.revs=o&&o.revs||{};SYNC.hashes=o&&o.hashes||{}}catch(e){SYNC.dirty=new Set();SYNC.revs={};SYNC.hashes={}}}
-function adoptLegacy(){ // dados de versões sem perfil passam para o primeiro perfil que entrar
-  if(lsGet('painel-financeiro-legado')==='1')return;
-  let moved=false;
-  for(const[n,k] of Object.entries(LEGACY)){const v=lsGet(k);if(v!==null&&rawLocal(n)===null){putLocal(n,v);moved=true;if(CLOUDKEYS.includes(n))SYNC.dirty.add(n)}lsDel(k)}
-  if(moved)persistMeta();
-  lsSet('painel-financeiro-legado','1');
-}
-
-/* --- senha de 4 dígitos: PBKDF2 + AES-GCM (quando o navegador oferece WebCrypto) --- */
-const SECURE=!!(window.crypto&&crypto.subtle&&window.TextEncoder);
-const b64=u8=>btoa(String.fromCharCode(...u8)),unb64=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0));
-const weakHash=x=>{let h=5381;for(const ch of x)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return String(h)};
-async function pinHash(pin,salt){
-  if(SECURE){const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);return b64(new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:unb64(salt),iterations:150000,hash:'SHA-256'},km,256)))}
-  return weakHash(pin+salt);
-}
-async function makePin(pin){const salt=SECURE?b64(crypto.getRandomValues(new Uint8Array(16))):Math.random().toString(36).slice(2);return{salt,hash:await pinHash(pin,salt),enc:SECURE?1:0}}
-const checkPin=async(p,pin)=>p.enc?(SECURE&&await pinHash(pin,p.salt)===p.hash):weakHash(pin+p.salt)===p.hash;
 function loadProfs(){try{const o=JSON.parse(lsGet(PROFKEY)||'null');if(o&&Array.isArray(o.profiles))PROFS=o}catch(e){}}
 const saveProfs=()=>{try{lsSet(PROFKEY,JSON.stringify(PROFS))}catch(e){}};
-const lockState=id=>{try{return JSON.parse(lsGet(`pf:${id}:lock`)||'{}')}catch(e){return{}}};
-const saveLock=(id,o)=>{try{lsSet(`pf:${id}:lock`,JSON.stringify(o))}catch(e){}};
 
 /* --- Google Sheets: conversão entre as abas da planilha e os dados do painel --- */
 const hashStr=x=>{let h=5381;for(let i=0;i<x.length;i++)h=((h<<5)+h+x.charCodeAt(i))>>>0;return h.toString(36)+x.length};
@@ -725,7 +706,7 @@ function fromTabs(tabs){ // abas → [{chave,valor,rev,hash}] (mesmo formato que
   return out;
 }
 
-/* --- transporte: backend central (Apps Script na conta do desenvolvedor) --- */
+/* --- transporte: backend central (Apps Script na sua conta), sem senha --- */
 const backendOn=()=>/^https:\/\/script\.google\.com\//.test(PAINEL_CONFIG.APPS_SCRIPT_URL||'');
 async function tfetch(url,opt,ms){
   const ctrl=typeof AbortController!=='undefined'?new AbortController():null,to=setTimeout(()=>ctrl&&ctrl.abort(),ms||20000);
@@ -738,22 +719,12 @@ async function rawApi(action,payload){ // text/plain evita a pré-checagem CORS 
   if(!r.ok)throw await httpErr(r);
   try{return await r.json()}catch(e){throw Object.assign(new Error('resposta inválida do servidor'),{kind:'server'})}
 }
-async function apiLogin(usuario,senha){
-  const j=await rawApi('login',{usuario,senha});
-  if(!j.ok)throw Object.assign(new Error(j.msg||'Não foi possível entrar.'),{kind:j.code==='locked'?'locked':'login'});
-  AUTH.token=j.token;return j;
-}
-async function api(action,payload,again){ // chamada autenticada; se a sessão caiu, entra de novo em silêncio com a senha digitada
-  if(!AUTH.token){
-    if(SESSION&&SESSION.pin)await apiLogin(SESSION.profile.usuario,SESSION.pin);
-    else throw Object.assign(new Error('auth'),{kind:'authexp'});
-  }
-  const j=await rawApi(action,{...payload,token:AUTH.token});
-  if(!j.ok&&j.code==='auth'){AUTH.token='';if(!again)return api(action,payload,true);throw Object.assign(new Error('auth'),{kind:'authexp'})}
-  if(!j.ok&&!j.conflict)throw Object.assign(new Error(j.msg||'erro no servidor'),{kind:'server'});
+async function api(action,payload){ // chamada ligada ao perfil aberto
+  const j=await rawApi(action,{...payload,perfil:PID});
+  if(!j.ok&&!j.conflict)throw Object.assign(new Error(j.msg||'erro no servidor'),{kind:j.code==='perfil'?'perfil':'server'});
   return j;
 }
-async function gsTabs(){return (await api('pull',{})).tabs} // só as linhas do usuário logado
+async function gsTabs(){return (await api('pull',{})).tabs} // só as linhas do perfil aberto
 const gsPull=async()=>fromTabs(await gsTabs());
 async function gsPush(n,val,rev){ // grava uma chave; o servidor confere a revisão (outro aparelho pode ter gravado antes)
   const body={key:n,rev:rev||0};
@@ -764,9 +735,7 @@ async function gsPush(n,val,rev){ // grava uma chave; o servidor confere a revis
 function classifyErr(e){
   const st=e&&e.status,k=e&&e.kind;
   if(k==='config')return{kind:'config',msg:'o painel ainda não foi conectado ao servidor (APPS_SCRIPT_URL vazio no código)'};
-  if(k==='authexp')return{kind:'auth',msg:'a sessão expirou: entre novamente com usuário e senha'};
-  if(k==='login')return{kind:'auth',msg:'a senha ou o acesso deste usuário foi alterado: entre novamente com a senha atual'};
-  if(k==='locked')return{kind:'auth',msg:e.message.replace(/\.$/,'')};
+  if(k==='perfil')return{kind:'config',msg:'este perfil não existe mais na planilha central: escolha outro no menu 👤'};
   if(k==='server')return{kind:'http',msg:e.message||'erro no servidor'};
   if(st)return{kind:'http',msg:`o servidor respondeu com erro ${st}`};
   if(e&&e.name==='AbortError')return{kind:'net',msg:'tempo esgotado ao falar com o servidor'};
@@ -783,7 +752,7 @@ function setSync(state,msg,kind){
   a.className='syncalert';
   if(state==='offline'||state==='error'){
     a.hidden=false;
-    a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o servidor'}</b> — ${esc(String(msg).replace(/\.$/,''))}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':'; as alterações ficam pendentes até a conexão ser restabelecida'}. ${kind==='auth'?'<button class="sec" id="saLogin" type="button">Entrar novamente</button>':'<button class="sec" id="saRetry">Tentar novamente</button>'}`;
+    a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o servidor'}</b> — ${esc(String(msg).replace(/\.$/,''))}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':'; as alterações ficam pendentes até a conexão ser restabelecida'}. <button class="sec" id="saRetry">Tentar novamente</button>`;
   }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b>⚠️ Conflito de sincronização</b> — a planilha mudou (em outro aparelho ou à mão) enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
   else a.hidden=true;
 }
@@ -865,68 +834,89 @@ function startPolling(){
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
 }
 
-/* --- tela de entrada (usuário + senha de 4 dígitos), validada no servidor --- */
-const LASTUSER='painel-financeiro-ultimo-usuario';
-let LOGGING=false;
-function bootLock(){
+/* --- perfis: escolher, trocar e criar (sem senha); a planilha central guarda a lista --- */
+const PERFIL_RE=/^p_/;
+let NEWP=false,PIMP=false;
+const profList=()=>PROFS.profiles.filter(p=>PERFIL_RE.test(p.id));
+function mergeProfiles(list){ // o servidor manda a lista; ids antigos (sem "p_") ficam só como fonte para importar dados
+  const old=PROFS.profiles.filter(p=>!PERFIL_RE.test(p.id));
+  PROFS.profiles=[...list.map(p=>({id:p.id,name:p.nome})),...old];
+  if(PROFS.active&&PERFIL_RE.test(PROFS.active)&&!list.some(p=>p.id===PROFS.active))PROFS.active=null;
+}
+async function fetchProfiles(){
+  const j=await rawApi('perfis',{});
+  if(!j.ok)throw Object.assign(new Error(j.msg||'erro no servidor'),{kind:'server'});
+  mergeProfiles(j.perfis);saveProfs();return profList();
+}
+async function createProfile(nome){
+  const j=await rawApi('criar_perfil',{nome});
+  if(!j.ok)throw Object.assign(new Error(j.msg||'Não foi possível criar o perfil.'),{kind:'server'});
+  mergeProfiles(j.perfis);saveProfs();return j.criado;
+}
+const errMsg=e=>e&&e.kind==='server'?e.message:classifyErr(e).msg;
+function showPick(on){$('perfPick').hidden=!on;$('perfHint').textContent=on?'Quem está usando?':''}
+function renderPicker(){$('perfList').innerHTML=profList().map(p=>`<button class="sec perfbtn" data-pick="${p.id}">👤 ${esc(p.name)}</button>`).join('')||'<p class="mut sm">Nenhum perfil ainda.</p>'}
+async function bootProfiles(){
   loadProfs();$('lock').hidden=false;
-  $('lockUser').value=lsGet(LASTUSER)||'';
-  if(!backendOn())$('lockMsg').textContent='Painel sem servidor: preencha APPS_SCRIPT_URL no topo do código.';
-  try{($('lockUser').value?$('lockInput'):$('lockUser')).focus()}catch(e){}
+  const act=profList().find(p=>p.id===PROFS.active);
+  if(act){showPick(false);$('lockMsg').textContent='Abrindo '+act.name+'…';await enter(act);return}
+  showPick(true);renderPicker();
+  const m=t=>{$('lockMsg').textContent=t};
+  if(!backendOn()){m('Painel sem servidor: preencha APPS_SCRIPT_URL no topo do código.');return}
+  m('Carregando perfis…');
+  try{await fetchProfiles();m('')}catch(e){m(profList().length?'Sem conexão: mostrando os perfis salvos neste aparelho.':`Sem conexão com o servidor (${errMsg(e)}).`)}
+  renderPicker();
 }
-async function tryUnlock(){
-  if(SYNC.entering||LOGGING)return;
-  const usuario=$('lockUser').value.trim().toLowerCase(),pin=$('lockInput').value,msg=t=>{$('lockMsg').textContent=t};
-  if(!usuario){msg('Digite o usuário.');return}
-  if(!/^\d{4}$/.test(pin)){msg('Digite a senha de 4 dígitos.');return}
-  LOGGING=true;msg('Verificando…');
-  try{
-    let r=null,err=null;
-    try{r=await apiLogin(usuario,pin)}catch(e){err=e}
-    if(r){ // o servidor confirmou: guarda um verificador local da senha para entrar offline depois
-      const p={id:r.uid,usuario,name:r.nome||usuario,...await makePin(pin)},i=PROFS.profiles.findIndex(x=>x.id===p.id);
-      if(i>=0)PROFS.profiles[i]=p;else PROFS.profiles.push(p);
-      PROFS.active=p.id;saveProfs();saveLock(p.id,{n:0,until:0});lsSet(LASTUSER,usuario);
-      await enter(p,pin,true);return;
-    }
-    if(err.kind==='login'||err.kind==='locked'){msg(err.message);$('lockInput').value='';return}
-    const lp=PROFS.profiles.find(x=>x.usuario===usuario); // servidor inacessível: só quem já entrou neste aparelho
-    if(!lp){msg(`Sem conexão (${classifyErr(err).msg}). Neste aparelho só entram offline usuários que já acessaram o painel antes.`);return}
-    const ls=lockState(lp.id);
-    if(ls.until&&Date.now()<ls.until){msg(`Muitas tentativas. Aguarde ${Math.ceil((ls.until-Date.now())/1000)} s.`);return}
-    if(!(await checkPin(lp,pin))){const n=(ls.n||0)+1;saveLock(lp.id,{n,until:n%5===0?Date.now()+30000:0});msg('Usuário ou senha incorretos.');$('lockInput').value='';return}
-    saveLock(lp.id,{n:0,until:0});lsSet(LASTUSER,usuario);
-    await enter(lp,pin,false);
-  }finally{LOGGING=false}
+function pickProfile(id){const p=profList().find(x=>x.id===id);if(!p)return;PROFS.active=id;saveProfs();showPick(false);$('lockMsg').textContent='Abrindo '+p.name+'…';enter(p)}
+async function createFromPicker(){
+  const nome=$('newName').value.trim(),m=t=>{$('lockMsg').textContent=t};
+  if(!nome){m('Digite o nome do novo perfil.');return}
+  m('Criando…');
+  try{const c=await createProfile(nome);$('newName').value='';renderPicker();pickProfile(c.id)}catch(e){m(errMsg(e))}
 }
-function adoptOldProfile(){ // traz os dados salvos pelas versões com login do Google ou sem servidor, uma única vez neste aparelho
-  if(rawLocal('lancamentos')!=null)return;
-  const old=PROFS.profiles.find(p=>p.id!==PID&&!p.usuario&&lsGet(`pf:${p.id}:lancamentos`)!=null);
-  if(!old)return;
-  [...CLOUDKEYS,'ui'].forEach(k=>{const v=lsGet(`pf:${old.id}:${k}`);if(v!=null){putLocal(k,v);if(CLOUDKEYS.includes(k))SYNC.dirty.add(k)}});
-  persistMeta();
-}
-async function enter(p,pin,online){
+async function enter(p){
   if(SYNC.entering)return;SYNC.entering=true;
   try{
-    PID=p.id;SESSION={profile:p,pin};SYNC.on=true;SYNC.mode='rw';loadMeta();adoptLegacy();adoptOldProfile();
-    SYNC.authErr=online?null:Object.assign(new Error('offline'),{kind:'net'});
+    PID=p.id;SESSION={profile:p};SYNC.on=true;SYNC.mode='rw';loadMeta();
     await startApp();
-    if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: os dados ficam na nuvem, mas o painel não lembra deste acesso offline.');
+    fetchProfiles().catch(()=>{}); // atualiza a lista do menu em segundo plano
+    if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: os dados ficam na nuvem, mas o painel não lembra do perfil escolhido.');
   }catch(e){
-    SYNC.entering=false;document.body.classList.add('locked');$('lock').hidden=false;
-    $('lockMsg').textContent='Erro ao abrir o painel: '+(e&&e.message||e);
+    SYNC.entering=false;PID=null;SESSION=null;document.body.classList.add('locked');$('lock').hidden=false;
+    showPick(true);renderPicker();$('lockMsg').textContent='Erro ao abrir o painel: '+(e&&e.message||e);
   }
 }
-function renderProfMenu(){
-  const pend=SYNC.dirty.size>0;
-  $('profMenu').innerHTML=`<div class="pmi on" style="cursor:default"><b>${esc(SESSION.profile.name)}</b><br><small class="mut">usuário: ${esc(SESSION.profile.usuario)}</small></div><hr>`+
-   '<button class="sec pmi" data-pact="sync">🔄 Sincronizar agora</button><button class="sec pmi" data-pact="lock">🔒 Bloquear / trocar de usuário</button>'+
-   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?(pend?'Há alterações não enviadas: confirmar apagar':'Confirmar: apagar os dados deste aparelho'):'🗑 Limpar os dados deste aparelho'}</button>`;
+async function leaveProfile(){try{await Promise.race([flushNow(),new Promise(r=>setTimeout(r,4000))])}catch(e){}} // tenta enviar o que está pendente antes de trocar
+function oldSource(){ // dados de versões anteriores guardados neste aparelho (sem perfil ou de perfis antigos)
+  const o=PROFS.profiles.find(p=>!PERFIL_RE.test(p.id)&&lsGet(`pf:${p.id}:lancamentos`)!=null);
+  if(o)return{get:k=>lsGet(`pf:${o.id}:${k}`)};
+  if(lsGet(LEGACY.lancamentos)!=null)return{get:k=>lsGet(LEGACY[k])};
+  return null;
 }
-function deleteCurrentProfile(){ // apaga só o cache deste aparelho; os dados continuam na nuvem
+function importOld(){ // copia os dados antigos para o perfil aberto e marca para enviar
+  const src=oldSource();if(!src)return false;
+  [...CLOUDKEYS,'ui'].forEach(k=>{const v=src.get(k);if(v!=null){putLocal(k,v);if(CLOUDKEYS.includes(k))SYNC.dirty.add(k)}});
+  persistMeta();return true;
+}
+function renderProfMenu(){
+  const cur=SESSION.profile.id,pend=SYNC.dirty.size>0,imp=!NEWP&&rawLocal('lancamentos')==null&&oldSource();
+  let h=profList().map(p=>`<button class="sec pmi${p.id===cur?' on':''}" data-pswitch="${p.id}">${p.id===cur?'✓ ':''}${esc(p.name)}</button>`).join('');
+  if(!profList().some(p=>p.id===cur))h=`<button class="sec pmi on" disabled>✓ ${esc(SESSION.profile.name)}</button>`+h;
+  h+='<hr>';
+  if(NEWP)h+='<input type="text" id="mpName" maxlength="30" placeholder="Nome do novo perfil" style="width:100%;margin:4px 0"><div class="row"><button class="act" data-pact="newgo">Criar</button><button class="sec" data-pact="newcancel">Cancelar</button></div><p class="mut sm" id="mpMsg" role="status"></p>';
+  else h+='<button class="sec pmi" data-pact="new">＋ Novo perfil</button><button class="sec pmi" data-pact="sync">🔄 Sincronizar agora</button>'+
+   (imp?`<button class="sec pmi" data-pact="import">${PIMP?'Confirmar: trazer os dados antigos para este perfil':'📥 Trazer dados antigos deste aparelho'}</button>`:'')+
+   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?(pend?'Há alterações não enviadas: confirmar limpeza':'Confirmar: limpar o cache deste aparelho'):'🗑 Limpar o cache deste aparelho'}</button>`;
+  $('profMenu').innerHTML=h;
+}
+async function createFromMenu(){
+  const nome=$('mpName').value.trim(),m=t=>{$('mpMsg').textContent=t};
+  if(!nome){m('Digite o nome do novo perfil.');return}
+  m('Criando…');
+  try{const c=await createProfile(nome);await leaveProfile();PROFS.active=c.id;saveProfs();reloadPage()}catch(e){m(errMsg(e))}
+}
+function clearLocalCache(){ // apaga só o cache deste aparelho; os dados continuam na planilha central
   const id=SESSION.profile.id;
-  PROFS.profiles=PROFS.profiles.filter(p=>p.id!==id);PROFS.active=PROFS.profiles[0]?PROFS.profiles[0].id:null;saveProfs();
   lsKeys().forEach(k=>{if(k.startsWith(`pf:${id}:`))lsDel(k)});
   reloadPage();
 }
@@ -1977,22 +1967,25 @@ document.addEventListener('drop',e=>{
 document.addEventListener('dragend',()=>{if(DB){DB.draggable=false;DB.classList.remove('dragging');DB=null}DC=null});
 document.addEventListener('mouseup',()=>{if(DB&&!DB.classList.contains('dragging')){DB.draggable=false;DB=null}});
 
-/* ===== login, perfil e sincronização: eventos ===== */
-$('lockGo').onclick=tryUnlock;
-$('lockInput').oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,4);if(e.target.value.length===4&&$('lockUser').value.trim())tryUnlock()};
-$('lockInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
-$('lockUser').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();try{$('lockInput').focus()}catch(x){}}});
-$('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;PDEL=false;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
-$('profMenu').addEventListener('click',e=>{
-  const ac=e.target.closest('[data-pact]');if(!ac)return;
-  const a=ac.dataset.pact;
-  if(a==='sync'){$('profMenu').hidden=true;SYNC.state='syncing';resync()}
-  else if(a==='lock')reloadPage();
-  else if(a==='del'){if(PDEL)deleteCurrentProfile();else{PDEL=true;renderProfMenu()}}
+/* ===== perfis e sincronização: eventos ===== */
+$('perfList').addEventListener('click',e=>{const b=e.target.closest('[data-pick]');if(b)pickProfile(b.dataset.pick)});
+$('newGo').onclick=createFromPicker;
+$('newName').addEventListener('keydown',e=>{if(e.key==='Enter')createFromPicker()});
+$('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;PDEL=false;PIMP=false;NEWP=false;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
+$('profMenu').addEventListener('click',async e=>{
+  const sw=e.target.closest('[data-pswitch]'),ac=e.target.closest('[data-pact]');
+  if(sw){if(sw.dataset.pswitch!==SESSION.profile.id){await leaveProfile();PROFS.active=sw.dataset.pswitch;saveProfs();reloadPage()}else $('profMenu').hidden=true;return}
+  if(!ac)return;const a=ac.dataset.pact;
+  if(a==='new'){NEWP=true;renderProfMenu();try{$('mpName').focus()}catch(x){}}
+  else if(a==='newcancel'){NEWP=false;renderProfMenu()}
+  else if(a==='newgo')await createFromMenu();
+  else if(a==='sync'){$('profMenu').hidden=true;SYNC.state='syncing';resync()}
+  else if(a==='import'){if(PIMP){importOld();reloadPage()}else{PIMP=true;renderProfMenu()}}
+  else if(a==='del'){if(PDEL)clearLocalCache();else{PDEL=true;renderProfMenu()}}
 });
+$('profMenu').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='mpName'){e.preventDefault();createFromMenu()}});
 $('syncAlert').addEventListener('click',e=>{
-  if(e.target.closest('#saLogin'))reloadPage();
-  else if(e.target.closest('#saRetry')){SYNC.state='syncing';resync()}
+  if(e.target.closest('#saRetry')){SYNC.state='syncing';resync()}
   else if(e.target.closest('#saResolve'))openConflict();
 });
 $('cfCloud').onclick=()=>resolveConflict('cloud');
@@ -2024,7 +2017,7 @@ async function startApp(){
   else if(SYNC.on&&SYNC.state==='ok')pushDirty();
   startPolling();
 }
-bootLock();
+bootProfiles();
 </script>
 </body>
 </html>
