@@ -77,6 +77,7 @@ tr.ex td{opacity:.5}
 .dng{background:var(--neg);color:#fff;border:0;border-radius:6px;padding:4px 10px;font:inherit;font-size:.82rem;cursor:pointer;white-space:nowrap}.dng:hover{filter:brightness(1.1)}
 .agh td{background:var(--bg);font-size:.9rem}.agh .acts{float:right;display:inline-flex;gap:6px}
 tr.off td{opacity:.5}
+.bdg{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.78rem;white-space:nowrap}.bdg.on{background:#d8f3dc;color:#1b4332}.bdg.off{background:#ffe3e3;color:#9d0208}
 .perfbtn{display:block;width:100%;margin:6px 0;text-align:left;padding:10px 14px}
 .newp{margin-top:14px;border-top:1px solid var(--line,#ddd);padding-top:12px}.newp input{margin-bottom:8px}
 .toast .sec{color:#fff;border-color:#fff;background:transparent;margin-left:8px;padding:2px 10px}
@@ -370,18 +371,29 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 </section>
 </main>
 <div class="tt" id="tt" hidden></div>
-<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Escolha do perfil">
+<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Entrada no painel">
   <div class="lockbox">
-    <div class="lockic">👤</div>
+    <div class="lockic">💰</div>
     <div class="mt">Painel Financeiro</div>
-    <p class="mut" id="perfHint"></p>
-    <div id="perfPick">
-      <div id="perfList"></div>
-      <div class="newp"><input type="text" id="newName" maxlength="30" placeholder="Novo perfil: digite o nome" autocomplete="off" style="text-align:left;letter-spacing:0" aria-label="Nome do novo perfil"><button class="act" id="newGo" type="button">Criar perfil</button></div>
+    <div id="lkLogin" hidden>
+      <button class="gbtn" id="gLogin" type="button"><svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Entrar com o Google</button>
     </div>
-    <p class="mut sm" id="lockMsg" role="status"></p>
+    <div id="lkBlocked" hidden>
+      <p><b>Acesso restrito ou aguardando liberação.</b></p>
+      <p class="mut sm">Você entrou como <span id="lkWho"></span>. Peça ao administrador para liberar o seu acesso e toque em "Verificar novamente".</p>
+      <button class="act" id="lkCheck" type="button">Verificar novamente</button>
+      <button class="sec" id="lkOut" type="button">Sair</button>
+    </div>
+    <p class="mut sm" id="lkMsg" role="status"></p>
   </div>
 </div>
+<div class="modal" id="admModal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-label="Gerenciar Usuários" style="max-width:760px">
+  <div class="mt">Gerenciar Usuários</div>
+  <p class="mut sm" style="margin:0 0 10px">Quem entra com o Google pela primeira vez fica aguardando liberação. Ative para dar acesso ou bloqueie para tirar. Cada pessoa vê somente os próprios dados; nem o Master enxerga os lançamentos dos outros.</p>
+  <div class="wrap" id="admList"></div>
+  <p class="mut sm" id="admMsg" role="status" style="margin:10px 0"></p>
+  <div class="row"><button class="sec" id="admRefresh" type="button">Atualizar</button><button class="sec" id="admClose" type="button">Fechar</button></div>
+</div></div>
 <div class="modal" id="cfModal" hidden><div class="mbox" role="dialog" aria-modal="true">
   <div class="mt">Conflito de sincronização</div>
   <p id="cfText"></p>
@@ -392,15 +404,17 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 
 <textarea id="lbed" hidden rows="1" aria-label="Novo nome"></textarea>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-/* ====================== CONFIGURAÇÃO (preencha uma única vez antes de publicar) ======================
-   APPS_SCRIPT_URL: endereço do backend central (termina em /exec). Veja o passo a passo no topo do Codigo.gs.
-   A planilha central fica na sua conta Google e NÃO aparece aqui: não há ID de planilha, API Key nem token neste arquivo.
-   Atenção: o painel não tem senha. Quem souber o endereço do painel (e, portanto, este script) enxerga todos os perfis. */
-const PAINEL_CONFIG={
-  APPS_SCRIPT_URL:'https://script.google.com/macros/s/AKfycbzqqqI8A-QQ3ld3nYMGrFrURvZMDOnRYq3mE8XhY2L_ZxgWY7sbzH3Kg8oARYXJ-oPeLw/exec'
-};
-/* ==================================================================================================== */
+/* ╔══════════════════════════════════════════════════════════════════════════════════════════╗
+   ║  ⚙️  CONFIGURAÇÃO — PREENCHA AS 2 LINHAS ABAIXO, UMA ÚNICA VEZ                           ║
+   ║  Onde achar: Supabase > seu projeto > Project Settings (engrenagem) > API                ║
+   ╚══════════════════════════════════════════════════════════════════════════════════════════╝ */
+const SUPABASE_URL      = '';   // <<< COLE AQUI a "Project URL"       (ex.: https://abcdefghijklmno.supabase.co)
+const SUPABASE_ANON_KEY = '';   // <<< COLE AQUI a chave "anon public" (texto longo que começa com eyJ...)
+/* A chave anon é pública por desenho: quem protege os dados é o RLS do banco (supabase.sql).
+   NUNCA cole aqui a chave "service_role" nem senhas. */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════ */
 /* ===== utilitários ===== */
 const $=id=>document.getElementById(id);
 const MES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -706,40 +720,44 @@ function fromTabs(tabs){ // abas → [{chave,valor,rev,hash}] (mesmo formato que
   return out;
 }
 
-/* --- transporte: backend central (Apps Script na sua conta), sem senha --- */
-const backendOn=()=>/^https:\/\/script\.google\.com\//.test(PAINEL_CONFIG.APPS_SCRIPT_URL||'');
-async function tfetch(url,opt,ms){
-  const ctrl=typeof AbortController!=='undefined'?new AbortController():null,to=setTimeout(()=>ctrl&&ctrl.abort(),ms||20000);
-  try{return await fetch(url,{...(opt||{}),signal:ctrl&&ctrl.signal})}finally{clearTimeout(to)}
+/* --- transporte: Supabase (PostgreSQL + RLS); cada pessoa só acessa as próprias linhas --- */
+let sb=null;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const supaOn=()=>!!(SUPABASE_URL&&SUPABASE_ANON_KEY);
+function supaErr(error){ // erro do supabase-js → Error com "kind"
+  const m=String(error&&error.message||''),code=String(error&&error.code||''),st=error&&error.status;
+  let kind='server';
+  if(code==='42501'||/acesso negado/i.test(m))kind='blocked';
+  else if(st===401||code==='PGRST301'||/jwt/i.test(m))kind='auth';
+  else if(code==='PGRST202'||code==='42P01'||code==='42883'||/could not find the function|does not exist/i.test(m))kind='setup';
+  else if(!code&&!st&&/fetch|network|load failed|timeout|abort/i.test(m))kind='net';
+  return Object.assign(new Error(m||'erro no servidor'),{kind,code,status:st});
 }
-async function httpErr(r){let t='';try{t=await r.text()}catch(e){}return Object.assign(new Error('HTTP '+r.status),{status:r.status,body:t})}
-async function rawApi(action,payload){ // text/plain evita a pré-checagem CORS do navegador
-  if(!backendOn())throw Object.assign(new Error('config'),{kind:'config'});
-  const r=await tfetch(PAINEL_CONFIG.APPS_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload})},45000);
-  if(!r.ok)throw await httpErr(r);
-  try{return await r.json()}catch(e){throw Object.assign(new Error('resposta inválida do servidor'),{kind:'server'})}
+async function rpc(fn,args){
+  let r;
+  try{r=await sb.rpc(fn,args)}catch(e){throw Object.assign(new Error(e&&e.message||'rede'),{kind:'net'})}
+  if(r.error)throw supaErr(r.error);
+  return r.data;
 }
-async function api(action,payload){ // chamada ligada ao perfil aberto
-  const j=await rawApi(action,{...payload,perfil:PID});
-  if(!j.ok&&!j.conflict)throw Object.assign(new Error(j.msg||'erro no servidor'),{kind:j.code==='perfil'?'perfil':'server'});
-  return j;
+async function gsTabs(){ // dados do usuário logado, no mesmo formato de matriz que o painel já entende
+  const d=await rpc('carregar_tudo'),H=GHEAD;
+  return{lancamentos:[H.lancamentos,...(d.lancamentos||[])],formatos:[H.formatos,...(d.formatos||[])],regras:[H.regras,...(d.regras||[])],
+    config:[['Chave','Valor','Rev'],...(d.config||[]).map(r=>[r[0],r[1]==null?'':JSON.stringify(r[1]),r[2]])]};
 }
-async function gsTabs(){return (await api('pull',{})).tabs} // só as linhas do perfil aberto
 const gsPull=async()=>fromTabs(await gsTabs());
-async function gsPush(n,val,rev){ // grava uma chave; o servidor confere a revisão (outro aparelho pode ter gravado antes)
-  const body={key:n,rev:rev||0};
-  if(GTABS[n])body.values=toTab(n,val).values;else body.json=JSON.stringify(val);
-  const j=await api('push',body);
-  return j.conflict?{conflict:true,rev:j.rev}:{ok:true,rev:j.rev};
+async function gsPush(n,val,rev){ // grava um bloco; o banco confere a versão (outro aparelho pode ter gravado antes)
+  const args={p_chave:n,p_rev:rev||0};
+  if(GTABS[n])args.p_linhas=toTab(n,val).values.slice(1);else args.p_valor=val;
+  const j=await rpc('salvar_chave',args);
+  return j.conflito?{conflict:true,rev:j.rev}:{ok:true,rev:j.rev};
 }
 function classifyErr(e){
-  const st=e&&e.status,k=e&&e.kind;
-  if(k==='config')return{kind:'config',msg:'o painel ainda não foi conectado ao servidor (APPS_SCRIPT_URL vazio no código)'};
-  if(k==='perfil')return{kind:'config',msg:'este perfil não existe mais na planilha central: escolha outro no menu 👤'};
+  const k=e&&e.kind;
+  if(k==='setup')return{kind:'config',msg:'o banco ainda não foi preparado: rode o script supabase.sql no SQL Editor do Supabase'};
+  if(k==='blocked')return{kind:'blocked',msg:'o seu acesso foi bloqueado ou ainda não foi liberado'};
+  if(k==='auth')return{kind:'auth',msg:'a sessão expirou: entre novamente com o Google'};
   if(k==='server')return{kind:'http',msg:e.message||'erro no servidor'};
-  if(st)return{kind:'http',msg:`o servidor respondeu com erro ${st}`};
-  if(e&&e.name==='AbortError')return{kind:'net',msg:'tempo esgotado ao falar com o servidor'};
-  return{kind:'net',msg:'sem conexão com o servidor'};
+  return{kind:'net',msg:'sem conexão com o Supabase'};
 }
 
 /* --- estado da sincronização e alertas visuais --- */
@@ -753,12 +771,15 @@ function setSync(state,msg,kind){
   if(state==='offline'||state==='error'){
     a.hidden=false;
     a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o servidor'}</b> — ${esc(String(msg).replace(/\.$/,''))}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':'; as alterações ficam pendentes até a conexão ser restabelecida'}. <button class="sec" id="saRetry">Tentar novamente</button>`;
-  }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b>⚠️ Conflito de sincronização</b> — a planilha mudou (em outro aparelho ou à mão) enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
+  }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b>⚠️ Conflito de sincronização</b> — os dados na nuvem mudaram (em outro aparelho) enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
   else a.hidden=true;
 }
 function toast(t,undo){const e=$('toast');e.textContent=t;toast.fn=undo||null;if(undo){const b=document.createElement('button');b.className='sec';b.id='toastUndo';b.textContent='Desfazer';e.append(' ',b)}e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{e.hidden=true},undo?9000:4500)}
 function handleSyncError(e){
-  const c=classifyErr(e);setSync(c.kind==='net'?'offline':'error',c.msg,c.kind);
+  const c=classifyErr(e);
+  if(c.kind==='blocked'){recheckAccess();return}
+  if(c.kind==='auth'){renewSession();return}
+  setSync(c.kind==='net'?'offline':'error',c.msg,c.kind);
   clearTimeout(SYNC.retry);if(c.kind==='net'||c.kind==='http')SYNC.retry=setTimeout(()=>resync(),20000);
 }
 
@@ -804,10 +825,10 @@ async function resync(quiet){
   if(!SYNC.on||SYNC.busy||SYNC.state==='conflict')return;
   if(!quiet)setSync('syncing');
   const ch=await syncCore();
-  if(ch&&ch.length){reloadFromStore();toast('Dados atualizados a partir da planilha.')}
+  if(ch&&ch.length){reloadFromStore();toast('Dados atualizados a partir da nuvem.')}
   if(SYNC.state==='ok')pushDirty();
 }
-function openConflict(){$('cfText').textContent=`Os dados "${SYNC.conflict.join('", "')}" foram alterados na planilha (em outro aparelho ou à mão) e também neste aparelho. Escolha qual versão manter:`;$('cfModal').hidden=false}
+function openConflict(){$('cfText').textContent=`Os dados "${SYNC.conflict.join('", "')}" foram alterados na nuvem (em outro aparelho) e também neste aparelho. Escolha qual versão manter:`;$('cfModal').hidden=false}
 async function resolveConflict(choice){
   const names=SYNC.conflict.slice();$('cfModal').hidden=true;SYNC.conflict=[];
   try{
@@ -834,88 +855,159 @@ function startPolling(){
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
 }
 
-/* --- perfis: escolher, trocar e criar (sem senha); a planilha central guarda a lista --- */
-const PERFIL_RE=/^p_/;
-let NEWP=false,PIMP=false;
-const profList=()=>PROFS.profiles.filter(p=>PERFIL_RE.test(p.id));
-function mergeProfiles(list){ // o servidor manda a lista; ids antigos (sem "p_") ficam só como fonte para importar dados
-  const old=PROFS.profiles.filter(p=>!PERFIL_RE.test(p.id));
-  PROFS.profiles=[...list.map(p=>({id:p.id,name:p.nome})),...old];
-  if(PROFS.active&&PERFIL_RE.test(PROFS.active)&&!list.some(p=>p.id===PROFS.active))PROFS.active=null;
-}
-async function fetchProfiles(){
-  const j=await rawApi('perfis',{});
-  if(!j.ok)throw Object.assign(new Error(j.msg||'erro no servidor'),{kind:'server'});
-  mergeProfiles(j.perfis);saveProfs();return profList();
-}
-async function createProfile(nome){
-  const j=await rawApi('criar_perfil',{nome});
-  if(!j.ok)throw Object.assign(new Error(j.msg||'Não foi possível criar o perfil.'),{kind:'server'});
-  mergeProfiles(j.perfis);saveProfs();return j.criado;
-}
-const errMsg=e=>e&&e.kind==='server'?e.message:classifyErr(e).msg;
-function showPick(on){$('perfPick').hidden=!on;$('perfHint').textContent=on?'Quem está usando?':''}
-function renderPicker(){$('perfList').innerHTML=profList().map(p=>`<button class="sec perfbtn" data-pick="${p.id}">👤 ${esc(p.name)}</button>`).join('')||'<p class="mut sm">Nenhum perfil ainda.</p>'}
-async function bootProfiles(){
-  loadProfs();$('lock').hidden=false;
-  const act=profList().find(p=>p.id===PROFS.active);
-  if(act){showPick(false);$('lockMsg').textContent='Abrindo '+act.name+'…';await enter(act);return}
-  showPick(true);renderPicker();
-  const m=t=>{$('lockMsg').textContent=t};
-  if(!backendOn()){m('Painel sem servidor: preencha APPS_SCRIPT_URL no topo do código.');return}
-  m('Carregando perfis…');
-  try{await fetchProfiles();m('')}catch(e){m(profList().length?'Sem conexão: mostrando os perfis salvos neste aparelho.':`Sem conexão com o servidor (${errMsg(e)}).`)}
-  renderPicker();
-}
-function pickProfile(id){const p=profList().find(x=>x.id===id);if(!p)return;PROFS.active=id;saveProfs();showPick(false);$('lockMsg').textContent='Abrindo '+p.name+'…';enter(p)}
-async function createFromPicker(){
-  const nome=$('newName').value.trim(),m=t=>{$('lockMsg').textContent=t};
-  if(!nome){m('Digite o nome do novo perfil.');return}
-  m('Criando…');
-  try{const c=await createProfile(nome);$('newName').value='';renderPicker();pickProfile(c.id)}catch(e){m(errMsg(e))}
-}
-async function enter(p){
-  if(SYNC.entering)return;SYNC.entering=true;
-  try{
-    PID=p.id;SESSION={profile:p};SYNC.on=true;SYNC.mode='rw';loadMeta();
-    await startApp();
-    fetchProfiles().catch(()=>{}); // atualiza a lista do menu em segundo plano
-    if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: os dados ficam na nuvem, mas o painel não lembra do perfil escolhido.');
-  }catch(e){
-    SYNC.entering=false;PID=null;SESSION=null;document.body.classList.add('locked');$('lock').hidden=false;
-    showPick(true);renderPicker();$('lockMsg').textContent='Erro ao abrir o painel: '+(e&&e.message||e);
-  }
-}
-async function leaveProfile(){try{await Promise.race([flushNow(),new Promise(r=>setTimeout(r,4000))])}catch(e){}} // tenta enviar o que está pendente antes de trocar
-function oldSource(){ // dados de versões anteriores guardados neste aparelho (sem perfil ou de perfis antigos)
-  const o=PROFS.profiles.find(p=>!PERFIL_RE.test(p.id)&&lsGet(`pf:${p.id}:lancamentos`)!=null);
-  if(o)return{get:k=>lsGet(`pf:${o.id}:${k}`)};
-  if(lsGet(LEGACY.lancamentos)!=null)return{get:k=>lsGet(LEGACY[k])};
+/* --- login com Google (Supabase Auth), liberação pelo admin e perfil do usuário --- */
+let ACCESS=null,ENTERED=false,AFTERBUSY=false,PENDU=0,ADMBUSY=false;
+const LASTP='painel-financeiro-ultimo-perfil';
+const lastProfile=()=>{try{return JSON.parse(lsGet(LASTP)||'null')}catch(e){return null}};
+function storedSessionUser(){ // sessão que o Supabase guardou neste aparelho (some ao sair)
+  try{for(const k of lsKeys()){if(/^sb-.*-auth-token$/.test(k)){const o=JSON.parse(lsGet(k)||'null');if(o&&o.user&&o.user.id)return o.user.id}}}catch(e){}
   return null;
 }
-function importOld(){ // copia os dados antigos para o perfil aberto e marca para enviar
-  const src=oldSource();if(!src)return false;
+function showLock(mode,msg){ // mode: 'login' | 'blocked' | 'loading'
+  document.body.classList.add('locked');$('lock').hidden=false;
+  $('lkLogin').hidden=mode!=='login';$('lkBlocked').hidden=mode!=='blocked';
+  $('lkMsg').textContent=msg||'';
+  if(mode==='blocked'&&ACCESS)$('lkWho').textContent=ACCESS.email;
+}
+async function fetchProfile(uid){
+  const r=await sb.from('profiles').select('id,email,nome,role,ativo').eq('id',uid).maybeSingle();
+  if(r.error)throw supaErr(r.error);
+  return r.data;
+}
+async function afterLogin(user,force){ // há sessão do Google: confere se o acesso está liberado (eventos repetidos da biblioteca são ignorados)
+  if(AFTERBUSY||(ENTERED&&!force)||(SYNC.entering&&!ENTERED))return;AFTERBUSY=true;
+  try{
+    showLock('loading','Verificando o seu acesso…');
+    let p=null;
+    for(let i=0;i<6&&!p;i++){p=await fetchProfile(user.id);if(!p)await wait(700)} // o gatilho cria o perfil logo após o 1º login
+    if(!p){showLock('login','Não encontrei o seu perfil. Confira se o supabase.sql foi executado e entre de novo.');return}
+    ACCESS=p;lsSet(LASTP,JSON.stringify(p));
+    if(!p.ativo){showLock('blocked');return}
+    if(ENTERED){reloadPage();return}
+    await enter(p,false);
+  }catch(e){
+    const c=classifyErr(e),last=lastProfile();
+    if(c.kind==='net'&&last&&last.id===user.id&&last.ativo){ACCESS=last;await enter(last,true);return}
+    showLock('login','Não foi possível verificar o acesso: '+c.msg);
+  }finally{AFTERBUSY=false}
+}
+async function enter(p,offline){
+  if(SYNC.entering)return;SYNC.entering=true;
+  try{
+    PID=p.id;SESSION={profile:{id:p.id,name:p.nome||p.email,email:p.email,role:p.role}};SYNC.on=true;SYNC.mode='rw';loadMeta();
+    SYNC.authErr=offline?Object.assign(new Error('offline'),{kind:'net'}):null;
+    await startApp();
+    ENTERED=true;
+    if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: os dados ficam na nuvem, mas o painel não funciona offline.');
+    if(p.role==='admin')adminPending(true);
+  }catch(e){
+    SYNC.entering=false;PID=null;SESSION=null;
+    showLock('login','Erro ao abrir o painel: '+(e&&e.message||e));
+  }
+}
+function lockOutNow(mode,msg){ // bloqueio em plena sessão: para a sincronização e cobre a tela
+  SYNC.on=false;clearTimeout(SYNC.timer);clearTimeout(SYNC.retry);if(SYNC.poll){clearInterval(SYNC.poll);SYNC.poll=null}
+  showLock(mode,msg);
+}
+async function recheckAccess(){ // o banco recusou: o admin pode ter bloqueado esta pessoa
+  try{
+    const p=await fetchProfile(PID);
+    if(p&&!p.ativo){ACCESS=p;lsSet(LASTP,JSON.stringify(p));lockOutNow('blocked')}
+    else setSync('error','o servidor recusou a gravação; tente de novo em instantes','http');
+  }catch(e){const c=classifyErr(e);setSync(c.kind==='net'?'offline':'error',c.msg,c.kind)}
+}
+async function renewSession(){ // token vencido: renova sem pedir login; se não der, volta para a tela de entrada
+  try{
+    const r=await sb.auth.refreshSession();
+    if(r.error||!r.data||!r.data.session)throw supaErr(r.error||{message:'sem sessão',status:401});
+    SYNC.state='syncing';resync();
+  }catch(e){
+    const c=classifyErr(e);
+    if(c.kind==='net')setSync('offline',c.msg,'net');else lockOutNow('login','Sua sessão expirou. Entre novamente com o Google.');
+  }
+}
+async function initAuth(){
+  loadProfs();$('lock').hidden=false;
+  if(!supaOn()){showLock('login','Painel sem banco de dados: preencha SUPABASE_URL e SUPABASE_ANON_KEY no topo do código.');$('gLogin').disabled=true;return}
+  if(!(window.supabase&&window.supabase.createClient)){showLock('login','Não foi possível carregar a biblioteca do Supabase (sem internet ou bloqueada).');$('gLogin').disabled=true;return}
+  const q=new URLSearchParams(location.search+'&'+location.hash.replace(/^#/,'')),err=q.get('error_description')||q.get('error');
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  showLock('login',err?'O login não foi concluído: '+err:'');
+  if(err){try{history.replaceState(null,'',location.pathname)}catch(e){}}
+  sb.auth.onAuthStateChange((ev,session)=>{
+    if(ev==='SIGNED_OUT'){if(ENTERED)reloadPage();return}
+    if(session&&(ev==='INITIAL_SESSION'||ev==='SIGNED_IN')&&!SESSION){setTimeout(()=>afterLogin(session.user),0);return} // fora do callback, para não travar o cliente
+    if(ev==='INITIAL_SESSION'&&!session){
+      const last=lastProfile();
+      if(last&&last.ativo&&last.id===storedSessionUser()&&navigator.onLine===false){ACCESS=last;setTimeout(()=>enter(last,true),0)} // sem internet: abre o que está salvo neste aparelho
+      else showLock('login',err?'O login não foi concluído: '+err:'');
+    }
+  });
+}
+async function googleLogin(){
+  $('lkMsg').textContent='Abrindo o Google…';
+  const r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname,queryParams:{prompt:'select_account'}}});
+  if(r&&r.error)$('lkMsg').textContent='Não foi possível iniciar o login: '+r.error.message;
+}
+async function logout(){
+  try{await Promise.race([flushNow(),wait(3000)])}catch(e){}
+  try{await sb.auth.signOut()}catch(e){}
+  reloadPage();
+}
+
+/* --- administração (só o Master): liberar e bloquear acessos --- */
+async function adminPending(toastIt){
+  try{
+    const r=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('ativo',false);
+    if(r.error)return;PENDU=r.count||0;
+    if(toastIt&&PENDU)toast(`${PENDU} pessoa${PENDU>1?'s':''} aguardando liberação. Abra o menu 👤 › Gerenciar Usuários.`);
+  }catch(e){}
+}
+async function loadUsers(){
+  const m=t=>{$('admMsg').textContent=t};
+  $('admList').innerHTML='<p class="mut sm" style="padding:10px">Carregando…</p>';
+  const r=await sb.from('profiles').select('id,email,nome,role,ativo,criado_em').order('criado_em',{ascending:false});
+  if(r.error){$('admList').innerHTML='';m('Não foi possível carregar: '+r.error.message);return}
+  const L=(r.data||[]).slice().sort((a,b)=>(a.ativo-b.ativo)||String(b.criado_em).localeCompare(String(a.criado_em)));
+  PENDU=L.filter(u=>!u.ativo).length;m(PENDU?`${PENDU} aguardando liberação.`:'Nenhuma pessoa aguardando.');
+  $('admList').innerHTML=`<table style="width:100%;table-layout:auto"><thead><tr><th>Nome</th><th>E-mail</th><th>Desde</th><th>Situação</th><th>Ação</th></tr></thead><tbody>${L.map(u=>{
+    const master=u.role==='admin',dt=String(u.criado_em||'').slice(0,10).split('-').reverse().join('/');
+    return `<tr><td>${esc(u.nome||'—')}</td><td>${esc(u.email)}</td><td>${dt}</td><td><span class="bdg ${u.ativo?'on':'off'}">${master?'Master':u.ativo?'Ativo':'Aguardando / bloqueado'}</span></td><td>${master?'—':u.ativo?`<button class="dng" data-adm="${u.id}" data-to="0">Bloquear</button>`:`<button class="act" data-adm="${u.id}" data-to="1">Ativar</button>`}</td></tr>`}).join('')}</tbody></table>`;
+}
+async function setAtivo(id,ativo){
+  if(ADMBUSY)return;ADMBUSY=true;
+  try{
+    const r=await sb.from('profiles').update({ativo}).eq('id',id).select('id');
+    if(r.error){$('admMsg').textContent='Não foi possível alterar: '+r.error.message;return}
+    if(!r.data||!r.data.length){$('admMsg').textContent='Sem permissão para alterar este usuário.';return}
+    await loadUsers();
+  }finally{ADMBUSY=false}
+}
+function openAdmin(){$('admModal').hidden=false;loadUsers()}
+
+/* --- importar dados antigos deste aparelho (versões anteriores do painel) --- */
+function oldSources(){
+  const out=[];
+  PROFS.profiles.forEach(p=>{if(p.id!==PID&&lsGet(`pf:${p.id}:lancamentos`)!=null)out.push({name:p.name||p.id,get:k=>lsGet(`pf:${p.id}:${k}`)})});
+  if(lsGet(LEGACY.lancamentos)!=null)out.push({name:'versão antiga (sem perfil)',get:k=>lsGet(LEGACY[k])});
+  return out;
+}
+function importOld(i){ // copia os dados antigos para este usuário e marca para enviar à nuvem
+  const src=oldSources()[i];if(!src)return false;
   [...CLOUDKEYS,'ui'].forEach(k=>{const v=src.get(k);if(v!=null){putLocal(k,v);if(CLOUDKEYS.includes(k))SYNC.dirty.add(k)}});
   persistMeta();return true;
 }
+let PIMP=-1;
 function renderProfMenu(){
-  const cur=SESSION.profile.id,pend=SYNC.dirty.size>0,imp=!NEWP&&rawLocal('lancamentos')==null&&oldSource();
-  let h=profList().map(p=>`<button class="sec pmi${p.id===cur?' on':''}" data-pswitch="${p.id}">${p.id===cur?'✓ ':''}${esc(p.name)}</button>`).join('');
-  if(!profList().some(p=>p.id===cur))h=`<button class="sec pmi on" disabled>✓ ${esc(SESSION.profile.name)}</button>`+h;
-  h+='<hr>';
-  if(NEWP)h+='<input type="text" id="mpName" maxlength="30" placeholder="Nome do novo perfil" style="width:100%;margin:4px 0"><div class="row"><button class="act" data-pact="newgo">Criar</button><button class="sec" data-pact="newcancel">Cancelar</button></div><p class="mut sm" id="mpMsg" role="status"></p>';
-  else h+='<button class="sec pmi" data-pact="new">＋ Novo perfil</button><button class="sec pmi" data-pact="sync">🔄 Sincronizar agora</button>'+
-   (imp?`<button class="sec pmi" data-pact="import">${PIMP?'Confirmar: trazer os dados antigos para este perfil':'📥 Trazer dados antigos deste aparelho'}</button>`:'')+
-   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?(pend?'Há alterações não enviadas: confirmar limpeza':'Confirmar: limpar o cache deste aparelho'):'🗑 Limpar o cache deste aparelho'}</button>`;
-  $('profMenu').innerHTML=h;
+  const adm=SESSION.profile.role==='admin',srcs=rawLocal('lancamentos')==null?oldSources():[],pend=SYNC.dirty.size>0;
+  $('profMenu').innerHTML=`<div class="pmi on" style="cursor:default"><b>${esc(SESSION.profile.name)}</b><br><small class="mut">${esc(SESSION.profile.email)}${adm?' · Master':''}</small></div><hr>`+
+   (adm?`<button class="sec pmi" data-pact="admin">👥 Gerenciar Usuários${PENDU?` (${PENDU} aguardando)`:''}</button>`:'')+
+   '<button class="sec pmi" data-pact="sync">🔄 Sincronizar agora</button>'+
+   srcs.map((x,i)=>`<button class="sec pmi" data-pact="import" data-src="${i}">${PIMP===i?'Confirmar: trazer para este usuário':'📥 Trazer dados antigos: '+esc(x.name)}</button>`).join('')+
+   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?(pend?'Há alterações não enviadas: confirmar limpeza':'Confirmar: limpar o cache deste aparelho'):'🗑 Limpar o cache deste aparelho'}</button>`+
+   '<button class="sec pmi" data-pact="logout">🚪 Sair</button>';
 }
-async function createFromMenu(){
-  const nome=$('mpName').value.trim(),m=t=>{$('mpMsg').textContent=t};
-  if(!nome){m('Digite o nome do novo perfil.');return}
-  m('Criando…');
-  try{const c=await createProfile(nome);await leaveProfile();PROFS.active=c.id;saveProfs();reloadPage()}catch(e){m(errMsg(e))}
-}
-function clearLocalCache(){ // apaga só o cache deste aparelho; os dados continuam na planilha central
+function clearLocalCache(){ // apaga só o cache deste aparelho; os dados continuam na nuvem
   const id=SESSION.profile.id;
   lsKeys().forEach(k=>{if(k.startsWith(`pf:${id}:`))lsDel(k)});
   reloadPage();
@@ -1967,23 +2059,31 @@ document.addEventListener('drop',e=>{
 document.addEventListener('dragend',()=>{if(DB){DB.draggable=false;DB.classList.remove('dragging');DB=null}DC=null});
 document.addEventListener('mouseup',()=>{if(DB&&!DB.classList.contains('dragging')){DB.draggable=false;DB=null}});
 
-/* ===== perfis e sincronização: eventos ===== */
-$('perfList').addEventListener('click',e=>{const b=e.target.closest('[data-pick]');if(b)pickProfile(b.dataset.pick)});
-$('newGo').onclick=createFromPicker;
-$('newName').addEventListener('keydown',e=>{if(e.key==='Enter')createFromPicker()});
-$('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;PDEL=false;PIMP=false;NEWP=false;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
-$('profMenu').addEventListener('click',async e=>{
-  const sw=e.target.closest('[data-pswitch]'),ac=e.target.closest('[data-pact]');
-  if(sw){if(sw.dataset.pswitch!==SESSION.profile.id){await leaveProfile();PROFS.active=sw.dataset.pswitch;saveProfs();reloadPage()}else $('profMenu').hidden=true;return}
-  if(!ac)return;const a=ac.dataset.pact;
-  if(a==='new'){NEWP=true;renderProfMenu();try{$('mpName').focus()}catch(x){}}
-  else if(a==='newcancel'){NEWP=false;renderProfMenu()}
-  else if(a==='newgo')await createFromMenu();
+/* ===== login, administração e sincronização: eventos ===== */
+$('gLogin').onclick=googleLogin;
+$('lkOut').onclick=logout;
+$('lkCheck').onclick=async()=>{
+  $('lkMsg').textContent='Verificando…';
+  try{const r=await sb.auth.getSession();if(r.data&&r.data.session)afterLogin(r.data.session.user,true);else showLock('login','Entre novamente com o Google.')}
+  catch(e){$('lkMsg').textContent='Sem conexão: '+classifyErr(e).msg}
+};
+$('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;PDEL=false;PIMP=-1;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
+$('profMenu').addEventListener('click',e=>{
+  const ac=e.target.closest('[data-pact]');if(!ac)return;const a=ac.dataset.pact;
+  if(a==='admin'){$('profMenu').hidden=true;openAdmin()}
   else if(a==='sync'){$('profMenu').hidden=true;SYNC.state='syncing';resync()}
-  else if(a==='import'){if(PIMP){importOld();reloadPage()}else{PIMP=true;renderProfMenu()}}
+  else if(a==='import'){const i=+ac.dataset.src;if(PIMP===i){importOld(i);reloadPage()}else{PIMP=i;renderProfMenu()}}
   else if(a==='del'){if(PDEL)clearLocalCache();else{PDEL=true;renderProfMenu()}}
+  else if(a==='logout')logout();
 });
-$('profMenu').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='mpName'){e.preventDefault();createFromMenu()}});
+$('admClose').onclick=()=>{$('admModal').hidden=true;adminPending(false)};
+$('admRefresh').onclick=loadUsers;
+$('admList').addEventListener('click',e=>{
+  const b=e.target.closest('[data-adm]');if(!b)return;
+  const ativar=b.dataset.to==='1';
+  if(!ativar&&!confirm('Bloquear o acesso desta pessoa? Os dados dela continuam guardados e voltam se você ativar de novo.'))return;
+  setAtivo(b.dataset.adm,ativar);
+});
 $('syncAlert').addEventListener('click',e=>{
   if(e.target.closest('#saRetry')){SYNC.state='syncing';resync()}
   else if(e.target.closest('#saResolve'))openConflict();
@@ -2017,7 +2117,7 @@ async function startApp(){
   else if(SYNC.on&&SYNC.state==='ok')pushDirty();
   startPolling();
 }
-bootProfiles();
+initAuth();
 </script>
 </body>
 </html>
