@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Painel Financeiro</title>
 <style>
-:root{--bg:#f4f6f9;--card:#fff;--tx:#18202a;--mut:#667180;--bd:#e0e5ec;--ac:#2563eb;--acb:#e8efff;--neg:#d92d3a;--negb:#fdecee;--pos:#168a45;--posb:#e6f6ec;--warn:#b7791f;--warnb:#fff6e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141a;--card:#1a2029;--tx:#e8ecf1;--mut:#9aa6b4;--bd:#2c3542;--ac:#6ea0ff;--acb:#1f2d4a;--neg:#ff6b76;--negb:#3a1f24;--pos:#4fd184;--posb:#183226;--warn:#f0b955;--warnb:#3a2f17}}
-:root[data-theme="dark"]{--bg:#10141a;--card:#1a2029;--tx:#e8ecf1;--mut:#9aa6b4;--bd:#2c3542;--ac:#6ea0ff;--acb:#1f2d4a;--neg:#ff6b76;--negb:#3a1f24;--pos:#4fd184;--posb:#183226;--warn:#f0b955;--warnb:#3a2f17}
+:root{--bg:#f6f5fa;--card:#ffffff;--tx:#17151f;--mut:#6b6880;--bd:#e7e5ef;--ac:#820ad1;--acb:rgba(130,10,209,.08);--neg:#e11d48;--negb:rgba(225,29,72,.08);--pos:#059669;--posb:rgba(5,150,105,.09);--warn:#b45309;--warnb:rgba(217,119,6,.11);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e0c14;--card:#171421;--tx:#eceaf4;--mut:#9b98ae;--bd:#2b2738;--ac:#b66dff;--acb:rgba(182,109,255,.14);--neg:#ff6b86;--negb:rgba(255,107,134,.13);--pos:#34d399;--posb:rgba(52,211,153,.13);--warn:#fbbf24;--warnb:rgba(251,191,36,.13)}}
+:root[data-theme="dark"]{--bg:#0e0c14;--card:#171421;--tx:#eceaf4;--mut:#9b98ae;--bd:#2b2738;--ac:#b66dff;--acb:rgba(182,109,255,.14);--neg:#ff6b86;--negb:rgba(255,107,134,.13);--pos:#34d399;--posb:rgba(52,211,153,.13);--warn:#fbbf24;--warnb:rgba(251,191,36,.13)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -143,7 +143,7 @@ input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--bd);bo
 [data-bid]{position:relative}
 body.editing [data-uid]{outline:1px dashed var(--ac);outline-offset:2px;cursor:text}
 body.editing [data-bid]{outline:1px dashed var(--bd);outline-offset:5px}
-body.editing [data-bid]::before{content:"⠿ mover";position:absolute;top:6px;right:8px;z-index:3;background:var(--ac);color:#fff;font-size:.75rem;padding:2px 10px;border-radius:6px;cursor:grab}
+body.editing [data-bid]::before{content:"Mover";position:absolute;top:6px;right:8px;z-index:3;background:var(--ac);color:#fff;font-size:.75rem;padding:2px 10px;border-radius:6px;cursor:grab}
 body.editing [data-bid].dragging{opacity:.4}
 body.editing th[draggable="true"]{cursor:grab}
 .editbar{background:var(--acb);border:1px solid var(--ac);border-radius:10px;padding:8px 12px;margin:0 0 12px;font-size:.88rem}
@@ -158,26 +158,95 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 .bulk{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:4;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--acb);border:1px solid var(--ac);border-radius:10px;padding:8px 12px;margin:0 0 10px}
 .rform{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
 .rform label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--mut)}.rform input,.rform select{width:100%}
+
+/* ===================== tema fintech: Inter, ícones Lucide, badges translúcidos ===================== */
+:root{--onac:#fff;--sh:0 1px 2px rgba(23,21,31,.04),0 6px 18px rgba(23,21,31,.05)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--onac:#1c0a30;--sh:none}}
+:root[data-theme="dark"]{--onac:#1c0a30;--sh:none}
+body{font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14.5px;letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+svg.lucide{width:1.15em;height:1.15em;stroke-width:1.75;flex:none}
+i[data-lucide]{display:inline-block;width:1.15em;height:1.15em;font-style:normal}
+i[data-lucide][data-fb]:empty::after{content:attr(data-fb);font-size:.75rem}
+svg.sort{width:12px;height:12px;margin-left:4px;vertical-align:-1px}
+.top{padding-top:18px}.top b{font-size:1.15rem;font-weight:700;letter-spacing:-.02em}
+.brand{display:inline-flex;align-items:center;gap:10px}
+.logo{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--ac);color:var(--onac)}.logo svg{width:18px;height:18px}
+/* botões */
+button.sec,button.act,.dng,.nav button,.subnav button,.pmi{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button.sec,button.act,.dng{border-radius:10px;padding:8px 14px;font-weight:600;font-size:.88rem;transition:background .15s,border-color .15s,color .15s,filter .15s}
+button.sec:hover{background:var(--acb);border-color:var(--ac);color:var(--ac)}
+button.act{background:var(--ac);color:var(--onac)}button.act:hover{filter:brightness(1.08)}
+button:active{transform:translateY(1px)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+button.ic{padding:8px 10px;font-size:1rem}
+.dng{border-radius:10px}.dng svg{width:15px;height:15px}
+.pmi{display:flex;justify-content:flex-start;width:100%;text-align:left}
+.xbtn{display:inline-grid;place-items:center;padding:4px;border-radius:8px}.xbtn:hover{background:var(--negb)}.xbtn svg{width:16px;height:16px}
+#advBtn[aria-expanded="true"],#cfgBtn[aria-pressed="true"],#editToggle[aria-pressed="true"]{color:var(--ac)}
+#cfgBtn[aria-pressed="true"],#editToggle[aria-pressed="true"]{background:var(--ac);color:var(--onac)}
+.badge{background:var(--ac);color:var(--onac)}
+svg.chev{width:14px;height:14px;margin-left:2px;transition:transform .15s}
+/* abas */
+.nav{gap:4px}
+.nav button{border-radius:10px;padding:8px 14px;border-color:transparent;background:transparent;color:var(--mut);font-weight:600}
+.nav button:hover{background:var(--acb);color:var(--ac)}
+.nav button[aria-pressed="true"]{background:var(--ac);border-color:var(--ac);color:var(--onac)}
+.subnav button{border-radius:10px;font-size:.88rem}
+/* cartões, KPIs e tabelas */
+.card,.k,.rk{border-radius:16px;box-shadow:var(--sh)}.card{padding:18px}
+h3{font-weight:600;letter-spacing:-.01em}
+.k span{display:inline-flex;align-items:center;gap:6px;font-weight:600}.k span svg{width:15px;height:15px}
+.k b{font-weight:700;letter-spacing:-.02em}
+.wrap{border-radius:14px;box-shadow:var(--sh)}
+th{font-weight:600;font-size:.7rem;letter-spacing:.06em}
+tbody tr:hover td{background:var(--acb)}
+input[type=date],input[type=search],input[type=text],input[type=number],select,textarea{border-radius:10px;background:var(--card)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--acb)}
+/* badges suaves, fundo translúcido */
+.bdg,.tag,.atag,.meta,.chip2,.syncchip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;font-weight:600;font-size:.76rem;padding:3px 10px;border:1px solid transparent;line-height:1.3}
+.bdg svg,.atag svg,.syncchip svg,.tag svg{width:13px;height:13px}
+.bdg.on{background:var(--posb);color:var(--pos)}.bdg.off{background:var(--negb);color:var(--neg)}
+.bdg.warn,.atag{background:var(--warnb);color:var(--warn)}.bdg.info{background:var(--acb);color:var(--ac)}
+.dupw{cursor:help;margin-right:6px}
+.syncchip{background:rgba(120,116,140,.13);color:var(--mut)}
+.syncchip.syncing{background:var(--acb);color:var(--ac)}
+.syncchip.ok{background:var(--posb);color:var(--pos)}
+.syncchip.offline,.syncchip.error,.syncchip.conflict{background:var(--negb);color:var(--neg)}
+.syncchip.syncing svg{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.syncalert{border-radius:12px;border-color:transparent}
+.syncalert b.al{display:inline-flex;align-items:center;gap:6px;color:var(--neg)}
+.agh td{font-size:.88rem}.agh .acts .sec svg,.acts .sec svg{width:14px;height:14px}
+/* entrada, acesso e janelas */
+.lockic{width:60px;height:60px;border-radius:18px;background:var(--ac);color:var(--onac);display:grid;place-items:center;margin:0 auto 12px;font-size:0}.lockic svg{width:28px;height:28px}
+.lkic{width:48px;height:48px;border-radius:14px;background:var(--warnb);color:var(--warn);display:grid;place-items:center;margin:4px auto 10px}.lkic svg{width:24px;height:24px}
+.lockbox,.mbox{border-radius:20px;box-shadow:0 18px 50px rgba(23,21,31,.18)}
+.lockbox .mt{justify-content:center}.mt{display:flex;align-items:center;gap:8px}
+.gbtn{border-radius:10px}
+.toast{border-radius:12px}.toast .sec{display:inline-flex}
+body.editing [data-bid]::before{content:"Mover";color:var(--onac);border-radius:8px;padding:3px 10px 3px 26px;background:var(--ac) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='9' cy='6' r='1'/%3E%3Ccircle cx='15' cy='6' r='1'/%3E%3Ccircle cx='9' cy='12' r='1'/%3E%3Ccircle cx='15' cy='12' r='1'/%3E%3Ccircle cx='9' cy='18' r='1'/%3E%3Ccircle cx='15' cy='18' r='1'/%3E%3C/svg%3E") no-repeat 8px center}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="locked">
 <header class="top">
-  <div><b>Painel Financeiro</b> <span class="mut sm" id="src"></span></div>
-  <div class="row"><span class="syncchip local" id="syncChip">💾 Local</span><button class="sec" id="editReset" hidden>Restaurar interface padrão</button><button class="sec ic" id="cfgBtn" aria-pressed="false" title="Configurações" aria-label="Configurações">⚙️</button><button class="sec ic" id="editToggle" aria-pressed="false" title="Modo de Edição" aria-label="Modo de Edição">✎</button><div class="dd"><button class="sec ic" id="profBtn" title="Perfil" aria-label="Perfil">👤</button><div class="menu pmenu" id="profMenu" hidden></div></div></div>
+  <div><span class="brand"><span class="logo"><i data-lucide="wallet"></i></span><b>Painel Financeiro</b></span> <span class="mut sm" id="src"></span></div>
+  <div class="row"><span class="syncchip local" id="syncChip"><i data-lucide="hard-drive"></i><span>Local</span></span><button class="sec" id="editReset" hidden><i data-lucide="rotate-ccw"></i>Restaurar interface padrão</button><button class="sec ic" id="cfgBtn" aria-pressed="false" title="Configurações" aria-label="Configurações"><i data-lucide="settings" data-fb="Config."></i></button><button class="sec ic" id="editToggle" aria-pressed="false" title="Modo de Edição" aria-label="Modo de Edição"><i data-lucide="pencil" data-fb="Editar"></i></button><div class="dd"><button class="sec ic" id="profBtn" title="Perfil" aria-label="Perfil"><i data-lucide="user-round" data-fb="Perfil"></i></button><div class="menu pmenu" id="profMenu" hidden></div></div></div>
 </header>
 <div class="navw"><nav class="nav" id="nav">
-  <button data-t="entry">Painel de entrada</button>
-  <button data-t="cons">Consolidado</button>
-  <button data-t="comp">Comparativo mês a mês</button>
-  <button data-t="ins">Gargalos e insights</button>
-  <button data-t="tips">Dicas de economia</button>
-  <button data-t="audit">Irregularidades e auditoria</button>
+  <button data-t="entry"><i data-lucide="clipboard-paste"></i>Painel de entrada</button>
+  <button data-t="cons"><i data-lucide="table-2"></i>Consolidado</button>
+  <button data-t="comp"><i data-lucide="chart-line"></i>Comparativo mês a mês</button>
+  <button data-t="ins"><i data-lucide="chart-pie"></i>Gargalos e insights</button>
+  <button data-t="tips"><i data-lucide="piggy-bank"></i>Dicas de economia</button>
+  <button data-t="audit"><i data-lucide="shield-check"></i>Irregularidades e auditoria</button>
 </nav></div>
 
 <main>
 <div class="syncalert" id="syncAlert" hidden></div>
 <div class="fbanner" id="fbanner" hidden></div>
-<div class="editbar" id="editBar" hidden><b>Modo de Edição ativo.</b> Dê dois cliques em um botão, aba, título ou legenda para renomear (abas continuam navegando com um clique) · arraste os cabeçalhos da tabela para reordenar colunas · arraste a alça ⠿ no canto superior direito de um bloco para movê-lo.</div>
+<div class="editbar" id="editBar" hidden><b>Modo de Edição ativo.</b> Dê dois cliques em um botão, aba, título ou legenda para renomear (abas continuam navegando com um clique) · arraste os cabeçalhos da tabela para reordenar colunas · arraste a alça "Mover" no canto superior direito de um bloco para movê-lo.</div>
 <section id="v-cons">
 <section class="card" id="panel">
   <h2 class="ptitle">Painel Consolidador de Bancos</h2>
@@ -190,11 +259,11 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <div class="lbl" style="margin-top:14px">Dados brutos</div>
   <textarea id="inp" placeholder="Cole aqui o extrato (com a linha de cabeçalho)..." spellcheck="false"></textarea>
   <div class="row" style="margin-top:10px">
-    <button class="act" id="add">Processar e adicionar</button>
-    <button class="sec" id="clrRaw">Limpar dados brutos</button>
-    <button class="sec" id="clr">Limpar tabela</button>
-    <button class="sec" id="undo" hidden>Desfazer limpeza</button>
-    <button class="sec" id="manBtn" aria-expanded="false">Adicionar um lançamento (formulário)</button>
+    <button class="act" id="add"><i data-lucide="plus"></i>Processar e adicionar</button>
+    <button class="sec" id="clrRaw"><i data-lucide="eraser"></i>Limpar dados brutos</button>
+    <button class="sec" id="clr"><i data-lucide="trash-2"></i>Limpar tabela</button>
+    <button class="sec" id="undo" hidden><i data-lucide="undo-2"></i>Desfazer limpeza</button>
+    <button class="sec" id="manBtn" aria-expanded="false"><i data-lucide="circle-plus"></i>Adicionar um lançamento (formulário)</button>
   </div>
   <p class="mut sm" id="msg" style="margin:8px 0 0"></p>
   <div id="man" hidden style="margin-top:10px">
@@ -205,7 +274,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
       <input type="text" id="mval" placeholder="Valor (35,90)" style="width:120px">
       <select id="mtipo"><option value="out">Despesa</option><option value="in">Receita</option></select>
       <select id="mmod"></select>
-      <button class="act" id="madd">Adicionar</button>
+      <button class="act" id="madd"><i data-lucide="plus"></i>Adicionar</button>
     </div>
   </div>
 </section>
@@ -214,14 +283,14 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
     <label class="row sm">Até <input type="date" id="f1"></label>
     <input type="search" id="fq" placeholder="Pesquisar por descrição, categoria ou banco...">
     <label class="row sm"><input type="checkbox" id="ign" checked> Ignorar fatura e investimentos nas análises</label>
-    <button class="sec adv-btn" id="advBtn" aria-expanded="false" aria-controls="advFilters" title="Mostrar ou ocultar os filtros avançados">🎚️ + Filtros <span class="badge" id="advN" hidden>0</span><i class="chev">▾</i></button>
-    <button class="sec" id="fx">Limpar filtros</button>
+    <button class="sec adv-btn" id="advBtn" aria-expanded="false" aria-controls="advFilters" title="Mostrar ou ocultar os filtros avançados"><i data-lucide="sliders-horizontal"></i>Filtros <span class="badge" id="advN" hidden>0</span><i data-lucide="chevron-down" class="chev"></i></button>
+    <button class="sec" id="fx"><i data-lucide="filter-x"></i>Limpar filtros</button>
     <div class="adv" id="advFilters" hidden><div class="lbl advt" data-uid="l.cons.adv">Filtros avançados</div></div>
   </div>
   <div class="cards">
-    <div class="k in"><span>Total de entradas</span><b id="kIn"></b></div>
-    <div class="k out"><span>Total de saídas</span><b id="kOut"></b></div>
-    <div class="k bal" id="kBalBox"><span>Saldo líquido</span><b id="kBal"></b></div>
+    <div class="k in"><span><i data-lucide="arrow-down-left"></i>Total de entradas</span><b id="kIn"></b></div>
+    <div class="k out"><span><i data-lucide="arrow-up-right"></i>Total de saídas</span><b id="kOut"></b></div>
+    <div class="k bal" id="kBalBox"><span><i data-lucide="scale"></i>Saldo líquido</span><b id="kBal"></b></div>
   </div>
   <div class="grid2">
     <div class="card"><h3>Categorias de gastos (saídas)</h3><div id="pieOut"></div></div>
@@ -231,7 +300,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <div class="card">
     <div class="row between" style="margin-bottom:10px">
       <h3 style="margin:0">Lançamentos <span class="mut sm" id="cnt"></span> <span class="mut sm" id="sv"></span></h3>
-      <div class="row"><button class="sec" id="xcsv">Exportar para CSV</button><button class="sec" id="xxlsx">Exportar para Excel (.xlsx)</button><button class="sec" id="cp">Exportar para Google Planilhas</button><div class="dd"><button class="sec" id="gear">⚙ Gerenciar colunas</button><div class="menu" id="menu" hidden></div></div></div>
+      <div class="row"><button class="sec" id="xcsv"><i data-lucide="file-down"></i>Exportar para CSV</button><button class="sec" id="xxlsx"><i data-lucide="file-spreadsheet"></i>Exportar para Excel (.xlsx)</button><button class="sec" id="cp"><i data-lucide="clipboard-copy"></i>Exportar para Google Planilhas</button><div class="dd"><button class="sec" id="gear"><i data-lucide="columns-3"></i>Gerenciar colunas</button><div class="menu" id="menu" hidden></div></div></div>
     </div>
     <p class="mut sm" style="margin:0 0 8px">Arraste a borda direita de um cabeçalho para ajustar a largura. Clique no cabeçalho para ordenar. Clique duas vezes em Data, Descrição ou Valor para editar (despesas com sinal −). Modalidade, categoria e tipo mudam direto na célula.</p>
     <p class="mut sm" id="xmsg" style="margin:0 0 8px">As exportações seguem o filtro atual da tabela.</p>
@@ -253,7 +322,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
       <select id="bmod" aria-label="Modalidade"><option value="">Modalidade…</option><option>Crédito</option><option>Débito</option><option>Dinheiro</option><option>Pix</option><option>Benefício</option><option value="__none__">— (vazio)</option></select>
       <select id="bquem" aria-label="Quem"></select>
       <select id="bign" aria-label="Ignorar nos gráficos"><option value="">Ignorar…</option><option value="sim">Sim (ignorar nos gráficos)</option><option value="nao">Não (contar nos gráficos)</option></select>
-      <button class="sec" id="bclear">Limpar seleção</button>
+      <button class="sec" id="bclear"><i data-lucide="x"></i>Limpar seleção</button>
       <span class="mut sm" id="bmsg"></span>
     </div>
     <div class="wrap"><table id="tbl"></table></div>
@@ -274,7 +343,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
   <div class="card"><h3>Tabela de tendências</h3><div class="wrap" id="ctab"></div></div>
   <div class="card">
     <div class="row between"><h3 style="margin:0">Categorias para comparar</h3>
-      <span class="row"><button class="sec" id="selAll">Marcar todas</button><button class="sec" id="selNone">Limpar seleção</button></span></div>
+      <span class="row"><button class="sec" id="selAll"><i data-lucide="check-check"></i>Marcar todas</button><button class="sec" id="selNone"><i data-lucide="x"></i>Limpar seleção</button></span></div>
     <p class="mut sm" id="catNote" style="margin:6px 0 0">Sem nenhuma marcada, o gráfico mostra o total geral de despesas. As categorias aparecem em ordem alfabética.</p>
     <div class="cats" id="catList"></div>
   </div>
@@ -304,12 +373,12 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
       <label>Ignorar nos Gráficos?<select id="rign"><option value="">— (não definir)</option><option value="nao">Não</option><option value="sim">Sim (Estorno/Reembolso)</option></select></label>
       <label data-uid="lb.rules.quem">Quem<select id="rquem"></select></label>
       <label>Simplificar Descrição para (opcional)<input type="text" id="rsimp" placeholder="ex.: Oxxo"></label>
-      <button class="act" id="rsave">Salvar Regra</button>
+      <button class="act" id="rsave"><i data-lucide="check"></i>Salvar Regra</button>
     </div>
     <p class="mut sm" id="rmsg" style="margin:10px 0 0"></p>
   </div>
   <div class="card">
-    <div class="row between" style="margin-bottom:10px"><h3 style="margin:0">Regras ativas</h3><button class="sec" id="rapply">Aplicar às lançamentos da tabela</button></div>
+    <div class="row between" style="margin-bottom:10px"><h3 style="margin:0">Regras ativas</h3><button class="sec" id="rapply"><i data-lucide="wand-sparkles"></i>Aplicar às lançamentos da tabela</button></div>
     <div class="wrap"><table id="rtbl" style="width:100%;table-layout:auto"></table></div>
   </div>
 </section>
@@ -335,7 +404,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
       <label>Modalidade padrão<select id="fmod"><option value="">—</option><option>Crédito</option><option>Débito</option><option>Dinheiro</option><option>Pix</option><option>Benefício</option></select></label>
     </div>
     <label class="row" style="margin:14px 0 0;cursor:pointer"><input type="checkbox" id="finv"> Inverter sinal do valor (Marque se o banco exporta despesas como valor positivo)</label>
-    <div class="row" style="margin-top:14px"><button class="act" id="fsave">Salvar formato</button><button class="sec" id="fcancel" hidden>Cancelar edição</button><span class="mut sm" id="fmsg"></span></div>
+    <div class="row" style="margin-top:14px"><button class="act" id="fsave">Salvar formato</button><button class="sec" id="fcancel" hidden><i data-lucide="x"></i>Cancelar edição</button><span class="mut sm" id="fmsg"></span></div>
     <p class="mut sm" style="margin:10px 0 0">Quando o formato tem o cabeçalho de Quem e o valor é "Ambos", o valor é dividido por 2. Se o formato tiver cabeçalho de Categoria, a categoria da planilha entra fielmente, sem as regras automáticas.</p>
   </div>
   <div class="card" id="catPanel">
@@ -343,9 +412,9 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
     <p class="mut sm" style="margin-top:-4px">Inclua, renomeie ou exclua categorias. Ao excluir, os lançamentos dessa categoria ficam sem categoria (em branco) até você reclassificá-los.</p>
     <div class="grid2">
       <div><div class="lbl">Categorias de saídas</div><ul class="clist" id="catOut"></ul>
-        <div class="row"><input type="text" id="catOutNew" placeholder="Nova categoria de saída" style="flex:1"><button class="act" id="catOutAdd">Adicionar</button></div></div>
+        <div class="row"><input type="text" id="catOutNew" placeholder="Nova categoria de saída" style="flex:1"><button class="act" id="catOutAdd"><i data-lucide="plus"></i>Adicionar</button></div></div>
       <div><div class="lbl">Categorias de entradas</div><ul class="clist" id="catInn"></ul>
-        <div class="row"><input type="text" id="catInnNew" placeholder="Nova categoria de entrada" style="flex:1"><button class="act" id="catInnAdd">Adicionar</button></div></div>
+        <div class="row"><input type="text" id="catInnNew" placeholder="Nova categoria de entrada" style="flex:1"><button class="act" id="catInnAdd"><i data-lucide="plus"></i>Adicionar</button></div></div>
     </div>
     <p class="mut sm" id="catmsg" style="margin:10px 0 0"></p>
   </div>
@@ -354,7 +423,7 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 <section id="v-audit" hidden>
   <div class="card row">
     <label class="row"><input type="checkbox" id="audShow"> Mostrar avisos ignorados</label>
-    <button class="sec" id="audRestore">Restaurar todos os avisos ignorados</button>
+    <button class="sec" id="audRestore"><i data-lucide="rotate-ccw"></i>Restaurar todos os avisos ignorados</button>
     <span class="mut sm">Os filtros ativos também valem aqui. Duplicidade: mesma data, mesma descrição e mesmo valor. Valor atípico: muito acima do padrão da própria descrição ou da categoria.</span>
   </div>
   <div class="cards" id="audCards"></div>
@@ -363,9 +432,9 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 </section>
 <section id="v-cfg" hidden data-nodrag>
   <div class="subnav" id="subnav">
-    <button id="subBank" data-sub="bank" aria-pressed="true">Banco</button>
-    <button id="subCat" data-sub="cat" aria-pressed="false">Categorias</button>
-    <button id="subRules" data-sub="rules" aria-pressed="false">Regras</button>
+    <button id="subBank" data-sub="bank" aria-pressed="true"><i data-lucide="landmark"></i>Banco</button>
+    <button id="subCat" data-sub="cat" aria-pressed="false"><i data-lucide="tags"></i>Categorias</button>
+    <button id="subRules" data-sub="rules" aria-pressed="false"><i data-lucide="list-checks"></i>Regras</button>
   </div>
   <div id="sp-bank"></div><div id="sp-cat" hidden></div><div id="sp-rules" hidden></div>
 </section>
@@ -373,41 +442,43 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 <div class="tt" id="tt" hidden></div>
 <div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Entrada no painel">
   <div class="lockbox">
-    <div class="lockic">💰</div>
+    <div class="lockic"><i data-lucide="wallet"></i></div>
     <div class="mt">Painel Financeiro</div>
     <div id="lkLogin" hidden>
       <button class="gbtn" id="gLogin" type="button"><svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Entrar com o Google</button>
     </div>
     <div id="lkBlocked" hidden>
+      <div class="lkic"><i data-lucide="shield-alert"></i></div>
       <p><b>Acesso restrito ou aguardando liberação.</b></p>
       <p class="mut sm">Você entrou como <span id="lkWho"></span>. Peça ao administrador para liberar o seu acesso e toque em "Verificar novamente".</p>
-      <button class="act" id="lkCheck" type="button">Verificar novamente</button>
-      <button class="sec" id="lkOut" type="button">Sair</button>
+      <button class="act" id="lkCheck" type="button"><i data-lucide="refresh-cw"></i>Verificar novamente</button>
+      <button class="sec" id="lkOut" type="button"><i data-lucide="log-out"></i>Sair</button>
     </div>
     <p class="mut sm" id="lkMsg" role="status"></p>
   </div>
 </div>
 <div class="modal" id="admModal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-label="Gerenciar Usuários" style="max-width:760px">
-  <div class="mt">Gerenciar Usuários</div>
+  <div class="mt"><i data-lucide="users"></i>Gerenciar Usuários</div>
   <p class="mut sm" style="margin:0 0 10px">Quem entra com o Google pela primeira vez fica aguardando liberação. Ative para dar acesso ou bloqueie para tirar. Cada pessoa vê somente os próprios dados; nem o Master enxerga os lançamentos dos outros.</p>
   <div class="wrap" id="admList"></div>
   <p class="mut sm" id="admMsg" role="status" style="margin:10px 0"></p>
-  <div class="row"><button class="sec" id="admRefresh" type="button">Atualizar</button><button class="sec" id="admClose" type="button">Fechar</button></div>
+  <div class="row"><button class="sec" id="admRefresh" type="button"><i data-lucide="refresh-cw"></i>Atualizar</button><button class="sec" id="admClose" type="button"><i data-lucide="x"></i>Fechar</button></div>
 </div></div>
 <div class="modal" id="cfModal" hidden><div class="mbox" role="dialog" aria-modal="true">
   <div class="mt">Conflito de sincronização</div>
   <p id="cfText"></p>
-  <div class="row"><button class="act" id="cfCloud">Usar os dados da nuvem</button><button class="sec" id="cfLocal">Manter os dados deste aparelho</button></div>
+  <div class="row"><button class="act" id="cfCloud"><i data-lucide="cloud-download"></i>Usar os dados da nuvem</button><button class="sec" id="cfLocal"><i data-lucide="hard-drive"></i>Manter os dados deste aparelho</button></div>
   <p class="mut sm" style="margin:10px 0 0">"Usar a nuvem" descarta as alterações pendentes deste aparelho; "Manter" sobrescreve a nuvem com a versão deste aparelho.</p>
 </div></div>
 <div class="toast" id="toast" hidden role="status"></div>
 
 <textarea id="lbed" hidden rows="1" aria-label="Novo nome"></textarea>
 
+<script src="https://unpkg.com/lucide@1.61.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 /* ╔══════════════════════════════════════════════════════════════════════════════════════════╗
-   ║  ⚙️  CONFIGURAÇÃO — PREENCHA AS 2 LINHAS ABAIXO, UMA ÚNICA VEZ                           ║
+   ║  CONFIGURAÇÃO — PREENCHA AS 2 LINHAS ABAIXO, UMA ÚNICA VEZ                           ║
    ║  Onde achar: Supabase > seu projeto > Project Settings (engrenagem) > API                ║
    ╚══════════════════════════════════════════════════════════════════════════════════════════╝ */
 const SUPABASE_URL      = 'https://bvmoyfpyqrbhmofwcwfu.supabase.co';   // <<< COLE AQUI a "Project URL"       (ex.: https://abcdefghijklmno.supabase.co)
@@ -415,6 +486,21 @@ const SUPABASE_ANON_KEY = 'sb_publishable_axqjw9gHcbFocPoZNsCWEg_7qmrBDdj';   //
 /* A chave anon é pública por desenho: quem protege os dados é o RLS do banco (supabase.sql).
    NUNCA cole aqui a chave "service_role" nem senhas. */
 /* ═══════════════════════════════════════════════════════════════════════════════════════════ */
+/* --- ícones Lucide: <i data-lucide="nome"> vira SVG; renderIcons() é chamada a cada atualização da tela --- */
+function ic(n,c){return `<i data-lucide="${n}"${c?` class="${c}"`:''} aria-hidden="true"></i>`}
+let ICT=0;
+function renderIcons(){
+  if(!(window.lucide&&typeof window.lucide.createIcons==='function'))return;
+  try{window.lucide.createIcons({attrs:{'stroke-width':1.75}})}catch(e){}
+}
+function initIcons(){
+  if(!window.lucide){const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/lucide@1.61.0/dist/umd/lucide.min.js';sc.onload=renderIcons;document.head.appendChild(sc)} // reserva caso o unpkg esteja fora do ar
+  renderIcons();
+  window.addEventListener('load',renderIcons);
+  if(typeof MutationObserver==='undefined')return;
+  new MutationObserver(()=>{if(ICT)return;ICT=setTimeout(()=>{ICT=0;renderIcons()},16)}).observe(document.body,{childList:true,subtree:true}); // rede de segurança para qualquer elemento criado depois
+}
+
 /* ===== utilitários ===== */
 const $=id=>document.getElementById(id);
 const MES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -729,7 +815,7 @@ function supaErr(error){ // erro do supabase-js → Error com "kind"
   let kind='server';
   if(code==='42501'||/acesso negado/i.test(m))kind='blocked';
   else if(st===401||code==='PGRST301'||/jwt/i.test(m))kind='auth';
-  else if(code==='PGRST202'||code==='42P01'||code==='42883'||/could not find the function|does not exist/i.test(m))kind='setup';
+  else if(code==='PGRST202'||code==='PGRST205'||code==='42P01'||code==='42883'||/could not find the (function|table)|does not exist/i.test(m))kind='setup';
   else if(!code&&!st&&/fetch|network|load failed|timeout|abort/i.test(m))kind='net';
   return Object.assign(new Error(m||'erro no servidor'),{kind,code,status:st});
 }
@@ -761,17 +847,18 @@ function classifyErr(e){
 }
 
 /* --- estado da sincronização e alertas visuais --- */
-const CHIP={local:['💾','Local'],syncing:['☁️','…'],ok:['☁️','Sincronizado'],offline:['⚠️','Offline'],error:['⚠️','Erro'],conflict:['⚠️','Conflito']};
-function setSync(state,msg,kind){
+const CHIP={local:['hard-drive','Local'],syncing:['refresh-cw','Sincronizando'],ok:['cloud-check','Sincronizado'],offline:['cloud-off','Offline'],error:['triangle-alert','Erro'],conflict:['triangle-alert','Conflito']};
+function setSync(state,msg,kind){setSync0(state,msg,kind);renderIcons()}
+function setSync0(state,msg,kind){
   SYNC.state=state;SYNC.msg=msg||'';SYNC.kind=kind||'';
   const c=CHIP[state],chip=$('syncChip'),a=$('syncAlert');
-  chip.textContent=`${c[0]} ${c[1]}`;chip.className='syncchip '+state;
+  chip.innerHTML=ic(c[0])+'<span>'+c[1]+'</span>';chip.className='syncchip '+state;
   chip.title=state==='local'?'Somente neste aparelho':state==='ok'?`Sincronizado com a nuvem${SYNC.last?' às '+SYNC.last:''}`:state==='syncing'?'Sincronizando com a nuvem':state==='conflict'?'Conflito de sincronização a resolver':`Modo offline: ${msg}`;
   a.className='syncalert';
   if(state==='offline'||state==='error'){
     a.hidden=false;
-    a.innerHTML=`<b>⚠️ ${state==='offline'?'Modo Offline':'Falha na conexão com o servidor'}</b> — ${esc(String(msg).replace(/\.$/,''))}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':'; as alterações ficam pendentes até a conexão ser restabelecida'}. <button class="sec" id="saRetry">Tentar novamente</button>`;
-  }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b>⚠️ Conflito de sincronização</b> — os dados na nuvem mudaram (em outro aparelho) enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
+    a.innerHTML=`<b class="al">${ic('triangle-alert')}${state==='offline'?'Modo Offline':'Falha na conexão com o servidor'}</b> — ${esc(String(msg).replace(/\.$/,''))}. O painel continua com os dados salvos neste aparelho${state==='offline'?'; as alterações serão enviadas quando a conexão voltar':'; as alterações ficam pendentes até a conexão ser restabelecida'}. <button class="sec" id="saRetry">Tentar novamente</button>`;
+  }else if(state==='conflict'){a.hidden=false;a.innerHTML='<b class="al">'+ic('triangle-alert')+'Conflito de sincronização</b> — os dados na nuvem mudaram (em outro aparelho) enquanto havia alterações neste aparelho. <button class="sec" id="saResolve">Resolver</button>'}
   else a.hidden=true;
 }
 function toast(t,undo){const e=$('toast');e.textContent=t;toast.fn=undo||null;if(undo){const b=document.createElement('button');b.className='sec';b.id='toastUndo';b.textContent='Desfazer';e.append(' ',b)}e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{e.hidden=true},undo?9000:4500)}
@@ -960,7 +1047,7 @@ async function adminPending(toastIt){
   try{
     const r=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('ativo',false);
     if(r.error)return;PENDU=r.count||0;
-    if(toastIt&&PENDU)toast(`${PENDU} pessoa${PENDU>1?'s':''} aguardando liberação. Abra o menu 👤 › Gerenciar Usuários.`);
+    if(toastIt&&PENDU)toast(`${PENDU} pessoa${PENDU>1?'s':''} aguardando liberação. Abra o menu do perfil › Gerenciar Usuários.`);
   }catch(e){}
 }
 async function loadUsers(){
@@ -1001,11 +1088,12 @@ let PIMP=-1;
 function renderProfMenu(){
   const adm=SESSION.profile.role==='admin',srcs=rawLocal('lancamentos')==null?oldSources():[],pend=SYNC.dirty.size>0;
   $('profMenu').innerHTML=`<div class="pmi on" style="cursor:default"><b>${esc(SESSION.profile.name)}</b><br><small class="mut">${esc(SESSION.profile.email)}${adm?' · Master':''}</small></div><hr>`+
-   (adm?`<button class="sec pmi" data-pact="admin">👥 Gerenciar Usuários${PENDU?` (${PENDU} aguardando)`:''}</button>`:'')+
-   '<button class="sec pmi" data-pact="sync">🔄 Sincronizar agora</button>'+
-   srcs.map((x,i)=>`<button class="sec pmi" data-pact="import" data-src="${i}">${PIMP===i?'Confirmar: trazer para este usuário':'📥 Trazer dados antigos: '+esc(x.name)}</button>`).join('')+
-   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?(pend?'Há alterações não enviadas: confirmar limpeza':'Confirmar: limpar o cache deste aparelho'):'🗑 Limpar o cache deste aparelho'}</button>`+
-   '<button class="sec pmi" data-pact="logout">🚪 Sair</button>';
+   (adm?`<button class="sec pmi" data-pact="admin">${ic('users')}Gerenciar Usuários${PENDU?` (${PENDU} aguardando)`:''}</button>`:'')+
+   '<button class="sec pmi" data-pact="sync">'+ic('refresh-cw')+'Sincronizar agora</button>'+
+   srcs.map((x,i)=>`<button class="sec pmi" data-pact="import" data-src="${i}">${PIMP===i?'Confirmar: trazer para este usuário':ic('download')+'Trazer dados antigos: '+esc(x.name)}</button>`).join('')+
+   `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?(pend?'Há alterações não enviadas: confirmar limpeza':'Confirmar: limpar o cache deste aparelho'):ic('trash-2')+'Limpar o cache deste aparelho'}</button>`+
+   '<button class="sec pmi" data-pact="logout">'+ic('log-out')+'Sair</button>';
+  renderIcons();
 }
 function clearLocalCache(){ // apaga só o cache deste aparelho; os dados continuam na nuvem
   const id=SESSION.profile.id;
@@ -1218,7 +1306,8 @@ function setSource(s){
   AUTO=true;F=F0();$('fq').value='';SEL.clear();SELR.clear();undoRows=[];$('undo').hidden=true;
   refresh();
 }
-function refresh(){
+function refresh(){const __r=refresh__(...arguments);renderIcons();return __r}
+function refresh__(){
   const ds=DATA.map(r=>r.date).sort();
   if(AUTO){F.d0=ds[0]||'';F.d1=ds[ds.length-1]||'';$('f0').value=F.d0;$('f1').value=F.d1}
   fillT();renderLast();fillRuleSelects();
@@ -1272,12 +1361,12 @@ function renderTable(){
     c==='cat'?`<select data-id="${r.id}" data-f="cat"><option value=""${r.cat?'':' selected'}>—</option>${catsFor(r).map(x=>`<option${x===r.cat?' selected':''}>${esc(x)}</option>`).join('')}</select>`:
     c==='kind'?`<select data-id="${r.id}" data-f="kind"><option value="">—</option><option value="fixa"${r.kind==='fixa'?' selected':''}>Fixa</option><option value="variavel"${r.kind==='variavel'?' selected':''}>Variável</option></select>`:
     c==='ign'?`<input type="checkbox" data-id="${r.id}" data-f="ign"${r.ign?' checked':''} title="Ignorar nos gráficos">`:
-    c==='val'?brl(r.val):c==='x'?`<button class="xbtn" data-del="${r.id}" title="Remover">✕</button>`:esc(r[c]||'—');
+    c==='val'?brl(r.val):c==='x'?`<button class="xbtn" data-del="${r.id}" title="Remover">${ic('x')}</button>`:esc(r[c]||'—');
   const DC={};DATA.forEach(r=>{const k=dupKey(r);DC[k]=(DC[k]||0)+1});
-  const dupW=r=>{const k=dupKey(r);return DC[k]>1&&!AUD.dismissed.includes('dup|'+k)?`<span class="dupw" data-tip="${esc(`Possível duplicidade: há ${DC[k]} lançamentos idênticos (mesma data, descrição e valor). Veja a aba ${LB('nav.audit')} para ignorar o aviso.`)}">⚠️</span> `:''};
+  const dupW=r=>{const k=dupKey(r);return DC[k]>1&&!AUD.dismissed.includes('dup|'+k)?`<span class="dupw bdg warn" data-tip="${esc(`Possível duplicidade: há ${DC[k]} lançamentos idênticos (mesma data, descrição e valor). Veja a aba ${LB('nav.audit')} para ignorar o aviso.`)}">${ic('copy')}Duplicado</span> `:''};
   const ED=['date','desc','val','quem'],iv=vis.findIndex(c=>c.k==='val'),tot=sum(rs.filter(r=>!exc(r)).map(r=>r.val));
   $('tbl').innerHTML=`<colgroup>${vis.map(c=>`<col data-k="${c.k}" style="width:${W(c.k)}px">`).join('')}</colgroup>
-   <thead><tr>${vis.map(c=>`<th data-k="${c.k}"${c.k==='sel'?'':` data-uid="col.${c.k}"`} class="${c.r?'r':''}"${EDITM&&c.k!=='sel'?' draggable="true"':''}>${c.k==='sel'?'<input type="checkbox" id="selAllRows" title="Selecionar todas as linhas visíveis" aria-label="Selecionar todas">':['n','x'].includes(c.k)?LB('col.'+c.k):LB('col.'+c.k)+(SORT.k===c.k?(SORT.d>0?' ▲':' ▼'):'')}<i class="rz" data-k="${c.k}"></i></th>`).join('')}</tr></thead>
+   <thead><tr>${vis.map(c=>`<th data-k="${c.k}"${c.k==='sel'?'':` data-uid="col.${c.k}"`} class="${c.r?'r':''}"${EDITM&&c.k!=='sel'?' draggable="true"':''}>${c.k==='sel'?'<input type="checkbox" id="selAllRows" title="Selecionar todas as linhas visíveis" aria-label="Selecionar todas">':['n','x'].includes(c.k)?LB('col.'+c.k):LB('col.'+c.k)+(SORT.k===c.k?(SORT.d>0?ic('arrow-up','sort'):ic('arrow-down','sort')):'')}<i class="rz" data-k="${c.k}"></i></th>`).join('')}</tr></thead>
    <tbody>${rs.map((r,i)=>`<tr data-rid="${r.id}"${r.bank?` style="--bc:${bcol(r.bank)}"`:''} class="${[exc(r)?'ex':'',SELR.has(r.id)?'sel':''].filter(Boolean).join(' ')}">${vis.map(c=>`<td${ED.includes(c.k)?` data-edit="${c.k}" data-id="${r.id}"`:''} class="${[c.r?'r '+(r.val<0?'neg':'pos'):'',ED.includes(c.k)?'ed':''].filter(Boolean).join(' ')}" title="${esc(ED.includes(c.k)&&c.k!=='desc'?'Clique duas vezes para editar':['bank','desc'].includes(c.k)?r[c.k]||'':'')}">${cell(c.k,r,i)}</td>`).join('')}</tr>`).join('')}</tbody>`+
    (iv>=0&&rs.length?`<tfoot><tr>${iv>0?`<td colspan="${iv}">Saldo da seleção${nEx?' (sem os esmaecidos)':''}</td>`:''}<td class="r ${tot<0?'neg':'pos'}">${brl(tot)}</td>${vis.length-iv-1>0?`<td colspan="${vis.length-iv-1}"></td>`:''}</tr></tfoot>`:'');
   const sa=$('selAllRows');if(sa){const n=rs.filter(r=>SELR.has(r.id)).length;sa.checked=rs.length>0&&n===rs.length;sa.indeterminate=n>0&&n<rs.length}
@@ -1503,7 +1592,7 @@ function fillFmt(){
 }
 function showHint(){
   const f=FM.find(x=>String(x.id)===$('fmt').value),m=f&&(f.mode||'cols');
-  $('hint').textContent=!f?`Cadastre um formato em Configurações (⚙️) › ${LB('btn.subBank')} para colar extratos.`:
+  $('hint').textContent=!f?`Cadastre um formato em Configurações › ${LB('btn.subBank')} para colar extratos.`:
    m==='amazon'?'Cole o extrato em texto corrido: o painel acha data (DD/MM), descrição e valor por padrões de texto, sem precisar de colunas. Pagamentos, estornos e valores com "-" no fim entram como créditos.':
    m==='bb'?'Cole as linhas do extrato do BB (com data). O painel identifica Pix, Débito, Tarifa, Boleto e outros tipos, preenche a modalidade e limpa códigos, agências e horários da descrição. COMGAS, CONDOMINIO EDIFICIO MANACA, ENEL e GRPQA: dividido por 2 e categoria Casa.':
    m==='sheet'?'Cole a planilha com as colunas: Data | Banco Origem | Descrição | Modalidade | Categoria | Valor | Tipo | Ignorar nos gráficos | Quem. A coluna Banco Origem define o destino de cada linha. As linhas entram fielmente, sem regras automáticas.':
@@ -1511,7 +1600,7 @@ function showHint(){
 }
 function renderFmts(){
   const dash='<span class="mut">—</span>',bd=bankDates();
-  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Ordem</th><th>Cor</th><th>Formato</th><th>1º lançamento</th><th>Último lançamento</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map((f,i)=>{const c=(f.mode||'cols')==='cols';return `<tr><td style="white-space:nowrap"><button class="sec mv" data-fup="${f.id}" title="Subir"${i===0?' disabled':''}>▲</button> <button class="sec mv" data-fdn="${f.id}" title="Descer"${i===FM.length-1?' disabled':''}>▼</button></td><td><input type="color" data-fcol="${f.id}" value="${f.color||'#2563eb'}" title="Cor do banco" aria-label="Cor do banco ${esc(f.name)}"></td><td><b>${esc(f.name)}</b></td><td>${bd.first[f.name]?dmy(bd.first[f.name]):dash}</td><td>${bd.last[f.name]?dmy(bd.last[f.name]):dash}</td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
+  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Ordem</th><th>Cor</th><th>Formato</th><th>1º lançamento</th><th>Último lançamento</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map((f,i)=>{const c=(f.mode||'cols')==='cols';return `<tr><td style="white-space:nowrap"><button class="sec mv" data-fup="${f.id}" title="Subir"${i===0?' disabled':''}>${ic('chevron-up')}</button> <button class="sec mv" data-fdn="${f.id}" title="Descer"${i===FM.length-1?' disabled':''}>${ic('chevron-down')}</button></td><td><input type="color" data-fcol="${f.id}" value="${f.color||'#2563eb'}" title="Cor do banco" aria-label="Cor do banco ${esc(f.name)}"></td><td><b>${esc(f.name)}</b></td><td>${bd.first[f.name]?dmy(bd.first[f.name]):dash}</td><td>${bd.last[f.name]?dmy(bd.last[f.name]):dash}</td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
 }
 const FF=['fname','fcdata','fcdesc','fcval','fcquem','fcbank','fccat'];
 function resetFmtForm(){EDITF=null;FF.forEach(i=>$(i).value='');$('fmode').value='cols';$('finv').checked=false;$('fdec').value='auto';$('fmod').value='';setLbl($('fsave'),LB('btn.fsave'));$('fcancel').hidden=true}
@@ -1530,7 +1619,7 @@ function addManual(){
 }
 function add(){
   const text=$('inp').value,f=FM.find(x=>String(x.id)===$('fmt').value);
-  if(!f){$('msg').textContent=`Cadastre e selecione um formato em Configurações (⚙️) › ${LB('btn.subBank')}.`;return}
+  if(!f){$('msg').textContent=`Cadastre e selecione um formato em Configurações › ${LB('btn.subBank')}.`;return}
   if(!text.trim()){$('msg').textContent='Cole os dados do extrato primeiro.';return}
   let res;try{res=parseFormat(f,text)}catch(e){$('msg').textContent=String(e);return}
   if(!res.rows.length){$('msg').textContent=`Nenhuma linha válida no formato "${f.name}" (${MODEL[f.mode||'cols']}). Confira o texto colado, a data e o separador decimal.`;return}
@@ -1635,9 +1724,9 @@ function drawTrend(){
   const {T,cats,all,shownM,fm}=CS;
   if(!cats.length){$('ctab').innerHTML='<p class="mut" style="padding:12px;margin:0">Sem despesas no período selecionado.</p>';return}
   const totO={};all.forEach(m=>{totO[m]=cats.reduce((s,c)=>s+(T[c][m]||0),0)});
-  const arrow=(p,c)=>{if(p===undefined)return'';if(c>p)return`<small class="neg">▲ ${p>0?pct((c-p)/p*100):'novo'}</small>`;if(c<p)return`<small class="pos">▼ ${pct((p-c)/p*100)}</small>`;return'<small class="mut">=</small>'};
+  const arrow=(p,c)=>{if(p===undefined)return'';if(c>p)return`<small class="neg">${ic('arrow-up-right')}${p>0?pct((c-p)/p*100):'novo'}</small>`;if(c<p)return`<small class="pos">${ic('arrow-down-right')}${pct((p-c)/p*100)}</small>`;return'<small class="mut">=</small>'};
   const cell=(o,m)=>{const i=all.indexOf(m),cur=o[m]||0,prev=i>0?(o[all[i-1]]||0):undefined;return cur||prev?`${brl(cur)}${arrow(prev,cur)}`:'<span class="mut">—</span>'};
-  $('ctab').innerHTML=`<table class="cmp" style="width:100%;table-layout:auto"><thead><tr>${CGRP==='bank'?'<th>Banco</th>':`<th data-uid="comp.catcol">${LB('comp.catcol')}</th>`}${shownM.map(m=>`<th class="r">${mlab(m)}${fm.includes(m)?'':'*'}</th>`).join('')}</tr></thead><tbody>${cats.map(c=>`<tr><td>${esc(c)}</td>${shownM.map(m=>`<td class="r">${cell(T[c],m)}</td>`).join('')}</tr>`).join('')}</tbody><tfoot><tr><td data-uid="comp.total">${LB('comp.total')}</td>${shownM.map(m=>`<td class="r">${cell(totO,m)}</td>`).join('')}</tr></tfoot></table>`+(shownM.some(m=>!fm.includes(m))?'<p class="mut sm" style="margin:8px 10px">* mês em andamento (dados parciais). ▲ vermelho: gastou mais que no mês anterior · ▼ verde: gastou menos.</p>':'<p class="mut sm" style="margin:8px 10px">▲ vermelho: gastou mais que no mês imediatamente anterior · ▼ verde: gastou menos.</p>');
+  $('ctab').innerHTML=`<table class="cmp" style="width:100%;table-layout:auto"><thead><tr>${CGRP==='bank'?'<th>Banco</th>':`<th data-uid="comp.catcol">${LB('comp.catcol')}</th>`}${shownM.map(m=>`<th class="r">${mlab(m)}${fm.includes(m)?'':'*'}</th>`).join('')}</tr></thead><tbody>${cats.map(c=>`<tr><td>${esc(c)}</td>${shownM.map(m=>`<td class="r">${cell(T[c],m)}</td>`).join('')}</tr>`).join('')}</tbody><tfoot><tr><td data-uid="comp.total">${LB('comp.total')}</td>${shownM.map(m=>`<td class="r">${cell(totO,m)}</td>`).join('')}</tr></tfoot></table>`+(shownM.some(m=>!fm.includes(m))?'<p class="mut sm" style="margin:8px 10px">* mês em andamento (dados parciais). '+ic('arrow-up-right')+' vermelho: gastou mais que no mês anterior · '+ic('arrow-down-right')+' verde: gastou menos.</p>':'<p class="mut sm" style="margin:8px 10px">'+ic('arrow-up-right')+' vermelho: gastou mais que no mês imediatamente anterior · '+ic('arrow-down-right')+' verde: gastou menos.</p>');
 }
 
 /* ===== recorrência, volume e dicas ===== */
@@ -1808,18 +1897,19 @@ function outliers(){ // saídas muito acima do padrão: histórico da própria d
   });
   return out.sort((a,b)=>Math.abs(b.row.val)-Math.abs(a.row.val));
 }
-function renderAudit(){
+function renderAudit(){const __r=renderAudit__(...arguments);renderIcons();return __r}
+function renderAudit__(){
   const dups=dupGroups().filter(g=>g.rows.some(fmatch)),outs=outliers().filter(o=>fmatch(o.row));
   const off=x=>AUD.dismissed.includes(x.key),dl=dups.filter(g=>!off(g)),ol=outs.filter(o=>!off(o));
   AUDMAP={};
-  $('audCards').innerHTML=`<div class="k out"><span data-uid="t.aud.dup">${LB('t.aud.dup')}</span><b>${dl.length}</b></div><div class="k out"><span data-uid="t.aud.out">${LB('t.aud.out')}</span><b>${ol.length}</b></div><div class="k"><span data-uid="t.aud.off">${LB('t.aud.off')}</span><b>${dups.length-dl.length+outs.length-ol.length}</b></div>`;
-  const acts=x=>`<span class="acts"><button class="sec" data-aview="${esc(x.key)}">Ver na tabela</button>${off(x)?`<button class="sec" data-arest="${esc(x.key)}">Restaurar aviso</button>`:`<button class="sec" data-adis="${esc(x.key)}">Ignorar aviso</button>`}</span>`;
+  $('audCards').innerHTML=`<div class="k out"><span data-uid="t.aud.dup">${ic('copy')}${LB('t.aud.dup')}</span><b>${dl.length}</b></div><div class="k out"><span data-uid="t.aud.out">${ic('trending-up')}${LB('t.aud.out')}</span><b>${ol.length}</b></div><div class="k"><span data-uid="t.aud.off">${ic('eye-off')}${LB('t.aud.off')}</span><b>${dups.length-dl.length+outs.length-ol.length}</b></div>`;
+  const acts=x=>`<span class="acts"><button class="sec" data-aview="${esc(x.key)}">${ic('eye')}Ver na tabela</button>${off(x)?`<button class="sec" data-arest="${esc(x.key)}">${ic('rotate-ccw')}Restaurar aviso</button>`:`<button class="sec" data-adis="${esc(x.key)}">${ic('eye-off')}Ignorar aviso</button>`}</span>`;
   const dv=AUDSHOW?dups:dl,ov=AUDSHOW?outs:ol;
   const grp=g=>{const r=g.rows[0];AUDMAP[g.key]={date:r.date,desc:r.desc};
-    return `<tr class="agh${off(g)?' off':''}"><td colspan="6"><span class="atag">⚠️ Duplicado ×${g.rows.length}</span> <b>${esc(r.desc)}</b> · ${dmy(r.date)} · ${brl(r.val)} ${acts(g)}</td></tr>`+
-      g.rows.map((x,i)=>`<tr class="${off(g)?'off':''}"><td>${dmy(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.bank||'—')}</td><td class="r neg">${brl(x.val)}</td><td>${i+1} de ${g.rows.length}</td><td><button class="dng" data-adel="${x.id}" title="Excluir esta cópia da base de dados">🗑 Excluir Duplicado</button></td></tr>`).join('')};
+    return `<tr class="agh${off(g)?' off':''}"><td colspan="6"><span class="bdg warn">${ic('copy')}Duplicado ×${g.rows.length}</span> <b>${esc(r.desc)}</b> · ${dmy(r.date)} · ${brl(r.val)} ${acts(g)}</td></tr>`+
+      g.rows.map((x,i)=>`<tr class="${off(g)?'off':''}"><td>${dmy(x.date)}</td><td>${esc(x.desc)}</td><td>${esc(x.bank||'—')}</td><td class="r neg">${brl(x.val)}</td><td>${i+1} de ${g.rows.length}</td><td><button class="dng" data-adel="${x.id}" title="Excluir esta cópia da base de dados">${ic('trash-2')}Excluir Duplicado</button></td></tr>`).join('')};
   $('audDup').innerHTML=dv.length?`<div class="wrap"><table style="width:100%;table-layout:auto"><thead><tr><th>Data</th><th>Descrição</th><th>Banco</th><th class="r">Valor</th><th>Cópia</th><th>Ações</th></tr></thead><tbody>${dv.map(grp).join('')}</tbody></table></div>`:'<p class="mut" style="margin:0">Nenhuma transação duplicada encontrada.</p>';
-  $('audOut').innerHTML=ov.length?ov.map(o=>{const r=o.row;AUDMAP[o.key]={date:r.date,desc:r.desc};return`<div class="aud${off(o)?' off':''}"><div><span class="atag">📈 Atípico</span> <b>${esc(r.desc)}</b> · ${dmy(r.date)} · <b class="neg">${brl(r.val)}</b> · ${esc(cn(r))} · ${esc(r.bank||'—')}<div class="mut sm">${esc(o.why)}</div></div>${acts(o)}</div>`}).join(''):'<p class="mut" style="margin:0">Nenhum valor atípico encontrado.</p>';
+  $('audOut').innerHTML=ov.length?ov.map(o=>{const r=o.row;AUDMAP[o.key]={date:r.date,desc:r.desc};return`<div class="aud${off(o)?' off':''}"><div><span class="bdg info">${ic('trending-up')}Atípico</span> <b>${esc(r.desc)}</b> · ${dmy(r.date)} · <b class="neg">${brl(r.val)}</b> · ${esc(cn(r))} · ${esc(r.bank||'—')}<div class="mut sm">${esc(o.why)}</div></div>${acts(o)}</div>`}).join(''):'<p class="mut" style="margin:0">Nenhum valor atípico encontrado.</p>';
   $('audShow').checked=AUDSHOW;
 }
 $('v-audit').addEventListener('click',e=>{
@@ -1846,7 +1936,8 @@ function setSub(k){
 }
 const renderCfg=()=>setSub(CFGSUB);
 function render(){updateBanner();({entry:renderEntry,cons:renderCons,comp:renderComp,ins:renderIns,tips:renderTips,audit:renderAudit,cfg:renderCfg})[TAB]()}
-function setTab(t){TAB=t;document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));$('cfgBtn').setAttribute('aria-pressed',t==='cfg');for(const k of TABS)$('v-'+k).hidden=k!==t;render()}
+function setTab(t){const __r=setTab__(...arguments);renderIcons();return __r}
+function setTab__(t){TAB=t;document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));$('cfgBtn').setAttribute('aria-pressed',t==='cfg');for(const k of TABS)$('v-'+k).hidden=k!==t;render()}
 $('nav').onclick=e=>{const b=e.target.closest('[data-t]');if(b)setTab(b.dataset.t)};
 $('cfgBtn').onclick=()=>setTab('cfg');
 $('subnav').onclick=e=>{const b=e.target.closest('[data-sub]');if(b)setSub(b.dataset.sub)};
@@ -2117,6 +2208,7 @@ async function startApp(){
   else if(SYNC.on&&SYNC.state==='ok')pushDirty();
   startPolling();
 }
+initIcons();
 initAuth();
 </script>
 </body>
