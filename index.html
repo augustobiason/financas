@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Painel Financeiro</title>
 <style>
-:root{--bg:#f6f5fa;--card:#ffffff;--tx:#17151f;--mut:#6b6880;--bd:#e7e5ef;--ac:#820ad1;--acb:rgba(130,10,209,.08);--neg:#e11d48;--negb:rgba(225,29,72,.08);--pos:#059669;--posb:rgba(5,150,105,.09);--warn:#b45309;--warnb:rgba(217,119,6,.11);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e0c14;--card:#171421;--tx:#eceaf4;--mut:#9b98ae;--bd:#2b2738;--ac:#b66dff;--acb:rgba(182,109,255,.14);--neg:#ff6b86;--negb:rgba(255,107,134,.13);--pos:#34d399;--posb:rgba(52,211,153,.13);--warn:#fbbf24;--warnb:rgba(251,191,36,.13)}}
-:root[data-theme="dark"]{--bg:#0e0c14;--card:#171421;--tx:#eceaf4;--mut:#9b98ae;--bd:#2b2738;--ac:#b66dff;--acb:rgba(182,109,255,.14);--neg:#ff6b86;--negb:rgba(255,107,134,.13);--pos:#34d399;--posb:rgba(52,211,153,.13);--warn:#fbbf24;--warnb:rgba(251,191,36,.13)}
+:root{--bg:#F8FAFC;--card:#FFFFFF;--tx:#0F172A;--mut:#64748B;--bd:#E2E8F0;--ac:#4F46E5;--acb:rgba(79,70,229,.08);--neg:#F43F5E;--negb:#FFF1F2;--pos:#10B981;--posb:#ECFDF5;--warn:#F59E0B;--warnb:#FFFBEB;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B1120;--card:#111827;--tx:#F1F5F9;--mut:#94A3B8;--bd:#1E293B;--ac:#818CF8;--acb:rgba(129,140,248,.14);--neg:#FB7185;--negb:rgba(244,63,94,.14);--pos:#34D399;--posb:rgba(16,185,129,.14);--warn:#FBBF24;--warnb:rgba(245,158,11,.14)}}
+:root[data-theme="dark"]{--bg:#0B1120;--card:#111827;--tx:#F1F5F9;--mut:#94A3B8;--bd:#1E293B;--ac:#818CF8;--acb:rgba(129,140,248,.14);--neg:#FB7185;--negb:rgba(244,63,94,.14);--pos:#34D399;--posb:rgba(16,185,129,.14);--warn:#FBBF24;--warnb:rgba(245,158,11,.14)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -28,8 +28,8 @@ button.sec{background:transparent;color:var(--tx);border:1px solid var(--bd);bor
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
 .k{border-radius:14px;padding:16px;border:1px solid var(--bd);background:var(--card)}
 .k span{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}.k b{display:block;font-size:1.6rem;margin-top:2px}
-.k.in{background:var(--posb);border-color:transparent}.k.in b{color:var(--pos)}
-.k.out{background:var(--negb);border-color:transparent}.k.out b{color:var(--neg)}
+.k.in{background:var(--posb);border-color:transparent}.k.in b{color:var(--pos-t)}
+.k.out{background:var(--negb);border-color:transparent}.k.out b{color:var(--neg-t)}
 .k.bal.neg{background:var(--neg);border-color:transparent;color:#fff}.k.bal.neg span{color:#fff;opacity:.85}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
 .pie{display:flex;flex-wrap:wrap;gap:14px;align-items:center}.pie svg{width:210px;height:210px;flex:none;overflow:visible}
@@ -48,7 +48,7 @@ th.r,td.r{text-align:right;font-variant-numeric:tabular-nums}
 .rz{position:absolute;right:0;top:0;bottom:0;width:9px;cursor:col-resize}.rz:hover,.rz:active{background:var(--ac);opacity:.55}
 body.rzing{cursor:col-resize;user-select:none}
 tfoot td{font-weight:700;background:var(--bg)}
-.neg{color:var(--neg)}.pos{color:var(--pos)}
+.neg{color:var(--neg-t)}.pos{color:var(--pos-t)}
 .cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 12px;margin:10px 0}
 .cats label{display:flex;gap:8px;align-items:center;cursor:pointer;font-size:.9rem}.cats i{width:11px;height:11px;border-radius:3px;flex:none}
 .chart svg{width:100%;height:auto;display:block}.chart text{fill:var(--mut);font-size:11px}.chart .gl{stroke:var(--bd)}
@@ -59,7 +59,7 @@ tfoot td{font-weight:700;background:var(--bg)}
 .rk .n{font-size:.78rem;font-weight:700;color:var(--mut);text-transform:uppercase}.rk .v{font-size:1.45rem;font-weight:700;margin:2px 0}
 .bar{height:8px;background:var(--bg);border-radius:4px;margin:8px 0;overflow:hidden}.bar i{display:block;height:100%;background:var(--neg)}
 .tag{display:inline-block;border-radius:6px;padding:2px 8px;font-size:.75rem;font-weight:700}
-.t-a{background:var(--negb);color:var(--neg)}.t-m{background:var(--warnb);color:var(--warn)}.t-b{background:var(--acb);color:var(--ac)}.t-f{background:var(--bg);color:var(--mut)}
+.t-a{background:var(--negb);color:var(--neg-t)}.t-m{background:var(--warnb);color:var(--warn-t)}.t-b{background:var(--acb);color:var(--ac)}.t-f{background:var(--bg);color:var(--mut)}
 .tip{border-left:4px solid var(--ac)}.tip.a{border-left-color:var(--neg)}.tip.m{border-left-color:var(--warn)}
 .tip p{margin:6px 0}.meta{display:inline-block;background:var(--acb);color:var(--ac);border-radius:6px;padding:3px 9px;font-size:.85rem;font-weight:600}
 .tt{position:fixed;z-index:20;pointer-events:none;background:#111827;color:#fff;border-radius:8px;padding:6px 10px;font-size:.82rem;max-width:260px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
@@ -70,7 +70,7 @@ textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--bd);
 button.act{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
 input[type=text],input[type=number]{border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);padding:8px;font:inherit}
 td input[type=date],td select{width:100%;padding:3px 4px;font-size:.85rem;border-radius:6px}
-.xbtn{background:none;border:0;color:var(--mut);cursor:pointer;font-size:1rem}.xbtn:hover{color:var(--neg)}
+.xbtn{background:none;border:0;color:var(--mut);cursor:pointer;font-size:1rem}.xbtn:hover{color:var(--neg-t)}
 tr.ex td{opacity:.5}
 .gbtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#3c4043;border:1px solid #dadce0;border-radius:4px;padding:10px 16px;font:500 .95rem Roboto,Arial,sans-serif;cursor:pointer;width:100%}
 .gbtn:hover{background:#f8faff;box-shadow:0 1px 3px rgba(60,64,67,.3)}.gbtn.small{width:auto;font-size:.85rem;padding:6px 12px;margin-top:6px}
@@ -87,7 +87,7 @@ tr.off td{opacity:.5}
 .help summary{cursor:pointer;font-weight:600}.help ol{padding-left:1.25rem;margin:10px 0}.help li{margin-bottom:6px;font-size:.9rem}
 .help pre{max-height:200px}
 .syncalert.info{background:var(--warnb);border-color:var(--warn)}
-.syncchip.readonly{border-color:var(--warn);color:var(--warn)}
+.syncchip.readonly{border-color:var(--warn);color:var(--warn-t)}
 .adv{flex:1 1 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 16px;padding:12px;margin-top:4px;border:1px dashed var(--ac);border-radius:10px;background:var(--card);animation:advdrop .18s ease}
 .adv .advt{grid-column:1/-1;margin:0}
 .adv label{display:flex;flex-direction:column;align-items:stretch;gap:4px;font-size:.82rem;color:var(--mut)}
@@ -98,10 +98,10 @@ tr.off td{opacity:.5}
 .chev{display:inline-block;margin-left:4px;font-style:normal;transition:transform .15s}
 #advBtn[aria-expanded="true"]{background:var(--acb);border-color:var(--ac);color:var(--ac)}
 #advBtn[aria-expanded="true"] .chev{transform:rotate(180deg)}
-body.locked>header,body.locked>.navw,body.locked>main{display:none!important}
+body.locked>header,body.locked>.navw,body.locked>main,body.locked>.app{display:none!important}
 button.ic{font-size:1.15rem;line-height:1;padding:7px 10px}
 .syncchip{font-size:.8rem;border:1px solid var(--bd);border-radius:999px;padding:3px 10px;background:var(--card);white-space:nowrap}
-.syncchip.ok{border-color:var(--pos);color:var(--pos)}.syncchip.offline,.syncchip.error,.syncchip.conflict{border-color:var(--neg);color:var(--neg);background:var(--negb)}
+.syncchip.ok{border-color:var(--pos);color:var(--pos-t)}.syncchip.offline,.syncchip.error,.syncchip.conflict{border-color:var(--neg);color:var(--neg-t);background:var(--negb)}
 .syncalert{background:var(--negb);border:1px solid var(--neg);border-radius:10px;padding:8px 12px;margin:0 0 12px;font-size:.9rem;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
 .lock{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
 .lock[hidden],.modal[hidden],.toast[hidden]{display:none}
@@ -124,7 +124,7 @@ button.ic{font-size:1.15rem;line-height:1;padding:7px 10px}
 .dupw{cursor:help}
 .aud{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;margin-bottom:8px}
 .aud.off{opacity:.5}.aud .acts{display:flex;gap:6px;flex:none}
-.atag{display:inline-block;background:var(--warnb);color:var(--warn);border-radius:6px;padding:1px 8px;font-size:.78rem;font-weight:700}
+.atag{display:inline-block;background:var(--warnb);color:var(--warn-t);border-radius:6px;padding:1px 8px;font-size:.78rem;font-weight:700}
 .lb2 small{display:block;font-size:.72rem;color:var(--mut)}
 .lb2{gap:4px;min-width:170px}
 #tbl tbody tr[style*="--bc"] td{background:color-mix(in srgb,var(--bc) 11%,transparent)}
@@ -160,9 +160,9 @@ td input[type=checkbox],th input[type=checkbox]{width:auto;cursor:pointer}
 .rform label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--mut)}.rform input,.rform select{width:100%}
 
 /* ===================== tema fintech: Inter, ícones Lucide, badges translúcidos ===================== */
-:root{--onac:#fff;--sh:0 1px 2px rgba(23,21,31,.04),0 6px 18px rgba(23,21,31,.05)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--onac:#1c0a30;--sh:none}}
-:root[data-theme="dark"]{--onac:#1c0a30;--sh:none}
+:root{--onac:#fff;--sh:0 1px 3px rgba(0,0,0,.05)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--onac:#0F172A;--sh:0 1px 3px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{--onac:#0F172A;--sh:0 1px 3px rgba(0,0,0,.3)}
 body{font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14.5px;letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
 svg.lucide{width:1.15em;height:1.15em;stroke-width:1.75;flex:none}
 i[data-lucide]{display:inline-block;width:1.15em;height:1.15em;font-style:normal}
@@ -205,88 +205,164 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac);box-
 /* badges suaves, fundo translúcido */
 .bdg,.tag,.atag,.meta,.chip2,.syncchip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;font-weight:600;font-size:.76rem;padding:3px 10px;border:1px solid transparent;line-height:1.3}
 .bdg svg,.atag svg,.syncchip svg,.tag svg{width:13px;height:13px}
-.bdg.on{background:var(--posb);color:var(--pos)}.bdg.off{background:var(--negb);color:var(--neg)}
-.bdg.warn,.atag{background:var(--warnb);color:var(--warn)}.bdg.info{background:var(--acb);color:var(--ac)}
+.bdg.on{background:var(--posb);color:var(--pos-t)}.bdg.off{background:var(--negb);color:var(--neg-t)}
+.bdg.warn,.atag{background:var(--warnb);color:var(--warn-t)}.bdg.info{background:var(--acb);color:var(--ac)}
 .dupw{cursor:help;margin-right:6px}
 .syncchip{background:rgba(120,116,140,.13);color:var(--mut)}
 .syncchip.syncing{background:var(--acb);color:var(--ac)}
-.syncchip.ok{background:var(--posb);color:var(--pos)}
-.syncchip.offline,.syncchip.error,.syncchip.conflict{background:var(--negb);color:var(--neg)}
+.syncchip.ok{background:var(--posb);color:var(--pos-t)}
+.syncchip.offline,.syncchip.error,.syncchip.conflict{background:var(--negb);color:var(--neg-t)}
 .syncchip.syncing svg{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 .syncalert{border-radius:12px;border-color:transparent}
-.syncalert b.al{display:inline-flex;align-items:center;gap:6px;color:var(--neg)}
+.syncalert b.al{display:inline-flex;align-items:center;gap:6px;color:var(--neg-t)}
 .agh td{font-size:.88rem}.agh .acts .sec svg,.acts .sec svg{width:14px;height:14px}
 /* entrada, acesso e janelas */
 .lockic{width:60px;height:60px;border-radius:18px;background:var(--ac);color:var(--onac);display:grid;place-items:center;margin:0 auto 12px;font-size:0}.lockic svg{width:28px;height:28px}
-.lkic{width:48px;height:48px;border-radius:14px;background:var(--warnb);color:var(--warn);display:grid;place-items:center;margin:4px auto 10px}.lkic svg{width:24px;height:24px}
+.lkic{width:48px;height:48px;border-radius:14px;background:var(--warnb);color:var(--warn-t);display:grid;place-items:center;margin:4px auto 10px}.lkic svg{width:24px;height:24px}
 .lockbox,.mbox{border-radius:20px;box-shadow:0 18px 50px rgba(23,21,31,.18)}
 .lockbox .mt{justify-content:center}.mt{display:flex;align-items:center;gap:8px}
 .gbtn{border-radius:10px}
 .toast{border-radius:12px}.toast .sec{display:inline-flex}
 body.editing [data-bid]::before{content:"Mover";color:var(--onac);border-radius:8px;padding:3px 10px 3px 26px;background:var(--ac) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='9' cy='6' r='1'/%3E%3Ccircle cx='15' cy='6' r='1'/%3E%3Ccircle cx='9' cy='12' r='1'/%3E%3Ccircle cx='15' cy='12' r='1'/%3E%3Ccircle cx='9' cy='18' r='1'/%3E%3Ccircle cx='15' cy='18' r='1'/%3E%3C/svg%3E") no-repeat 8px center}
+
+/* ===================== estrutura: barra lateral, topo, gaveta e janelas (estilo Stripe e Linear) ===================== */
+:root{--pos-t:#047857;--neg-t:#BE123C;--warn-t:#B45309;--ach:#4338CA}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pos-t:#34D399;--neg-t:#FB7185;--warn-t:#FBBF24;--ach:#6366F1}}
+:root[data-theme="dark"]{--pos-t:#34D399;--neg-t:#FB7185;--warn-t:#FBBF24;--ach:#6366F1}
+button.act:hover{background:var(--ach);filter:none}
+.app{display:grid;grid-template-columns:264px minmax(0,1fr);min-height:100vh}
+.mainw{min-width:0;display:flex;flex-direction:column}
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding:18px 12px 14px;background:var(--card);border-right:1px solid var(--bd);z-index:30}
+.sbtop{display:flex;align-items:center;justify-content:space-between;padding:2px 8px 12px}.sbtop .brand b{font-size:1rem}
+.sbsec{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:14px 10px 6px}
+.side .nav{display:flex;flex-direction:column;gap:2px;max-width:none;margin:0;padding:0;overflow:visible}
+.side .nav button{width:100%;justify-content:flex-start;border-radius:8px;padding:9px 10px;font-weight:500;font-size:.9rem;color:var(--tx);background:transparent;border-color:transparent}
+.side .nav button svg{color:var(--mut)}
+.side .nav button:hover{background:rgba(100,116,139,.1);color:var(--tx)}
+.side .nav button[aria-pressed="true"]{background:var(--acb);color:var(--ac);font-weight:600;border-color:transparent}
+.side .nav button[aria-pressed="true"] svg{color:var(--ac)}
+.side .nav .badge{margin-left:auto}
+.sbgrow{flex:1}
+.sbfoot{display:flex;flex-direction:column;gap:10px;padding:12px 8px 0;border-top:1px solid var(--bd);margin-top:10px}
+.side .syncchip{align-self:flex-start}
+.userbtn{display:flex;align-items:center;gap:10px;width:100%;padding:6px 8px;border:1px solid transparent;border-radius:10px;background:transparent;cursor:pointer;color:var(--tx);font:inherit;text-align:left}
+.userbtn:hover{background:rgba(100,116,139,.1)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--acb);color:var(--ac);display:grid;place-items:center;font-weight:700;font-size:.8rem;flex:none}
+.uname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:.88rem}
+.side .pmenu{left:0;right:auto;top:auto;bottom:calc(100% + 8px);width:100%;min-width:230px}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 28px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
+.ttl{display:flex;align-items:baseline;gap:10px;min-width:0}.ttl h1{margin:0;font-size:1.25rem;font-weight:700;letter-spacing:-.02em;color:var(--tx)}
+.tright{margin-left:auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.period{display:flex;gap:10px;align-items:center}.period input{padding:6px 8px}
+.editctl{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--mut)}
+.tgl{position:relative;width:34px;height:20px;padding:0;border-radius:999px;border:0;background:var(--bd);cursor:pointer;flex:none;transition:background .15s;display:inline-block}
+.tgl .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+.tgl[aria-pressed="true"]{background:var(--ac)}.tgl[aria-pressed="true"] .knob{transform:translateX(14px)}
+.help{position:relative;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;color:var(--mut);cursor:help}
+.help:hover,.help:focus{color:var(--ac);outline:none;background:var(--acb)}
+.help .tip{display:none;position:absolute;right:0;top:calc(100% + 8px);width:300px;z-index:40;background:#0F172A;color:#F8FAFC;font-size:.8rem;line-height:1.5;padding:10px 12px;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.25);font-weight:400;text-align:left}
+.help:hover .tip,.help:focus .tip,.help:focus-within .tip{display:block}
+main{max-width:1280px;width:100%;margin:0 auto;padding:22px 28px 60px}
+#editBar{display:none!important}
+.fbar2{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 18px}
+.fbar2 .search{position:relative;flex:1 1 280px;max-width:460px}
+.fbar2 .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--mut);pointer-events:none}
+.fbar2 .search input{width:100%;padding:9px 12px 9px 36px}
+.drbg,.sbbg{position:fixed;inset:0;background:rgba(15,23,42,.35);z-index:55}.drbg[hidden],.sbbg[hidden]{display:none}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,92vw);z-index:60;display:flex;flex-direction:column;background:var(--card);border-left:1px solid var(--bd);box-shadow:-12px 0 32px rgba(15,23,42,.12);animation:slidein .2s ease}
+.drawer[hidden]{display:none}@keyframes slidein{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+.drh{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--bd)}
+.drh .advt{margin:0;font-size:1rem;font-weight:600;color:var(--tx);text-transform:none;letter-spacing:0}
+.drb{flex:1;overflow:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.drb label{display:flex;flex-direction:column;align-items:stretch;gap:5px;font-size:.82rem;color:var(--mut)}.drb select{width:100%;max-width:none}
+.drb label:has(input[type=checkbox]){flex-direction:row;align-items:center;color:var(--tx);padding-top:12px;border-top:1px solid var(--bd)}
+.drf{padding:14px 18px;border-top:1px solid var(--bd);display:flex;gap:10px}.drf .act{flex:1}
+.seg{display:inline-flex;gap:2px;padding:3px;border-radius:10px;background:rgba(100,116,139,.12);margin:0 0 16px;max-width:100%;overflow-x:auto}
+.seg button{border:0;background:transparent;color:var(--mut);padding:7px 14px;border-radius:8px;font-weight:600;font-size:.86rem;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.seg button:hover{background:transparent;color:var(--tx)}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.1);border:0}
+.mbox.wide{max-width:760px}.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.mhead .mt{margin:0}
+.manrow{display:flex;flex-wrap:wrap;gap:10px}
+.k.in span svg{color:var(--pos-t)}.k.out span svg{color:var(--neg-t)}
+.mob{display:none}
+@media (max-width:900px){
+  .app{display:block}
+  .side{position:fixed;left:0;top:0;bottom:0;width:280px;max-width:86vw;transform:translateX(-102%);transition:transform .22s ease;z-index:80}
+  .side.open{transform:none;box-shadow:12px 0 40px rgba(15,23,42,.2)}
+  .sbbg{z-index:70}.mob{display:inline-flex}
+  .topbar{padding:12px 16px}main{padding:16px 16px 48px}
+  .tright{margin-left:0;width:100%;justify-content:space-between}
+  .help .tip{right:auto;left:-140px}
+}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="locked">
-<header class="top">
-  <div><span class="brand"><span class="logo"><i data-lucide="wallet"></i></span><b>Painel Financeiro</b></span> <span class="mut sm" id="src"></span></div>
-  <div class="row"><span class="syncchip local" id="syncChip"><i data-lucide="hard-drive"></i><span>Local</span></span><button class="sec" id="editReset" hidden><i data-lucide="rotate-ccw"></i>Restaurar interface padrão</button><button class="sec ic" id="cfgBtn" aria-pressed="false" title="Configurações" aria-label="Configurações"><i data-lucide="settings" data-fb="Config."></i></button><button class="sec ic" id="editToggle" aria-pressed="false" title="Modo de Edição" aria-label="Modo de Edição"><i data-lucide="pencil" data-fb="Editar"></i></button><div class="dd"><button class="sec ic" id="profBtn" title="Perfil" aria-label="Perfil"><i data-lucide="user-round" data-fb="Perfil"></i></button><div class="menu pmenu" id="profMenu" hidden></div></div></div>
+<div class="app">
+<aside class="side" id="side" aria-label="Navegação">
+  <div class="sbtop"><span class="brand"><span class="logo"><i data-lucide="wallet"></i></span><b>Painel Financeiro</b></span><button class="sec ic mob" id="sbClose" aria-label="Fechar menu"><i data-lucide="x" data-fb="Fechar"></i></button></div>
+  <div class="sbsec">Menu principal</div>
+  <nav class="nav" id="nav" aria-label="Menu principal">
+    <button data-t="ov"><i data-lucide="layout-dashboard"></i>Visão geral</button>
+    <button data-t="cons"><i data-lucide="table-2"></i>Lançamentos</button>
+    <button data-t="comp"><i data-lucide="chart-line"></i>Comparativo mensal</button>
+    <button data-t="ai"><i data-lucide="shield-check"></i>Auditoria e insights</button>
+  </nav>
+  <div class="sbgrow"></div>
+  <div class="sbsec">Sistema</div>
+  <div class="nav sysnav">
+    <button id="cfgBtn" aria-pressed="false"><i data-lucide="settings"></i>Configurações</button>
+    <button id="sbAdmin" hidden><i data-lucide="users"></i>Gerenciar usuários <span class="badge" id="sbAdminN" hidden>0</span></button>
+  </div>
+  <div class="sbfoot">
+    <span class="syncchip local" id="syncChip"><i data-lucide="hard-drive"></i><span>Local</span></span>
+    <div class="dd"><button class="userbtn" id="profBtn" title="Perfil" aria-label="Perfil"><span class="avatar" id="avatar">?</span><span class="uname" id="uname">Perfil</span><i data-lucide="chevrons-up-down" class="chev"></i></button><div class="menu pmenu" id="profMenu" hidden></div></div>
+  </div>
+</aside>
+<div class="sbbg" id="sbBg" hidden></div>
+<div class="mainw">
+<header class="topbar">
+  <button class="sec ic mob" id="sbOpen" aria-label="Abrir menu"><i data-lucide="menu" data-fb="Menu"></i></button>
+  <div class="ttl"><h1 id="pageTitle">Visão geral</h1><span class="mut sm" id="src"></span></div>
+  <div class="tright">
+    <div class="period"><label class="row sm">De <input type="date" id="f0"></label><label class="row sm">Até <input type="date" id="f1"></label></div>
+    <div class="editctl">
+      <button class="tgl" id="editToggle" role="switch" aria-checked="false" aria-pressed="false" aria-label="Modo de edição" title="Modo de edição"><span class="knob"></span></button>
+      <span class="tl">Modo de edição</span>
+      <span class="help" tabindex="0" role="button" aria-label="Ajuda sobre o modo de edição"><i data-lucide="circle-help" data-fb="?"></i><span class="tip" role="tooltip">Modo de Edição ativo. Dê dois cliques em um botão, aba, título ou legenda para renomear (abas continuam navegando com um clique) · arraste os cabeçalhos da tabela para reordenar colunas · arraste a alça "Mover" no canto superior direito de um bloco para movê-lo.</span></span>
+      <button class="sec" id="editReset" hidden><i data-lucide="rotate-ccw"></i>Restaurar interface padrão</button>
+    </div>
+    <button class="act" id="newBtn"><i data-lucide="plus"></i>Novo lançamento</button>
+  </div>
 </header>
-<div class="navw"><nav class="nav" id="nav">
-  <button data-t="entry"><i data-lucide="clipboard-paste"></i>Painel de entrada</button>
-  <button data-t="cons"><i data-lucide="table-2"></i>Consolidado</button>
-  <button data-t="comp"><i data-lucide="chart-line"></i>Comparativo mês a mês</button>
-  <button data-t="ins"><i data-lucide="chart-pie"></i>Gargalos e insights</button>
-  <button data-t="tips"><i data-lucide="piggy-bank"></i>Dicas de economia</button>
-  <button data-t="audit"><i data-lucide="shield-check"></i>Irregularidades e auditoria</button>
-</nav></div>
-
 <main>
 <div class="syncalert" id="syncAlert" hidden></div>
 <div class="fbanner" id="fbanner" hidden></div>
-<div class="editbar" id="editBar" hidden><b>Modo de Edição ativo.</b> Dê dois cliques em um botão, aba, título ou legenda para renomear (abas continuam navegando com um clique) · arraste os cabeçalhos da tabela para reordenar colunas · arraste a alça "Mover" no canto superior direito de um bloco para movê-lo.</div>
-<section id="v-cons">
-<section class="card" id="panel">
-  <h2 class="ptitle">Painel Consolidador de Bancos</h2>
-  <p class="mut" style="margin:0 0 14px">Cole o extrato bruto, escolha o formato e adicione. Despesas ficam negativas e receitas positivas.</p>
-  <label class="lbl" for="fmt">Selecione o Formato do Extrato</label>
-  <select id="fmt" style="min-width:260px;max-width:100%"></select>
-  <p class="hint" id="hint"></p>
-  <div class="lbl" data-uid="l.panel.last" style="margin-top:12px">Datas do primeiro e do último lançamento processado, por banco</div>
-  <div class="lastbank" id="lastBank"></div>
-  <div class="lbl" style="margin-top:14px">Dados brutos</div>
-  <textarea id="inp" placeholder="Cole aqui o extrato (com a linha de cabeçalho)..." spellcheck="false"></textarea>
-  <div class="row" style="margin-top:10px">
-    <button class="act" id="add"><i data-lucide="plus"></i>Processar e adicionar</button>
-    <button class="sec" id="clrRaw"><i data-lucide="eraser"></i>Limpar dados brutos</button>
-    <button class="sec" id="clr"><i data-lucide="trash-2"></i>Limpar tabela</button>
-    <button class="sec" id="undo" hidden><i data-lucide="undo-2"></i>Desfazer limpeza</button>
-    <button class="sec" id="manBtn" aria-expanded="false"><i data-lucide="circle-plus"></i>Adicionar um lançamento (formulário)</button>
-  </div>
-  <p class="mut sm" id="msg" style="margin:8px 0 0"></p>
-  <div id="man" hidden style="margin-top:10px">
-    <div class="row">
-      <input type="date" id="md"><input type="text" id="mbank" list="banklist" placeholder="Banco/Cartão" style="width:150px">
-      <datalist id="banklist"></datalist>
-      <input type="text" id="mdesc" placeholder="Descrição" style="min-width:180px;flex:1">
-      <input type="text" id="mval" placeholder="Valor (35,90)" style="width:120px">
-      <select id="mtipo"><option value="out">Despesa</option><option value="in">Receita</option></select>
-      <select id="mmod"></select>
-      <button class="act" id="madd"><i data-lucide="plus"></i>Adicionar</button>
-    </div>
-  </div>
-</section>
-  <div class="card row">
-    <label class="row sm">De <input type="date" id="f0"></label>
-    <label class="row sm">Até <input type="date" id="f1"></label>
-    <input type="search" id="fq" placeholder="Pesquisar por descrição, categoria ou banco...">
+<div class="editbar" id="editBar" hidden></div>
+<div class="fbar2" id="fbar">
+  <div class="search"><i data-lucide="search"></i><input type="search" id="fq" placeholder="Pesquisar por descrição, categoria ou banco..."></div>
+  <label class="row sm">Banco/Cartão <select id="tb"></select></label>
+  <label class="row sm">Categoria <select id="tc"></select></label>
+  <button class="sec adv-btn" id="advBtn" aria-expanded="false" aria-controls="advFilters" title="Abrir os filtros avançados"><i data-lucide="sliders-horizontal"></i>Filtros <span class="badge" id="advN" hidden>0</span></button>
+  <button class="sec" id="fx"><i data-lucide="filter-x"></i>Limpar filtros</button>
+</div>
+<div class="drbg" id="drBg" hidden></div>
+<aside class="drawer" id="advFilters" hidden aria-label="Filtros avançados">
+  <div class="drh"><div class="lbl advt" data-uid="l.cons.adv">Filtros avançados</div><button class="sec ic" id="advClose" aria-label="Fechar filtros"><i data-lucide="x" data-fb="Fechar"></i></button></div>
+  <div class="drb">
+    <label class="row sm" data-uid="lb.cons.fdate">Data <select id="tdt"></select></label>
+    <label class="row sm" data-uid="lb.cons.fdesc">Descrição <select id="tds"></select></label>
+    <label class="row sm" data-uid="lb.cons.fmod">Modalidade <select id="tmo"></select></label>
+    <label class="row sm" data-uid="lb.cons.fval">Valor <select id="tvl"></select></label>
+    <label class="row sm" data-uid="lb.cons.fkind">Tipo <select id="tkd"></select></label>
+    <label class="row sm" data-uid="lb.cons.fign">Ignorar nos Gráficos <select id="tig"></select></label>
     <label class="row sm"><input type="checkbox" id="ign" checked> Ignorar fatura e investimentos nas análises</label>
-    <button class="sec adv-btn" id="advBtn" aria-expanded="false" aria-controls="advFilters" title="Mostrar ou ocultar os filtros avançados"><i data-lucide="sliders-horizontal"></i>Filtros <span class="badge" id="advN" hidden>0</span><i data-lucide="chevron-down" class="chev"></i></button>
-    <button class="sec" id="fx"><i data-lucide="filter-x"></i>Limpar filtros</button>
-    <div class="adv" id="advFilters" hidden><div class="lbl advt" data-uid="l.cons.adv">Filtros avançados</div></div>
   </div>
+  <div class="drf"><button class="act" id="advDone"><i data-lucide="check"></i>Concluir</button></div>
+</aside>
+<section id="v-ov" hidden>
   <div class="cards">
     <div class="k in"><span><i data-lucide="arrow-down-left"></i>Total de entradas</span><b id="kIn"></b></div>
     <div class="k out"><span><i data-lucide="arrow-up-right"></i>Total de saídas</span><b id="kOut"></b></div>
@@ -297,23 +373,19 @@ body.editing [data-bid]::before{content:"Mover";color:var(--onac);border-radius:
     <div class="card"><h3>Categorias de receitas (entradas)</h3><div id="pieIn"></div></div>
     <div class="card"><h3 data-uid="h.cons.bank">Saídas por banco/cartão</h3><div id="pieBank"></div></div>
   </div>
+</section>
+<section id="v-cons" hidden>
   <div class="card">
     <div class="row between" style="margin-bottom:10px">
       <h3 style="margin:0">Lançamentos <span class="mut sm" id="cnt"></span> <span class="mut sm" id="sv"></span></h3>
-      <div class="row"><button class="sec" id="xcsv"><i data-lucide="file-down"></i>Exportar para CSV</button><button class="sec" id="xxlsx"><i data-lucide="file-spreadsheet"></i>Exportar para Excel (.xlsx)</button><button class="sec" id="cp"><i data-lucide="clipboard-copy"></i>Exportar para Google Planilhas</button><div class="dd"><button class="sec" id="gear"><i data-lucide="columns-3"></i>Gerenciar colunas</button><div class="menu" id="menu" hidden></div></div></div>
+      <div class="row">
+        <div class="dd"><button class="sec" id="expBtn" aria-haspopup="menu" aria-expanded="false"><i data-lucide="download"></i>Exportar<i data-lucide="chevron-down" class="chev"></i></button>
+          <div class="menu" id="expMenu" hidden><button class="sec" id="xcsv"><i data-lucide="file-down"></i>CSV</button><button class="sec" id="xxlsx"><i data-lucide="file-spreadsheet"></i>Excel (.xlsx)</button><button class="sec" id="cp"><i data-lucide="clipboard-copy"></i>Google Planilhas</button></div></div>
+        <div class="dd"><button class="sec" id="gear"><i data-lucide="columns-3"></i>Colunas</button><div class="menu" id="menu" hidden></div></div>
+      </div>
     </div>
     <p class="mut sm" style="margin:0 0 8px">Arraste a borda direita de um cabeçalho para ajustar a largura. Clique no cabeçalho para ordenar. Clique duas vezes em Data, Descrição ou Valor para editar (despesas com sinal −). Modalidade, categoria e tipo mudam direto na célula.</p>
     <p class="mut sm" id="xmsg" style="margin:0 0 8px">As exportações seguem o filtro atual da tabela.</p>
-    <div class="row" style="margin:0 0 10px">
-      <label class="row sm">Categoria <select id="tc"></select></label>
-      <label class="row sm">Banco/Cartão <select id="tb"></select></label>
-      <label class="row sm" data-uid="lb.cons.fdate">Data <select id="tdt"></select></label>
-      <label class="row sm" data-uid="lb.cons.fdesc">Descrição <select id="tds" style="max-width:230px"></select></label>
-      <label class="row sm" data-uid="lb.cons.fmod">Modalidade <select id="tmo"></select></label>
-      <label class="row sm" data-uid="lb.cons.fval">Valor <select id="tvl"></select></label>
-      <label class="row sm" data-uid="lb.cons.fkind">Tipo <select id="tkd"></select></label>
-      <label class="row sm" data-uid="lb.cons.fign">Ignorar nos Gráficos <select id="tig"></select></label>
-    </div>
     <div class="bulk" id="bulk" hidden>
       <b>Ações em Massa</b> <span class="mut sm" id="bulkN"></span>
       <select id="bbank" aria-label="Banco"></select>
@@ -330,6 +402,11 @@ body.editing [data-bid]::before{content:"Mover";color:var(--onac);border-radius:
   </div>
 </section>
 
+<div class="seg" id="aiTabs" hidden>
+  <button data-ai="ins" aria-pressed="true"><i data-lucide="chart-pie"></i>Gargalos e insights</button>
+  <button data-ai="tips" aria-pressed="false"><i data-lucide="piggy-bank"></i>Dicas de economia</button>
+  <button data-ai="audit" aria-pressed="false"><i data-lucide="shield-check"></i>Duplicados e atípicos</button>
+</div>
 <section id="v-comp" hidden>
   <div class="card">
     <div class="row between"><h3 style="margin:0">Despesas por mês</h3><span class="mut sm" id="cflt"></span></div>
@@ -419,7 +496,6 @@ body.editing [data-bid]::before{content:"Mover";color:var(--onac);border-radius:
     <p class="mut sm" id="catmsg" style="margin:10px 0 0"></p>
   </div>
 </section>
-<section id="v-entry" hidden data-nodrag></section>
 <section id="v-audit" hidden>
   <div class="card row">
     <label class="row"><input type="checkbox" id="audShow"> Mostrar avisos ignorados</label>
@@ -431,14 +507,52 @@ body.editing [data-bid]::before{content:"Mover";color:var(--onac);border-radius:
   <div class="card"><h3>Valores atípicos</h3><div id="audOut"></div></div>
 </section>
 <section id="v-cfg" hidden data-nodrag>
-  <div class="subnav" id="subnav">
-    <button id="subBank" data-sub="bank" aria-pressed="true"><i data-lucide="landmark"></i>Banco</button>
+  <div class="subnav seg" id="subnav">
+    <button id="subRules" data-sub="rules" aria-pressed="true"><i data-lucide="list-checks"></i>Regras</button>
+    <button id="subBank" data-sub="bank" aria-pressed="false"><i data-lucide="landmark"></i>Formatos de bancos</button>
     <button id="subCat" data-sub="cat" aria-pressed="false"><i data-lucide="tags"></i>Categorias</button>
-    <button id="subRules" data-sub="rules" aria-pressed="false"><i data-lucide="list-checks"></i>Regras</button>
   </div>
-  <div id="sp-bank"></div><div id="sp-cat" hidden></div><div id="sp-rules" hidden></div>
+  <div id="sp-bank" hidden></div><div id="sp-cat" hidden></div><div id="sp-rules"></div>
 </section>
 </main>
+</div>
+</div>
+<div class="modal" id="entryModal" hidden><div class="mbox wide" role="dialog" aria-modal="true" aria-label="Novo lançamento">
+  <div class="mhead"><div class="mt"><i data-lucide="circle-plus"></i>Novo lançamento</div><button class="sec ic" id="entClose" aria-label="Fechar"><i data-lucide="x" data-fb="Fechar"></i></button></div>
+  <div class="seg" id="entTabs"><button id="entTabImp" aria-pressed="true"><i data-lucide="clipboard-paste"></i>Importar extrato bruto</button><button id="entTabMan" aria-pressed="false"><i data-lucide="pencil-line"></i>Lançamento manual</button></div>
+  <div id="entImp">
+    <p class="mut" style="margin:0 0 14px">Cole o extrato bruto, escolha o formato e adicione. Despesas ficam negativas e receitas positivas.</p>
+    <label class="lbl" for="fmt">Selecione o Formato do Extrato</label>
+    <select id="fmt" style="min-width:260px;max-width:100%"></select>
+    <p class="hint" id="hint"></p>
+    <div class="lbl" data-uid="l.panel.last" style="margin-top:12px">Datas do primeiro e do último lançamento processado, por banco</div>
+    <div class="lastbank" id="lastBank"></div>
+    <div class="lbl" style="margin-top:14px">Dados brutos</div>
+    <textarea id="inp" placeholder="Cole aqui o extrato (com a linha de cabeçalho)..." spellcheck="false"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="act" id="add"><i data-lucide="plus"></i>Processar e adicionar</button>
+      <button class="sec" id="clrRaw"><i data-lucide="eraser"></i>Limpar dados brutos</button>
+      <button class="sec" id="clr"><i data-lucide="trash-2"></i>Limpar tabela</button>
+      <button class="sec" id="undo" hidden><i data-lucide="undo-2"></i>Desfazer limpeza</button>
+    </div>
+  </div>
+  <div id="entMan" hidden>
+    <p class="mut" style="margin:0 0 14px">Informe uma despesa ou uma receita avulsa. Despesas ficam negativas e receitas positivas.</p>
+    <div id="man">
+      <div class="manrow">
+        <select id="mtipo" aria-label="Despesa ou receita"><option value="out">Despesa</option><option value="in">Receita</option></select>
+        <input type="date" id="md"><input type="text" id="mbank" list="banklist" placeholder="Banco/Cartão" style="width:150px">
+        <datalist id="banklist"></datalist>
+        <input type="text" id="mdesc" placeholder="Descrição" style="min-width:180px;flex:1">
+        <input type="text" id="mval" placeholder="Valor (35,90)" style="width:120px">
+        <select id="mmod"></select>
+        <button class="act" id="madd"><i data-lucide="plus"></i>Adicionar</button>
+      </div>
+    </div>
+    <button class="sec" id="manBtn" aria-expanded="false" hidden>Adicionar um lançamento (formulário)</button>
+  </div>
+  <p class="mut sm" id="msg" style="margin:12px 0 0" role="status"></p>
+</div></div>
 <div class="tt" id="tt" hidden></div>
 <div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Entrada no painel">
   <div class="lockbox">
@@ -512,7 +626,7 @@ const sum=a=>a.reduce((s,x)=>s+x,0),mean=a=>a.length?sum(a)/a.length:0;
 const dmy=d=>d.split('-').reverse().join('/');
 const mlab=k=>MES[+k.slice(5)-1]+' '+k.slice(0,4);
 const monthsOf=rs=>[...new Set(rs.map(r=>r.date.slice(0,7)))].sort();
-const PAL=['#2563eb','#e11d48','#16a34a','#f59e0b','#7c3aed','#0891b2','#ea580c','#db2777','#65a30d','#4f46e5','#0d9488','#be123c'],GRAY='#94a3b8';
+const PAL=['#4F46E5','#F43F5E','#10B981','#F59E0B','#8B5CF6','#06B6D4','#F97316','#EC4899','#84CC16','#0EA5E9','#14B8A6','#64748B'],GRAY='#94A3B8';
 let EXCL=['Fatura de Cartão','Investimentos']; // fora das análises: evitam dupla contagem
 const SRC_KEY='lancamentos',UI_KEY='ui'; // chaves lógicas: cada perfil tem seu espaço no LocalStorage e, na nuvem, uma linha por chave
 
@@ -981,10 +1095,10 @@ async function afterLogin(user,force){ // há sessão do Google: confere se o ac
 async function enter(p,offline){
   if(SYNC.entering)return;SYNC.entering=true;
   try{
-    PID=p.id;SESSION={profile:{id:p.id,name:p.nome||p.email,email:p.email,role:p.role}};SYNC.on=true;SYNC.mode='rw';loadMeta();
+    PID=p.id;SESSION={profile:{id:p.id,name:p.nome||p.email,email:p.email,role:p.role}};SYNC.on=true;SYNC.mode='rw';loadMeta();updateUserBtn();
     SYNC.authErr=offline?Object.assign(new Error('offline'),{kind:'net'}):null;
     await startApp();
-    ENTERED=true;
+    ENTERED=true;$('sbAdmin').hidden=p.role!=='admin';
     if(MEMONLY)toast('Este navegador bloqueia o armazenamento local: os dados ficam na nuvem, mas o painel não funciona offline.');
     if(p.role==='admin')adminPending(true);
   }catch(e){
@@ -1046,8 +1160,8 @@ async function logout(){
 async function adminPending(toastIt){
   try{
     const r=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('ativo',false);
-    if(r.error)return;PENDU=r.count||0;
-    if(toastIt&&PENDU)toast(`${PENDU} pessoa${PENDU>1?'s':''} aguardando liberação. Abra o menu do perfil › Gerenciar Usuários.`);
+    if(r.error)return;PENDU=r.count||0;updateAdminBadge();
+    if(toastIt&&PENDU)toast(`${PENDU} pessoa${PENDU>1?'s':''} aguardando liberação. Abra Gerenciar usuários no menu lateral.`);
   }catch(e){}
 }
 async function loadUsers(){
@@ -1056,7 +1170,7 @@ async function loadUsers(){
   const r=await sb.from('profiles').select('id,email,nome,role,ativo,criado_em').order('criado_em',{ascending:false});
   if(r.error){$('admList').innerHTML='';m('Não foi possível carregar: '+r.error.message);return}
   const L=(r.data||[]).slice().sort((a,b)=>(a.ativo-b.ativo)||String(b.criado_em).localeCompare(String(a.criado_em)));
-  PENDU=L.filter(u=>!u.ativo).length;m(PENDU?`${PENDU} aguardando liberação.`:'Nenhuma pessoa aguardando.');
+  PENDU=L.filter(u=>!u.ativo).length;updateAdminBadge();m(PENDU?`${PENDU} aguardando liberação.`:'Nenhuma pessoa aguardando.');
   $('admList').innerHTML=`<table style="width:100%;table-layout:auto"><thead><tr><th>Nome</th><th>E-mail</th><th>Desde</th><th>Situação</th><th>Ação</th></tr></thead><tbody>${L.map(u=>{
     const master=u.role==='admin',dt=String(u.criado_em||'').slice(0,10).split('-').reverse().join('/');
     return `<tr><td>${esc(u.nome||'—')}</td><td>${esc(u.email)}</td><td>${dt}</td><td><span class="bdg ${u.ativo?'on':'off'}">${master?'Master':u.ativo?'Ativo':'Aguardando / bloqueado'}</span></td><td>${master?'—':u.ativo?`<button class="dng" data-adm="${u.id}" data-to="0">Bloquear</button>`:`<button class="act" data-adm="${u.id}" data-to="1">Ativar</button>`}</td></tr>`}).join('')}</tbody></table>`;
@@ -1088,7 +1202,6 @@ let PIMP=-1;
 function renderProfMenu(){
   const adm=SESSION.profile.role==='admin',srcs=rawLocal('lancamentos')==null?oldSources():[],pend=SYNC.dirty.size>0;
   $('profMenu').innerHTML=`<div class="pmi on" style="cursor:default"><b>${esc(SESSION.profile.name)}</b><br><small class="mut">${esc(SESSION.profile.email)}${adm?' · Master':''}</small></div><hr>`+
-   (adm?`<button class="sec pmi" data-pact="admin">${ic('users')}Gerenciar Usuários${PENDU?` (${PENDU} aguardando)`:''}</button>`:'')+
    '<button class="sec pmi" data-pact="sync">'+ic('refresh-cw')+'Sincronizar agora</button>'+
    srcs.map((x,i)=>`<button class="sec pmi" data-pact="import" data-src="${i}">${PIMP===i?'Confirmar: trazer para este usuário':ic('download')+'Trazer dados antigos: '+esc(x.name)}</button>`).join('')+
    `<button class="sec pmi ${PDEL?'danger':''}" data-pact="del">${PDEL?(pend?'Há alterações não enviadas: confirmar limpeza':'Confirmar: limpar o cache deste aparelho'):ic('trash-2')+'Limpar o cache deste aparelho'}</button>`+
@@ -1111,7 +1224,7 @@ const saveIFC=()=>kvSet(IFKEY,IFC);
 const LB=uid=>IFC.labels[uid]!==undefined?IFC.labels[uid]:(DEF[uid]||'');
 function lblNode(el){for(const n of el.childNodes)if(n.nodeType===3&&n.nodeValue.trim())return n;return null}
 const getLbl=el=>{const n=lblNode(el);return(n?n.nodeValue:el.textContent).trim()};
-function setLbl(el,t){const n=lblNode(el);if(n){const m=/^(\s*)[\s\S]*?(\s*)$/.exec(n.nodeValue);n.nodeValue=m[1]+t+m[2]}else el.textContent=t}
+function setLbl(el,t){const n=lblNode(el);if(n){const m=/^(\s*)[\s\S]*?(\s*)$/.exec(n.nodeValue);n.nodeValue=m[1]+t+m[2]}else if(!el.querySelector('svg,i[data-lucide]'))el.textContent=t} // nunca apaga o ícone de um botão sem texto
 const orderedCols=()=>{const o=IFC.order.filter(k=>k!=='sel'&&COLS.some(c=>c.k===k));const rest=COLS.filter(c=>c.k!=='sel'&&!o.includes(c.k)).map(c=>c.k);return['sel',...o,...rest].map(k=>COLS.find(c=>c.k===k))};
 function initUid(){
   const cnt={},SEC=el=>(el.closest('section[id]')||{}).id||'top';
@@ -1119,7 +1232,7 @@ function initUid(){
   document.querySelectorAll('[data-uid]:not([data-st])').forEach(el=>reg(el,el.dataset.uid)); // elementos com ID estrutural fixo no HTML
   const next=(el,p)=>{const k=p+'.'+SEC(el);cnt[k]=(cnt[k]||0)+1;return k+'.'+cnt[k]};
   document.querySelectorAll('#nav button[data-t]').forEach(b=>reg(b,'nav.'+b.dataset.t));
-  document.querySelectorAll('main button[id],header button[id]').forEach(b=>{if(!['editToggle','editReset','cfgBtn','profBtn'].includes(b.id))reg(b,'btn.'+b.id)});
+  document.querySelectorAll('main button[id],header button[id]').forEach(b=>{if(!['editToggle','editReset','cfgBtn','profBtn','sbOpen','sbClose','advClose','entClose','sbAdmin'].includes(b.id))reg(b,'btn.'+b.id)});
   document.querySelectorAll('h2,h3,.lbl,.k span,.top b,.bulk b,#panel > p.mut').forEach(el=>{if(!el.dataset.uid)reg(el,next(el,el.tagName.toLowerCase()==='span'?'k':el.className.includes('lbl')?'l':'t'))});
   document.querySelectorAll('main label').forEach(l=>{
     const n=lblNode(l);if(!n||l.dataset.uid||l.querySelector('[data-uid]'))return;
@@ -1160,7 +1273,7 @@ function closeEd(save){
 }
 function setEdit(on){
   EDITM=on;document.body.classList.toggle('editing',on);
-  $('editToggle').setAttribute('aria-pressed',on);$('editBar').hidden=!on;$('editReset').hidden=!on;
+  $('editToggle').setAttribute('aria-pressed',on);$('editToggle').setAttribute('aria-checked',on);$('editBar').hidden=!on;$('editReset').hidden=!on;
   if(!on)closeEd(false);
   renderTable();
 }
@@ -1234,11 +1347,11 @@ function activeFilters(){ // lista legível dos filtros acionados
 }
 const flt=()=>{const a=activeFilters();return a.length?`Análise restrita a: ${a.join(' · ')}`:'Sem filtros ativos: todos os lançamentos'};
 let ADV=false;
-function setAdv(open){ADV=open;$('advFilters').hidden=!open;$('advBtn').setAttribute('aria-expanded',open);$('advBtn').classList.toggle('on',open)}
+function setAdv(open){ADV=open;$('advFilters').hidden=!open;$('drBg').hidden=!open;$('advBtn').setAttribute('aria-expanded',open);$('advBtn').classList.toggle('on',open)}
 function updateAdv(){const n=['desc','mod','val','kind','ign'].filter(k=>F[k]).length,b=$('advN');b.hidden=!n;b.textContent=n;$('advBtn').title=n?`Filtros avançados: ${n} ativo(s)`:'Mostrar ou ocultar os filtros avançados'}
 function updateBanner(){ // aviso visível quando algum filtro está acionado
   updateAdv();
-  const a=activeFilters(),b=$('fbanner'),on=a.length&&['cons','comp','ins','tips','audit'].includes(TAB);
+  const a=activeFilters(),b=$('fbanner'),on=a.length&&['ov','cons','comp','ins','tips','audit'].includes(TAB);
   b.hidden=!on;if(!on)return;
   b.innerHTML=`<b data-uid="banner.title">${LB('banner.title')}</b> ${a.map(x=>`<span class="chip2">${esc(x)}</span>`).join(' ')} <button class="sec" id="fbClear">${LB('btn.fx')}</button>`;
 }
@@ -1249,19 +1362,8 @@ function renderLast(){ // primeiro e último lançamento processado por banco/fo
   const names=SRC==='user'?allBanks():realFormats().map(f=>f.name),bd=bankDates(),d=x=>x?dmy(x):'—';
   $('lastBank').innerHTML=names.length?names.map(n=>`<div class="lb2${bd.last[n]?'':' none'}" style="--bc:${bcol(n)}"><span>${esc(n)}</span><div><small data-uid="t.first">${LB('t.first')}</small><b>${d(bd.first[n])}</b></div><div><small data-uid="t.last">${LB('t.last')}</small><b>${d(bd.last[n])}</b></div></div>`).join(''):'<span class="mut sm">Nenhum banco cadastrado.</span>';
 }
-function moveFilters(){ // filtros unificados: período, busca e todos os dropdowns numa só barra, logo acima da tabela
-  const f=document.querySelector('#v-cons > .card.row'),q=$('tc').closest('label').parentElement;
-  if(!f||!q)return;
-  f.classList.remove('card');f.classList.add('fbar');f.removeAttribute('data-bid');
-  q.parentElement.insertBefore(f,q);
-  const adv=$('advFilters'),L=id=>$(id).closest('label');
-  ['tb','tc'].forEach(id=>f.insertBefore(L(id),$('fq')));                         // sempre visíveis: período, Banco, Categoria e busca
-  ['tdt','tds','tmo','tvl','tkd','tig'].forEach(id=>adv.appendChild(L(id)));      // gaveta "+ Filtros": os demais filtros
-  adv.appendChild($('ign').closest('label'));
-  q.remove();
-}
-function relocate(){ // painel de entrada e configurações ganham abas próprias (IDs estruturais preservados)
-  $('v-entry').appendChild($('panel'));$('panel').removeAttribute('data-bid');
+function moveFilters(){} // os filtros já nascem no lugar certo: busca, banco e categoria na barra da página; os avançados na gaveta
+function relocate(){ // as configurações ganham sub-abas (IDs estruturais preservados)
   $('sp-bank').appendChild($('v-fmts'));$('sp-rules').appendChild($('v-rules'));
   $('v-fmts').hidden=false;$('v-rules').hidden=false;
   $('sp-cat').appendChild($('catPanel'));$('catPanel').removeAttribute('data-bid');
@@ -1340,13 +1442,13 @@ function pie(id,rs,sign,grp){
 
 
 /* ===== aba Consolidado ===== */
-function renderCons(){
+function renderOv(){ // Visão geral: totais e gráficos de pizza
   const rs=shown(),inc=sum(rs.filter(r=>r.val>0).map(r=>r.val)),out=-sum(rs.filter(r=>r.val<0).map(r=>r.val)),bal=inc-out;
   $('kIn').textContent=brl(inc);$('kOut').textContent=brl(out);$('kBal').textContent=brl(bal);
   $('kBalBox').className='k bal'+(bal<0?' neg':'');
   pie('pieOut',rs,-1);pie('pieIn',rs,1);pie('pieBank',rs,-1,'bank');
-  renderTable();
 }
+function renderCons(){renderTable()} // Lançamentos: tabela completa
 function renderTable(){
   const vis=orderedCols().filter(c=>!UI.hide.includes(c.k)),rs=tableView(),nEx=rs.filter(exc).length;
   const ids=new Set(rs.map(r=>r.id));SELR.forEach(id=>{if(!ids.has(id))SELR.delete(id)}); // seleção só vale para linhas visíveis
@@ -1600,7 +1702,7 @@ function showHint(){
 }
 function renderFmts(){
   const dash='<span class="mut">—</span>',bd=bankDates();
-  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Ordem</th><th>Cor</th><th>Formato</th><th>1º lançamento</th><th>Último lançamento</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map((f,i)=>{const c=(f.mode||'cols')==='cols';return `<tr><td style="white-space:nowrap"><button class="sec mv" data-fup="${f.id}" title="Subir"${i===0?' disabled':''}>${ic('chevron-up')}</button> <button class="sec mv" data-fdn="${f.id}" title="Descer"${i===FM.length-1?' disabled':''}>${ic('chevron-down')}</button></td><td><input type="color" data-fcol="${f.id}" value="${f.color||'#2563eb'}" title="Cor do banco" aria-label="Cor do banco ${esc(f.name)}"></td><td><b>${esc(f.name)}</b></td><td>${bd.first[f.name]?dmy(bd.first[f.name]):dash}</td><td>${bd.last[f.name]?dmy(bd.last[f.name]):dash}</td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
+  $('ftbl').innerHTML=FM.length?`<thead><tr><th>Ordem</th><th>Cor</th><th>Formato</th><th>1º lançamento</th><th>Último lançamento</th><th>Leitura</th><th>Data</th><th>Descrição</th><th>Valor</th><th>Quem</th><th>Banco</th><th>Categoria</th><th>Inverter sinal</th><th>Decimal</th><th>Modalidade</th><th></th></tr></thead><tbody>${FM.map((f,i)=>{const c=(f.mode||'cols')==='cols';return `<tr><td style="white-space:nowrap"><button class="sec mv" data-fup="${f.id}" title="Subir"${i===0?' disabled':''}>${ic('chevron-up')}</button> <button class="sec mv" data-fdn="${f.id}" title="Descer"${i===FM.length-1?' disabled':''}>${ic('chevron-down')}</button></td><td><input type="color" data-fcol="${f.id}" value="${f.color||'#4F46E5'}" title="Cor do banco" aria-label="Cor do banco ${esc(f.name)}"></td><td><b>${esc(f.name)}</b></td><td>${bd.first[f.name]?dmy(bd.first[f.name]):dash}</td><td>${bd.last[f.name]?dmy(bd.last[f.name]):dash}</td><td>${MODEL[f.mode||'cols']}</td><td>${c?esc(f.cData):dash}</td><td>${c?esc(f.cDesc):dash}</td><td>${c?esc(f.cValor):dash}</td><td>${c&&f.cQuem?esc(f.cQuem):dash}</td><td>${c&&f.cBank?esc(f.cBank):dash}</td><td>${c&&f.cCat?esc(f.cCat):dash}</td><td>${f.inv?'Sim':'Não'}</td><td>${DECL[f.dec||'auto']}</td><td>${esc(f.mod||'—')}</td><td style="white-space:nowrap"><button class="sec" data-fed="${f.id}">Editar</button> <button class="sec" data-fdel="${f.id}">Excluir</button></td></tr>`}).join('')}</tbody>`:'<tbody><tr><td class="mut">Nenhum formato cadastrado.</td></tr></tbody>';
 }
 const FF=['fname','fcdata','fcdesc','fcval','fcquem','fcbank','fccat'];
 function resetFmtForm(){EDITF=null;FF.forEach(i=>$(i).value='');$('fmode').value='cols';$('finv').checked=false;$('fdec').value='auto';$('fmod').value='';setLbl($('fsave'),LB('btn.fsave'));$('fcancel').hidden=true}
@@ -1920,14 +2022,24 @@ $('v-audit').addEventListener('click',e=>{
     toast(`Excluído: ${r.desc} (${dmy(r.date)}, ${brl(r.val)}).`,()=>{DATA.push(copy);commit();flushNow()});
   }else if(dis){AUD.dismissed.push(dis.dataset.adis);saveAUD();renderAudit()}
   else if(rest){AUD.dismissed=AUD.dismissed.filter(k=>k!==rest.dataset.arest);saveAUD();renderAudit()}
-  else if(view){const m=AUDMAP[view.dataset.aview];if(!m)return;F=F0();AUTO=false;F.d0=F.d1=m.date;F.desc=m.desc;fillT();setAdv(true);setTab('cons')}
+  else if(view){const m=AUDMAP[view.dataset.aview];if(!m)return;F=F0();AUTO=false;F.d0=F.d1=m.date;F.desc=m.desc;fillT();setTab('cons')}
   else if(e.target.closest('#audRestore')){AUD.dismissed=[];saveAUD();renderAudit()}
 });
 $('audShow').onchange=e=>{AUDSHOW=e.target.checked;renderAudit()};
 
 /* ===== navegação ===== */
-const TABS=['entry','cons','comp','ins','tips','audit','cfg'];
-let CFGSUB='bank';
+const TABS=['ov','cons','comp','ins','tips','audit','cfg'];
+const AIV=['ins','tips','audit'];let AISUB='ins';
+const navKey=t=>AIV.includes(t)?'ai':t;
+function titleFor(t){const el=t==='cfg'?$('cfgBtn'):document.querySelector('#nav [data-t="'+navKey(t)+'"]');return el?String(getLbl(el)||'').trim():''}
+function openSide(){$('side').classList.add('open');$('sbBg').hidden=false}
+function closeSide(){$('side').classList.remove('open');$('sbBg').hidden=true}
+function entTab(w){const imp=w!=='man';$('entImp').hidden=!imp;$('entMan').hidden=imp;$('entTabImp').setAttribute('aria-pressed',imp);$('entTabMan').setAttribute('aria-pressed',!imp)}
+function openEntry(w){$('entryModal').hidden=false;entTab(w||'imp');renderEntry();setTimeout(()=>{try{(w==='man'?$('md'):$('inp')).focus()}catch(e){}},0)}
+function closeEntry(){$('entryModal').hidden=true}
+function updateUserBtn(){const n=(SESSION&&SESSION.profile.name)||'';$('uname').textContent=n||'Perfil';$('avatar').textContent=(n.trim()[0]||'?').toUpperCase()}
+function updateAdminBadge(){const b=$('sbAdminN');b.hidden=!PENDU;b.textContent=PENDU}
+let CFGSUB='rules';
 function renderEntry(){renderLast();showHint()}
 function setSub(k){
   CFGSUB=k;document.querySelectorAll('#subnav [data-sub]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sub===k));
@@ -1935,9 +2047,22 @@ function setSub(k){
   if(k==='bank')renderFmts();else if(k==='cat')renderCats();else{fillRuleSelects();renderRules()}
 }
 const renderCfg=()=>setSub(CFGSUB);
-function render(){updateBanner();({entry:renderEntry,cons:renderCons,comp:renderComp,ins:renderIns,tips:renderTips,audit:renderAudit,cfg:renderCfg})[TAB]()}
+function render(){updateBanner();({ov:renderOv,cons:renderCons,comp:renderComp,ins:renderIns,tips:renderTips,audit:renderAudit,cfg:renderCfg})[TAB]()}
 function setTab(t){const __r=setTab__(...arguments);renderIcons();return __r}
-function setTab__(t){TAB=t;document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));$('cfgBtn').setAttribute('aria-pressed',t==='cfg');for(const k of TABS)$('v-'+k).hidden=k!==t;render()}
+function setTab__(t){
+  if(t==='ai')t=AISUB;
+  if(AIV.includes(t))AISUB=t;
+  TAB=t;
+  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===navKey(t)));
+  $('cfgBtn').setAttribute('aria-pressed',t==='cfg');
+  for(const k of TABS)$('v-'+k).hidden=k!==t;
+  $('fbar').hidden=!['ov','cons'].includes(t);
+  $('aiTabs').hidden=!AIV.includes(t);
+  document.querySelectorAll('#aiTabs [data-ai]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ai===t));
+  $('pageTitle').textContent=titleFor(t);
+  closeSide();
+  render();
+}
 $('nav').onclick=e=>{const b=e.target.closest('[data-t]');if(b)setTab(b.dataset.t)};
 $('cfgBtn').onclick=()=>setTab('cfg');
 $('subnav').onclick=e=>{const b=e.target.closest('[data-sub]');if(b)setSub(b.dataset.sub)};
@@ -2016,8 +2141,10 @@ $('fbanner').addEventListener('click',e=>{if(e.target.closest('#fbClear'))clearF
 [['tc','cat'],['tb','bank'],['tds','desc'],['tmo','mod'],['tvl','val'],['tkd','kind'],['tig','ign']].forEach(([id,k])=>{$(id).onchange=e=>{F[k]=e.target.value;filtersChanged()}});
 
 /* ===== tabela: colunas, ordenação, seleção e edição ===== */
-$('gear').onclick=e=>{e.stopPropagation();$('profMenu').hidden=true;$('menu').hidden=!$('menu').hidden};
-document.addEventListener('click',e=>{if(!e.target.closest('.dd')){$('menu').hidden=true;$('profMenu').hidden=true}});
+$('gear').onclick=e=>{e.stopPropagation();$('profMenu').hidden=true;$('expMenu').hidden=true;$('menu').hidden=!$('menu').hidden};
+$('expBtn').onclick=e=>{e.stopPropagation();$('profMenu').hidden=true;$('menu').hidden=true;$('expMenu').hidden=!$('expMenu').hidden;$('expBtn').setAttribute('aria-expanded',!$('expMenu').hidden)};
+$('expMenu').addEventListener('click',()=>{$('expMenu').hidden=true;$('expBtn').setAttribute('aria-expanded','false')});
+document.addEventListener('click',e=>{if(!e.target.closest('.dd')){$('menu').hidden=true;$('profMenu').hidden=true;$('expMenu').hidden=true}});
 $('menu').addEventListener('change',e=>{const k=e.target.dataset.k;if(!k)return;UI.hide=e.target.checked?UI.hide.filter(x=>x!==k):[...UI.hide,k];saveUI();renderTable()});
 $('menu').addEventListener('click',e=>{if(e.target.id==='mreset'){UI={hide:DEFHIDE.slice(),w:{},ex:UI.ex,v:2};saveUI();buildMenu();renderTable()}});
 $('tbl').addEventListener('click',e=>{
@@ -2152,13 +2279,22 @@ document.addEventListener('mouseup',()=>{if(DB&&!DB.classList.contains('dragging
 
 /* ===== login, administração e sincronização: eventos ===== */
 $('gLogin').onclick=googleLogin;
+$('newBtn').onclick=()=>openEntry('imp');
+$('entClose').onclick=closeEntry;
+$('entryModal').addEventListener('mousedown',e=>{if(e.target===$('entryModal'))closeEntry()});
+$('entTabImp').onclick=()=>entTab('imp');$('entTabMan').onclick=()=>entTab('man');
+$('sbOpen').onclick=openSide;$('sbClose').onclick=closeSide;$('sbBg').onclick=closeSide;
+$('sbAdmin').onclick=()=>{closeSide();openAdmin()};
+$('advClose').onclick=()=>setAdv(false);$('advDone').onclick=()=>setAdv(false);$('drBg').onclick=()=>setAdv(false);
+$('aiTabs').addEventListener('click',e=>{const b=e.target.closest('[data-ai]');if(b)setTab(b.dataset.ai)});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('entryModal').hidden)closeEntry();else if(ADV)setAdv(false);else closeSide()});
 $('lkOut').onclick=logout;
 $('lkCheck').onclick=async()=>{
   $('lkMsg').textContent='Verificando…';
   try{const r=await sb.auth.getSession();if(r.data&&r.data.session)afterLogin(r.data.session.user,true);else showLock('login','Entre novamente com o Google.')}
   catch(e){$('lkMsg').textContent='Sem conexão: '+classifyErr(e).msg}
 };
-$('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;PDEL=false;PIMP=-1;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
+$('profBtn').onclick=e=>{e.stopPropagation();$('menu').hidden=true;$('expMenu').hidden=true;PDEL=false;PIMP=-1;renderProfMenu();$('profMenu').hidden=!$('profMenu').hidden};
 $('profMenu').addEventListener('click',e=>{
   const ac=e.target.closest('[data-pact]');if(!ac)return;const a=ac.dataset.pact;
   if(a==='admin'){$('profMenu').hidden=true;openAdmin()}
@@ -2201,7 +2337,7 @@ async function startApp(){
   loadIFC();Object.assign(DEF,DYNDEF);COLS.forEach(c=>{DEF['col.'+c.k]=c.t});initUid();initBlocks();applyLabels();applyLayout();relocate();moveFilters();
   buildMenu();fillFmt();
   $('profBtn').title='Perfil: '+SESSION.profile.name;
-  setSource(userRows().length?'user':'demo');setTab('cons');
+  setSource(userRows().length?'user':'demo');setTab('ov');
   SYNC.booted=true;
   document.body.classList.remove('locked');$('lock').hidden=true;
   if(SYNC.state==='conflict')openConflict();
